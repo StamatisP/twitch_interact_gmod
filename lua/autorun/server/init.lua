@@ -113,7 +113,7 @@ hook.Add("PlayerSay", "ChangeSettings", function(sender, txt, teamchat)
 		print("AFTER - -- - - -- - - -" .. MessageDelay)
 		return ""
 	elseif args[1] == "!reconnectsocket" then
-		if sender:Nick() == "Mineturtle" then
+		if sender:IsAdmin() then
 			if WEBSOCKET:isConnected() then
 				WEBSOCKET:close()
 				timer.Simple(1, function()
@@ -124,7 +124,7 @@ hook.Add("PlayerSay", "ChangeSettings", function(sender, txt, teamchat)
 			end
 		end
 	elseif args[1] == "!forcereconnect" then
-		if sender:Nick() == "Mineturtle" then
+		if sender:IsAdmin() then
 			if WEBSOCKET then
 				WEBSOCKET:close()
 				WEBSOCKET = nil
