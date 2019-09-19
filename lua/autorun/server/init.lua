@@ -1,3 +1,5 @@
+if game.SinglePlayer() then Error("this cant be run in singleplayer!!") end
+
 require("gwsockets")
 include("actions.lua")
 print("runnin!")
@@ -29,8 +31,8 @@ util.AddNetworkString("AntFight")
 do // add files here precache in shared init.lua
 	resource.AddFile( "sound/the_world_time_start.mp3" )
 	resource.AddFile( "sound/the_world_time_stop.mp3" )
-	resource.AddFile("sound/spy_cloak.wav")
-	resource.AddFile("sound/spy_uncloak.wav")
+	resource.AddFile("sound/invis_on.mp3")
+	resource.AddFile("sound/invis_off.mp3")
 	resource.AddFile("sound/inception.mp3")
 end
 

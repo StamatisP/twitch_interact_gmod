@@ -56,10 +56,11 @@ end
 
 local function Inception()
 	print("bwaaam. inception time")
-	local oldnumgrav = GetConVar("sv_gravity"):GetInt()
+	//local oldnumgrav = GetConVar("sv_gravity"):GetInt()
 	// lower gravity below 0 for a period of time, then bring it back to normal
 	RunConsoleCommand("sv_gravity", "80")
 	RunConsoleCommand("sv_airaccelerate", "1000")
+	RunConsoleCommand("sv_sticktoground", "0")
 	net.Start("Inception")
 	net.Broadcast()
 	for k, v in ipairs(player.GetAll()) do
@@ -73,8 +74,9 @@ local function Inception()
 		v:SetVelocity( accel )
 	end
 	timer.Simple(ActionDuration, function()
-		RunConsoleCommand("sv_gravity", oldnumgrav)
+		RunConsoleCommand("sv_gravity", "600")
 		RunConsoleCommand("sv_airaccelerate", "10")
+		RunConsoleCommand("sv_sticktoground", "1")
 	end)
 end
 

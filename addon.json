@@ -1,0 +1,11 @@
+{
+	"title"		:	"Twitch Interact",
+	"type"		:	"ServerContent",
+	"tags"		:	"fun",
+	"ignore"	:
+	[
+		"*.psd",
+		"*.vcproj",
+		"*.svn*"
+	]
+}

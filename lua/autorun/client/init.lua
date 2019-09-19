@@ -6,11 +6,19 @@ local isDoubleVote = false
 local ScreenFuck = false
 local SilentHill = false
 local Fog_End = 5600
+local Fog_Density = 0
 local votes = {}
 
 do // precache here
 	util.PrecacheSound( "the_world_time_stop.mp3" )
 	util.PrecacheSound( "the_world_time_start.mp3" )
+	if file.Exists("sound/spy_cloak.wav", "GAME") then
+		util.PrecacheSound("spy_cloak.wav")
+		util.PrecacheSound("spy_uncloak.wav")
+	else
+		util.PrecacheSound("invis_on.mp3")
+		util.PrecacheSound("invis_off.mp3")
+	end
 end
 
 local deepfryTab = {
@@ -233,7 +241,7 @@ function SetupWorldFog()
 		render.FogMode( MATERIAL_FOG_LINEAR )
 		render.FogStart( 0 )
 		render.FogEnd( Fog_End )
-		render.FogMaxDensity( 0.99 )
+		render.FogMaxDensity( Fog_Density )
 		render.FogColor( 0.98 * 255, 0.98 * 255, 0.98 * 255)
 
 		return true
@@ -241,7 +249,7 @@ function SetupWorldFog()
 		render.FogMode( MATERIAL_FOG_LINEAR )
 		render.FogStart( 0 )
 		render.FogEnd( Fog_End )
-		render.FogMaxDensity( 0 )
+		render.FogMaxDensity( Fog_Density )
 		render.FogColor( 0.6 * 255, 0.7 * 255, 0.8 * 255)
 
 		//return true
@@ -254,7 +262,7 @@ function SetupSkyFog( skyboxscale )
 		render.FogMode( MATERIAL_FOG_LINEAR )
 		render.FogStart( 0 * skyboxscale )
 		render.FogEnd( Fog_End * skyboxscale )
-		render.FogMaxDensity( 0.99 )
+		render.FogMaxDensity( Fog_Density )
 		render.FogColor( 0.98 * 255, 0.98 * 255, 0.98 * 255)
 
 		return true
@@ -262,7 +270,7 @@ function SetupSkyFog( skyboxscale )
 		render.FogMode( MATERIAL_FOG_LINEAR )
 		render.FogStart( 0 * skyboxscale )
 		render.FogEnd( Fog_End * skyboxscale )
-		render.FogMaxDensity( 0 )
+		render.FogMaxDensity( Fog_Density )
 		render.FogColor( 0.6 * 255, 0.7 * 255, 0.8 * 255)
 
 		//return true
@@ -280,7 +288,9 @@ net.Receive("SilentHill", function()
 			timer.Destroy("fog_end_lerp")
 			return
 		end
-		Fog_End = Fog_End - 280
+		Fog_End = math.Approach(Fog_End, 280, -280)
+		print(Fog_Density)
+		Fog_Density = math.Approach(Fog_Density, 0.99, 0.055)
 	end)
 	timer.Simple(14, function()
 		LocalPlayer():ChatPrint("It's finally clearing up.")
@@ -290,7 +300,9 @@ net.Receive("SilentHill", function()
 				SilentHill = false
 				return
 			end
-			Fog_End = Fog_End + 280
+			Fog_End = math.Approach(Fog_End, 5600, 280)
+			print(Fog_Density)
+			Fog_Density = math.Approach(Fog_Density, 0, -0.055)
 		end)
 	end)
 end)
@@ -298,34 +310,20 @@ end)
 net.Receive("PlayCloakSound", function()
 	local isCloak = net.ReadBool()
 	if isCloak then
-		surface.PlaySound("spy_cloak.wav")
+		if file.Exists("sound/spy_cloak.wav", "GAME") then
+			surface.PlaySound("spy_cloak.wav")
+		else
+			surface.PlaySound("invis_on.mp3")
+		end
 	else
-		surface.PlaySound("spy_uncloak.wav")
+		if file.Exists("sound/spy_cloak.wav", "GAME") then
+			surface.PlaySound("spy_uncloak.wav")
+		else
+			surface.PlaySound("invis_off.mp3")
+		end
 	end
 end)
 
-/*
-net.Receive("AntFight", function()
-	local bool = net.ReadBool()
-	if bool then
-		LocalPlayer():SetModelScale(LocalPlayer():GetModelScale() * 0.3, 1)
-		LocalPlayer():SetViewOffset(0.3 * Vector(0, 0, 64))
-		LocalPlayer():SetViewOffsetDucked(0.3 * Vector(0, 0, 28))
-		for k, v in ipairs(player.GetAll()) do
-			v:SetRenderBounds(0.3 * Vector(-16, -16, 0), 0.3 * Vector(16, 16, 72)) // based on their hull
-			v:SetHull(0.3 * Vector(-16, -16, 0), 0.3 * Vector(16, 16, 72))
-			v:SetHullDuck(0.3 * Vector(-16, -16, 0), 0.3 * Vector(-16, -16, 36))
-		end
-	else
-		LocalPlayer():SetModelScale(1, 1)
-		LocalPlayer():SetViewOffset(Vector(0, 0, 64))
-		LocalPlayer():SetViewOffsetDucked(Vector(0, 0, 28))
-		for k, v in ipairs(player.GetAll()) do
-			v:SetRenderBounds(Vector(-16, -16, 0), Vector(16, 16, 72))
-			v:ResetHull()
-		end
-	end
-end)*/
 
 net.Receive("Inception", function()
 	surface.PlaySound("inception.mp3")
