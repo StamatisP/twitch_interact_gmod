@@ -113,7 +113,6 @@ hook.Add("PlayerSay", "ChangeSettings", function(sender, txt, teamchat)
 		end)
 		timer.Start("CheckIfConnected")
 		print("AFTER - -- - - -- - - -" .. MessageDelay)
-		return ""
 	elseif args[1] == "!reconnectsocket" then
 		if sender:IsAdmin() then
 			if WEBSOCKET:isConnected() then
@@ -159,7 +158,6 @@ hook.Add("PlayerSay", "ChangeSettings", function(sender, txt, teamchat)
 			ws_url = args[2]
 			print("setting url to ".. ws_url)
 		end
-		return ""
 	elseif WSFunctions[string.TrimLeft(args[1], "!")] then
 		print("function found in PlayerSay, running...")
 
