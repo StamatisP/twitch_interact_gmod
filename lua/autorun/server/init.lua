@@ -27,13 +27,12 @@ util.AddNetworkString("Inception")
 util.AddNetworkString("SpeedUp")
 util.AddNetworkString("SlowDown")
 util.AddNetworkString("AntFight")
+util.AddNetworkString("Paranoia")
 
 do // add files here precache in shared init.lua
-	resource.AddFile( "sound/the_world_time_start.mp3" )
-	resource.AddFile( "sound/the_world_time_stop.mp3" )
-	resource.AddFile("sound/invis_on.mp3")
-	resource.AddFile("sound/invis_off.mp3")
-	resource.AddFile("sound/inception.mp3")
+	for k, v in pairs(file.Find("sound/*", "GAME")) do
+		resource.AddFile("sound/" .. v)
+	end
 end
 
 local ws_url = "ws://localhost:8765"

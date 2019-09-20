@@ -3,14 +3,19 @@ AddCSLuaFile()
 CreateClientConVar("tgm_chat", "0", true, true, "If you get Twitch chat printed to your chat.")
 local voting_time = false
 local isDoubleVote = false
+
 local ScreenFuck = false
+
 local SilentHill = false
 local Fog_End = 5600
 local Fog_Density = 0
+
+local Paranoia = false
+
 local votes = {}
 
 do // precache here
-	util.PrecacheSound( "the_world_time_stop.mp3" )
+	/*util.PrecacheSound( "the_world_time_stop.mp3" )
 	util.PrecacheSound( "the_world_time_start.mp3" )
 	if file.Exists("sound/spy_cloak.wav", "GAME") then
 		util.PrecacheSound("spy_cloak.wav")
@@ -18,6 +23,10 @@ do // precache here
 	else
 		util.PrecacheSound("invis_on.mp3")
 		util.PrecacheSound("invis_off.mp3")
+	end*/
+
+	for k, v in pairs(file.Find("sound/*", "GAME")) do
+		util.PrecacheSound(v)
 	end
 end
 
@@ -244,7 +253,15 @@ function SetupWorldFog()
 		render.FogMaxDensity( Fog_Density )
 		render.FogColor( 0.98 * 255, 0.98 * 255, 0.98 * 255)
 
-		return true
+		//return true
+	elseif Paranoia then
+		render.FogMode( MATERIAL_FOG_LINEAR )
+		render.FogStart( 0 )
+		render.FogEnd( Fog_End )
+		render.FogMaxDensity( 1 )
+		render.FogColor( 0, 0, 0)
+
+		//return true
 	else
 		render.FogMode( MATERIAL_FOG_LINEAR )
 		render.FogStart( 0 )
@@ -254,6 +271,7 @@ function SetupWorldFog()
 
 		//return true
 	end
+	return true
 end
 
 function SetupSkyFog( skyboxscale )
@@ -265,7 +283,15 @@ function SetupSkyFog( skyboxscale )
 		render.FogMaxDensity( Fog_Density )
 		render.FogColor( 0.98 * 255, 0.98 * 255, 0.98 * 255)
 
-		return true
+		//return true
+	elseif Paranoia then
+		render.FogMode( MATERIAL_FOG_LINEAR )
+		render.FogStart( 0 * skyboxscale )
+		render.FogEnd( Fog_End * skyboxscale )
+		render.FogMaxDensity( 1 )
+		render.FogColor( 0, 0, 0)
+
+		//return true
 	else
 		render.FogMode( MATERIAL_FOG_LINEAR )
 		render.FogStart( 0 * skyboxscale )
@@ -275,6 +301,7 @@ function SetupSkyFog( skyboxscale )
 
 		//return true
 	end
+	return true
 end
 
 hook.Add( "SetupWorldFog", "worldfog", SetupWorldFog )
@@ -283,26 +310,24 @@ hook.Add( "SetupSkyboxFog", "skyboxfog", SetupSkyFog )
 net.Receive("SilentHill", function()
 	SilentHill = true
 	LocalPlayer():ChatPrint("The fog is rolling in...")
-	timer.Create("fog_end_lerp", 0.1, 0, function()
+	timer.Create("fog_end_lerp", 0.05, 0, function()
 		if Fog_End <= 280 then
 			timer.Destroy("fog_end_lerp")
 			return
 		end
-		Fog_End = math.Approach(Fog_End, 280, -280)
-		print(Fog_Density)
-		Fog_Density = math.Approach(Fog_Density, 0.99, 0.055)
+		Fog_End = math.Approach(Fog_End, 280, -140)
+		Fog_Density = math.Approach(Fog_Density, 0.99, 0.025)
 	end)
-	timer.Simple(14, function()
+	timer.Simple(15, function()
 		LocalPlayer():ChatPrint("It's finally clearing up.")
-		timer.Create("fog_end_lerp_2", 0.1, 0, function()
+		timer.Create("fog_end_lerp_2", 0.05, 0, function()
 			if Fog_End >= 5600 then
 				timer.Destroy("fog_end_lerp_2")
 				SilentHill = false
 				return
 			end
-			Fog_End = math.Approach(Fog_End, 5600, 280)
-			print(Fog_Density)
-			Fog_Density = math.Approach(Fog_Density, 0, -0.055)
+			Fog_End = math.Approach(Fog_End, 5600, 140)
+			Fog_Density = math.Approach(Fog_Density, 0, -0.025)
 		end)
 	end)
 end)
@@ -324,7 +349,37 @@ net.Receive("PlayCloakSound", function()
 	end
 end)
 
-
 net.Receive("Inception", function()
 	surface.PlaySound("inception.mp3")
+end)
+
+net.Receive("Paranoia", function()
+	Paranoia = true
+	math.randomseed(os.time())
+	local rndvo = math.random(1, 4)
+	local rndstart = math.random(1, 2)
+	local rndloop = math.random(1, 5)
+	local loopsnd = CreateSound(LocalPlayer(), "paranoia_loop_"..rndloop..".wav")
+	surface.PlaySound("paranoia_vo_"..rndvo..".mp3")
+	surface.PlaySound("paranoia_start_"..rndstart..".wav")
+	loopsnd:PlayEx(0.6, 100)
+	timer.Create("fog_end_lerp_paranoia", 0.05, 0, function()
+		print(Fog_End)
+		if Fog_End <= 280 then
+			timer.Destroy("fog_end_lerp_paranoia")
+			return
+		end
+		Fog_End = math.Approach(Fog_End, 280, -140)
+	end)
+	timer.Simple(15, function()
+		timer.Create("fog_end_lerp_2_paranoia", 0.05, 0, function()
+			loopsnd:FadeOut(1)
+			if Fog_End >= 5600 then
+				timer.Destroy("fog_end_lerp_2_paranoia")
+				Paranoia = false
+				return
+			end
+			Fog_End = math.Approach(Fog_End, 5600, 140)
+		end)
+	end)
 end)

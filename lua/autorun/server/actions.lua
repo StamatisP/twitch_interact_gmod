@@ -761,6 +761,12 @@ local function JellyMode()
 	end)
 end
 
+local function Paranoia()
+	print("darkness...")
+	net.Start("Paranoia")
+	net.Broadcast()
+end
+
 /* UTILITY ACTIONS */
 WSFunctions["printtwitchchat"] = PrintTwitchChat
 WSFunctions["votetime"] = VoteTime
@@ -788,5 +794,6 @@ WSFunctions["bomberman"] = Bomberman
 WSFunctions["antfight"] = AntFight
 WSFunctions["bigheadmode"] = BigHeadMode
 WSFunctions["jellymode"] = JellyMode
+WSFunctions["paranoia"] = Paranoia
 //WSFunctions["speedtime"] = SpeedTime
 //WSFunctions["slowtime"] = SlowTime DOES NOT WORK WITHOUT SV_CHEATS
