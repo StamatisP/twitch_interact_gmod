@@ -41,6 +41,17 @@ local deepfryTab = {
 	[ "$pp_colour_mulg" ] = 0,
 	[ "$pp_colour_mulb" ] = 0
 }
+local paranoiaTab = {
+	[ "$pp_colour_addr" ] = 0,
+	[ "$pp_colour_addg" ] = 0,
+	[ "$pp_colour_addb" ] = 0,
+	[ "$pp_colour_brightness" ] = 0,
+	[ "$pp_colour_contrast" ] = 2,
+	[ "$pp_colour_colour" ] = 0,
+	[ "$pp_colour_mulr" ] = 0,
+	[ "$pp_colour_mulg" ] = 0,
+	[ "$pp_colour_mulb" ] = 0
+}
 
 local f
 local label1, label2, label3, label4
@@ -232,17 +243,22 @@ net.Receive("the_world_time_start.PlaySound", function()
     surface.PlaySound("the_world_time_start.mp3")
 end)
 
-timer.Simple(5, function()
-	local gm = gm or gmod.GetGamemode()
-	function gm:RenderScreenspaceEffects()
-		if ScreenFuck then
-			//print("please")
-			DrawColorModify(deepfryTab)
-			DrawSobel(0.5)
-			DrawSharpen(3, 3)
-		end
+local function TGMRender()
+	if ScreenFuck then
+		//print("please")
+		DrawColorModify(deepfryTab)
+		DrawSobel(0.5)
+		DrawSharpen(3, 3)
+	elseif SilentHill then
+		DrawMaterialOverlay( "overlays/vignette01", 1 )
+	elseif Paranoia then
+		DrawColorModify(paranoiaTab)
+		DrawSharpen(1.3, 1.3)
+		DrawMaterialOverlay( "overlays/vignette01", 1 )
 	end
-end)
+end
+
+hook.Add("RenderScreenspaceEffects", "TGMRender", TGMRender)
 
 function SetupWorldFog()
 	if SilentHill then
@@ -362,20 +378,23 @@ net.Receive("Paranoia", function()
 	local loopsnd = CreateSound(LocalPlayer(), "paranoia_loop_"..rndloop..".wav")
 	surface.PlaySound("paranoia_vo_"..rndvo..".mp3")
 	surface.PlaySound("paranoia_start_"..rndstart..".wav")
-	loopsnd:PlayEx(0.6, 100)
+	loopsnd:PlayEx(0.8, 100)
 	timer.Create("fog_end_lerp_paranoia", 0.05, 0, function()
 		print(Fog_End)
 		if Fog_End <= 280 then
+			LocalPlayer():SetDSP(31, false)
+			loopsnd:SetDSP(0)
 			timer.Destroy("fog_end_lerp_paranoia")
 			return
 		end
-		Fog_End = math.Approach(Fog_End, 280, -140)
+		Fog_End = math.Approach(Fog_End, 280, -70)
 	end)
 	timer.Simple(15, function()
 		timer.Create("fog_end_lerp_2_paranoia", 0.05, 0, function()
-			loopsnd:FadeOut(1)
 			if Fog_End >= 5600 then
+				loopsnd:FadeOut(1)
 				timer.Destroy("fog_end_lerp_2_paranoia")
+				LocalPlayer():SetDSP(0, false)
 				Paranoia = false
 				return
 			end

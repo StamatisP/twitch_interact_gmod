@@ -33,6 +33,7 @@ do // add files here precache in shared init.lua
 	for k, v in pairs(file.Find("sound/*", "GAME")) do
 		resource.AddFile("sound/" .. v)
 	end
+	resource.AddFile("materials/overlays/vignette01")
 end
 
 local ws_url = "ws://localhost:8765"
