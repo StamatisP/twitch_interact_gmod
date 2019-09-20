@@ -53,6 +53,17 @@ local paranoiaTab = {
 	[ "$pp_colour_mulg" ] = 0,
 	[ "$pp_colour_mulb" ] = 0
 }
+local silenthillTab = {
+	[ "$pp_colour_addr" ] = 0,
+	[ "$pp_colour_addg" ] = 0,
+	[ "$pp_colour_addb" ] = 0,
+	[ "$pp_colour_brightness" ] = 0,
+	[ "$pp_colour_contrast" ] = 1,
+	[ "$pp_colour_colour" ] = 0.3,
+	[ "$pp_colour_mulr" ] = 0,
+	[ "$pp_colour_mulg" ] = 0,
+	[ "$pp_colour_mulb" ] = 0
+}
 
 local f
 local label1, label2, label3, label4
@@ -251,6 +262,7 @@ local function TGMRender()
 		DrawSobel(0.5)
 		DrawSharpen(3, 3)
 	elseif SilentHill then
+		DrawColorModify(silenthillTab)
 		DrawMaterialOverlay( "overlays/vignette01", 1 )
 	elseif Paranoia then
 		DrawColorModify(paranoiaTab)
@@ -275,7 +287,7 @@ function SetupWorldFog()
 		render.FogMode( MATERIAL_FOG_LINEAR )
 		render.FogStart( 0 )
 		render.FogEnd( Fog_End )
-		render.FogMaxDensity( 1 )
+		render.FogMaxDensity( Fog_Density )
 		render.FogColor( 0, 0, 0)
 
 		//return true
@@ -305,7 +317,7 @@ function SetupSkyFog( skyboxscale )
 		render.FogMode( MATERIAL_FOG_LINEAR )
 		render.FogStart( 0 * skyboxscale )
 		render.FogEnd( Fog_End * skyboxscale )
-		render.FogMaxDensity( 1 )
+		render.FogMaxDensity( Fog_Density )
 		render.FogColor( 0, 0, 0)
 
 		//return true
@@ -326,6 +338,7 @@ hook.Add( "SetupSkyboxFog", "skyboxfog", SetupSkyFog )
 
 net.Receive("SilentHill", function()
 	SilentHill = true
+	math.randomseed(os.time())
 	local rndsong = math.random(1, 3)
 	surface.PlaySound("silenthill"..rndsong..".mp3")
 	//LocalPlayer():ChatPrint("The fog is rolling in...")
@@ -390,11 +403,12 @@ net.Receive("Paranoia", function()
 			return
 		end
 		Fog_End = math.Approach(Fog_End, 280, -70)
+		Fog_Density = math.Approach(Fog_Density, 1, 0.025)
 	end)
 	timer.Simple(ActionDuration, function()
 		surface.PlaySound("paranoia_end_1.mp3")
 		timer.Create("fog_end_lerp_2_paranoia", 0.05, 0, function()
-			if Fog_End >= 5600 then
+			if Fog_Density <= 0 then
 				loopsnd:FadeOut(1)
 				timer.Destroy("fog_end_lerp_2_paranoia")
 				LocalPlayer():SetDSP(0, false)
@@ -402,6 +416,7 @@ net.Receive("Paranoia", function()
 				return
 			end
 			Fog_End = math.Approach(Fog_End, 5600, 70)
+			Fog_Density = math.Approach(Fog_Density, 0, -0.025)
 		end)
 	end)
 end)

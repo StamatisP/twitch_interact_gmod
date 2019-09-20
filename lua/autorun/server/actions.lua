@@ -765,8 +765,53 @@ end
 
 local function Paranoia()
 	print("darkness...")
+	local plys = player.GetAll()
+	for k, ply in ipairs(plys) do // from ulib https://github.com/TeamUlysses/ulib/blob/master/LICENSE.md -- changes were made 
+		ply:DrawShadow( false )
+		ply:SetMaterial( "models/effects/vol_light001" )
+		ply:SetRenderMode( RENDERMODE_TRANSALPHA )
+		ply:Fire( "alpha", visibility, 0 )
+		ply:GetTable().invis = { vis=visibility, wep=ply:GetActiveWeapon() }
+
+		if IsValid( ply:GetActiveWeapon() ) then
+			ply:GetActiveWeapon():SetRenderMode( RENDERMODE_TRANSALPHA )
+			ply:GetActiveWeapon():Fire( "alpha", visibility, 0 )
+			ply:GetActiveWeapon():SetMaterial( "models/effects/vol_light001" )
+			if ply:GetActiveWeapon():GetClass() == "gmod_tool" then
+				ply:DrawWorldModel( false ) -- tool gun has problems
+			else
+				ply:DrawWorldModel( true )
+			end
+		end
+	end
+	/*local plys = player.GetAll()
+	for k, v in ipairs(plys) do
+		local nearbyplys = ents.FindInSphere(v:GetPos(), 280)
+		for k2, v2 in ipairs(nearbyplys) do
+			if v2 == v then continue end
+			if v2:IsPlayer() then
+				v2:SetPreventTransmit(v, false)
+				print("Player " .. v2:Nick() .. " is close to player " .. v:Nick() .. ", preventing transmit")
+			end
+		end
+	end*/
 	net.Start("Paranoia")
 	net.Broadcast()
+	timer.Simple(ActionDuration, function()
+		for k, ply in ipairs(plys) do
+			ply:DrawShadow( true )
+			ply:SetMaterial( "" )
+			ply:SetRenderMode( RENDERMODE_NORMAL )
+			ply:Fire( "alpha", 255, 0 )
+			local activeWeapon = ply:GetActiveWeapon()
+			if IsValid( activeWeapon ) then
+				activeWeapon:SetRenderMode( RENDERMODE_NORMAL )
+				activeWeapon:Fire( "alpha", 255, 0 )
+				activeWeapon:SetMaterial( "" )
+			end
+			ply:GetTable().invis = nil
+		end
+	end)
 end
 
 local function Blindness()
