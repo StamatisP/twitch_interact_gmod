@@ -13,6 +13,7 @@ local Fog_Density = 0
 local Paranoia = false
 
 local votes = {}
+local ActionDuration = 15
 
 do // precache here
 	/*util.PrecacheSound( "the_world_time_stop.mp3" )
@@ -325,24 +326,26 @@ hook.Add( "SetupSkyboxFog", "skyboxfog", SetupSkyFog )
 
 net.Receive("SilentHill", function()
 	SilentHill = true
-	LocalPlayer():ChatPrint("The fog is rolling in...")
+	local rndsong = math.random(1, 3)
+	surface.PlaySound("silenthill"..rndsong..".mp3")
+	//LocalPlayer():ChatPrint("The fog is rolling in...")
 	timer.Create("fog_end_lerp", 0.05, 0, function()
 		if Fog_End <= 280 then
 			timer.Destroy("fog_end_lerp")
 			return
 		end
-		Fog_End = math.Approach(Fog_End, 280, -140)
+		Fog_End = math.Approach(Fog_End, 280, -70)
 		Fog_Density = math.Approach(Fog_Density, 0.99, 0.025)
 	end)
-	timer.Simple(15, function()
-		LocalPlayer():ChatPrint("It's finally clearing up.")
+	timer.Simple(ActionDuration, function()
+		//LocalPlayer():ChatPrint("It's finally clearing up.")
 		timer.Create("fog_end_lerp_2", 0.05, 0, function()
-			if Fog_End >= 5600 then
+			if Fog_Density <= 0 then
 				timer.Destroy("fog_end_lerp_2")
 				SilentHill = false
 				return
 			end
-			Fog_End = math.Approach(Fog_End, 5600, 140)
+			Fog_End = math.Approach(Fog_End, 5600, 70)
 			Fog_Density = math.Approach(Fog_Density, 0, -0.025)
 		end)
 	end)
@@ -372,15 +375,14 @@ end)
 net.Receive("Paranoia", function()
 	Paranoia = true
 	math.randomseed(os.time())
-	local rndvo = math.random(1, 4)
+	local rndvo = math.random(1, 5)
 	local rndstart = math.random(1, 2)
 	local rndloop = math.random(1, 5)
 	local loopsnd = CreateSound(LocalPlayer(), "paranoia_loop_"..rndloop..".wav")
 	surface.PlaySound("paranoia_vo_"..rndvo..".mp3")
-	surface.PlaySound("paranoia_start_"..rndstart..".wav")
+	surface.PlaySound("paranoia_start_"..rndstart..".mp3")
 	loopsnd:PlayEx(0.8, 100)
 	timer.Create("fog_end_lerp_paranoia", 0.05, 0, function()
-		print(Fog_End)
 		if Fog_End <= 280 then
 			LocalPlayer():SetDSP(31, false)
 			loopsnd:SetDSP(0)
@@ -389,7 +391,8 @@ net.Receive("Paranoia", function()
 		end
 		Fog_End = math.Approach(Fog_End, 280, -70)
 	end)
-	timer.Simple(15, function()
+	timer.Simple(ActionDuration, function()
+		surface.PlaySound("paranoia_end_1.mp3")
 		timer.Create("fog_end_lerp_2_paranoia", 0.05, 0, function()
 			if Fog_End >= 5600 then
 				loopsnd:FadeOut(1)
@@ -398,7 +401,7 @@ net.Receive("Paranoia", function()
 				Paranoia = false
 				return
 			end
-			Fog_End = math.Approach(Fog_End, 5600, 140)
+			Fog_End = math.Approach(Fog_End, 5600, 70)
 		end)
 	end)
 end)

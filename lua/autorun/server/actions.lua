@@ -11,6 +11,8 @@ local slowdown = false
 local oldPlyPos = {}
 local oldPlyView = {}
 
+local bouncyJump = false
+
 local ActionDuration = 15
 
 local function RandomizeViews()
@@ -316,10 +318,10 @@ local function ZaWarudo() // from Vipes, edited for personal use https://steamco
 			if v:Alive() and k != randplayer then
 				v:Freeze( true )
 				v:SetMoveType(MOVETYPE_NOCLIP)
-				v:ScreenFade( 2, Color(0, 0, 0), 1, 4) // this should be cool than just a screenfade
+				v:ScreenFade( SCREENFADE.OUT, Color(0, 0, 0), 1, ActionDuration - 1) // this should be cool than just a screenfade
 			end
 		end
-		timer.Create("stoppedTime", 6, 1, function()
+		timer.Create("stoppedTime", ActionDuration - 1, 1, function()
 			net.Start("the_world_time_start.PlaySound")
 			net.Broadcast()
 			timer.Create("StartTime", 1, 1, function()
@@ -576,7 +578,7 @@ function ApplyAccel( ent, magnitude, direction, dTime ) // Ulib
 end
 
 hook.Add("GetFallDamage", "SlapOverwrite", function(ply, speed)
-	if isSlapping then
+	if isSlapping or bouncyJump then
 		return 0
 	end
 end)
@@ -767,6 +769,41 @@ local function Paranoia()
 	net.Broadcast()
 end
 
+local function Blindness()
+	print("blindness")
+	for k, v in ipairs(player.GetAll()) do
+		v:ScreenFade(SCREENFADE.OUT, Color(0, 0, 0), 1, ActionDuration - 1)
+	end
+end
+
+local function Deafness()
+	print("deafness")
+	local plys = player.GetAll()
+	for k, v in ipairs(plys) do
+		v:SetDSP(31, false)
+	end
+	timer.Simple(ActionDuration, function()
+		for k, v in ipairs(plys) do
+			v:SetDSP(0, false)
+		end
+	end)
+end
+
+local function BouncyJump()
+	print("bouncy time")
+	local plys = player.GetAll()
+	bouncyJump = true
+	for k, v in ipairs(plys) do
+		v:SetJumpPower(600)
+	end
+	timer.Simple(ActionDuration, function()
+		bouncyJump = false
+		for k, v in ipairs(plys) do
+			v:SetJumpPower(200)
+		end
+	end)
+end
+
 /* UTILITY ACTIONS */
 WSFunctions["printtwitchchat"] = PrintTwitchChat
 WSFunctions["votetime"] = VoteTime
@@ -795,5 +832,8 @@ WSFunctions["antfight"] = AntFight
 WSFunctions["bigheadmode"] = BigHeadMode
 WSFunctions["jellymode"] = JellyMode
 WSFunctions["paranoia"] = Paranoia
+WSFunctions["blindness"] = Blindness
+WSFunctions["deafness"] = Deafness
+WSFunctions["bouncyjump"] = BouncyJump
 //WSFunctions["speedtime"] = SpeedTime
 //WSFunctions["slowtime"] = SlowTime DOES NOT WORK WITHOUT SV_CHEATS
