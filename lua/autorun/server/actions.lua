@@ -200,7 +200,9 @@ local function GetVotableFuncs(tab, isDoubleVote)
 				continue
 			else
 				if table.HasValue(used_funcs, key) then continue end
+				if table.HasValue(used_funcs, key2) then continue end
 				used_funcs[#used_funcs + 1] = key
+				used_funcs[#used_funcs + 1] = key2
 				tab[#tab + 1] = {name = key, name2 = key2, value = 0}
 			end
 		else // if it is a normal vote

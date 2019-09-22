@@ -69,6 +69,9 @@ end
 
 function WEBSOCKET:onConnected()
 	print("CONNECTED!")
+	for k, v in ipairs(player.GetAll()) do
+		v:ChatPrint("Websocket connection established!")
+	end
 	WEBSOCKET:write("Connected Message!")
 	timer.Create("CheckIfConnected", MessageDelay, 0, function()
 		//print("testing for connection")
