@@ -114,6 +114,7 @@ end)
 
 hook.Add("OnPlayerChat", "check_tgm_chat", function(ply, text, teamchat, isdead)
 	if text == "!chat" then
+		if LocalPlayer() != ply then return end
 		if GetConVar("tgm_chat"):GetBool() then
 			GetConVar("tgm_chat"):SetBool(false)
 			chat.AddText("Twitch chat disabled.")

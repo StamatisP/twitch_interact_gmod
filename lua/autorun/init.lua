@@ -93,10 +93,11 @@ end)
 hook.Add("AntFight", "AntFightShared", function(scale)
 	print("running antfight hook")
 	for k, v in ipairs(player.GetAll()) do
+		if not v:Alive() then continue end
 		v:SetViewOffset(scale * Vector(0, 0, 64))
 		v:SetViewOffsetDucked(scale * Vector(0, 0, 28))
-		v:SetHull(scale * Vector(-16, -16, 0), 0.3 * Vector(16, 16, 72))
-		v:SetHullDuck(scale * Vector(-16, -16, 0), 0.3 * Vector(-16, -16, 36))
+		v:SetHull(scale * Vector(-16, -16, 0), scale * Vector(16, 16, 72))
+		v:SetHullDuck(scale * Vector(-16, -16, 0), scale * Vector(-16, -16, 36))
 		if SERVER then 
 			v:SetStepSize(18 * scale)
 		else

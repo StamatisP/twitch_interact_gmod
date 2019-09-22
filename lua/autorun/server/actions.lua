@@ -22,11 +22,13 @@ local function RandomizeViews()
 	local plys = player.GetAll()
 	local plyAngles = {}
 	for k, v in ipairs(plys) do
+		if not v:Alive() then continue end
 		plyAngles[k] = v:EyeAngles()
 		v:SetEyeAngles(AngleRand())
 	end
 	timer.Simple(ActionDuration, function()
 		for k, v in ipairs(plys) do
+			if not v:Alive() then continue end
 			v:SetEyeAngles(Angle(plyAngles[k].pitch, plyAngles[k].yaw, 0))
 		end
 	end)
@@ -66,6 +68,7 @@ local function Inception()
 	net.Start("Inception")
 	net.Broadcast()
 	for k, v in ipairs(player.GetAll()) do
+		if not v:Alive() then continue end
 		local power = 100
 		local direction = Vector( math.random( 5 )-10, math.random( 5 )-10, math.random( 5 ) )
 		if not v:Alive() then
@@ -102,6 +105,7 @@ local function SpawnZombies() // ulib
 	print("spawning zombies")
 	local plys = player.GetAll()
 	for k, v in ipairs(plys) do
+		if not v:Alive() then continue end
 		local pos = {}
 		local testent = newZombie( Vector( 0, 0, 0 ), Angle( 0, 0, 0 ), v, true ) -- Test ent for traces
 
@@ -155,6 +159,7 @@ local function MasterFOV()
 	local plys = player.GetAll()
 	local plyFovs = {}
 	for k, v in pairs(plys) do
+		if not v:Alive() then continue end
 		plyFovs[k] = v:GetFOV()
 		v:SetFOV(177, 1)
 		v:ChatPrint("MASTER FOV ENGAGED")
@@ -346,6 +351,7 @@ local function InvisibleWarfare()
 		net.WriteBool(true)
 	net.Broadcast()
 	for k, ply in ipairs(plys) do // from ulib https://github.com/TeamUlysses/ulib/blob/master/LICENSE.md -- changes were made 
+		if not ply:Alive() then continue end
 		ply:DrawShadow( false )
 		ply:SetMaterial( "models/effects/vol_light001" )
 		ply:SetRenderMode( RENDERMODE_TRANSALPHA )
@@ -368,6 +374,7 @@ local function InvisibleWarfare()
 			net.WriteBool(false)
 		net.Broadcast()
 		for k, ply in ipairs(plys) do
+			if not ply:Alive() then continue end
 			ply:DrawShadow( true )
 			ply:SetMaterial( "" )
 			ply:SetRenderMode( RENDERMODE_NORMAL )
@@ -536,12 +543,14 @@ local function SlowDown()
 	slowdown = true
 	local plys = player.GetAll()
 	for k, v in ipairs(plys) do
+		if not v:Alive() then continue end
 		v:SetWalkSpeed(50)
 		v:SetRunSpeed(125)
 	end	
 	timer.Simple(ActionDuration, function()
 		slowdown = false
 		for k, v in ipairs(plys) do
+			if not v:Alive() then continue end
 			v:SetWalkSpeed(250)
 			v:SetRunSpeed(500)
 		end
@@ -642,6 +651,7 @@ local function SwapPositions()
 		table.insert(plyPositions, v:GetPos())
 	end
 	for k, v in ipairs(plys) do
+		if not v:Alive() then continue end
 		/*if #plyPositions >= 2 then
 			local rndpos = plyPositions[math.random(#plyPositions)]
 			if v:GetPos() != rndpos then
@@ -670,6 +680,7 @@ end)
 local function TimeSkip()
 	print("time has been skipped!")
 	for k, v in ipairs(player.GetAll()) do
+		if not v:Alive() then continue end
 		if not oldPlyPos[k] then continue end
 		if not oldPlyView[k] then continue end
 		v:SetPos(oldPlyPos[k])
@@ -681,11 +692,13 @@ local function UpsideDownCameras()
 	print("the cameras are upside down!")
 	local plys = player.GetAll()
 	for k, v in ipairs(plys) do
+		if not v:Alive() then continue end
 		local plyAngles = v:EyeAngles()
 		v:SetEyeAngles(Angle(plyAngles.pitch, plyAngles.yaw, 180))
 	end
 	timer.Simple(ActionDuration, function()
 		for k, v in ipairs(plys) do
+			if not v:Alive() then continue end
 			local angs = v:EyeAngles()
 			v:SetEyeAngles(Angle(angs.pitch, angs.yaw, 0))
 		end
@@ -725,6 +738,7 @@ local function BigHeadMode() // can be laggy if lots of players
 	print("ya got a big head")
 	local plys = player.GetAll()
 	for k, v in ipairs(plys) do
+		if not v:Alive() then continue end
 		local bone = v:LookupBone("ValveBiped.Bip01_Head1")
 		if bone then
 			v:ManipulateBoneScale(bone, Vector(10, 10, 10))
@@ -732,6 +746,7 @@ local function BigHeadMode() // can be laggy if lots of players
 	end
 	timer.Simple(ActionDuration, function()
 		for k, v in ipairs(plys) do
+			if not v:Alive() then continue end
 			local bone = v:LookupBone("ValveBiped.Bip01_Head1")
 			if bone then
 				v:ManipulateBoneScale(bone, Vector(1, 1, 1))
@@ -744,6 +759,7 @@ local function JellyMode()
 	print("jelly mode")
 	local plys = player.GetAll()
 	for k, v in ipairs(plys) do
+		if not v:Alive() then continue end
 		local i = 0
 
 		while i < v:GetBoneCount() do
@@ -753,6 +769,7 @@ local function JellyMode()
 	end
 	timer.Simple(ActionDuration, function()
 		for k, v in ipairs(plys) do
+			if not v:Alive() then continue end
 			local i = 0
 
 			while i < v:GetBoneCount() do
@@ -767,6 +784,7 @@ local function Paranoia()
 	print("darkness...")
 	local plys = player.GetAll()
 	for k, ply in ipairs(plys) do // from ulib https://github.com/TeamUlysses/ulib/blob/master/LICENSE.md -- changes were made 
+		if not ply:Alive() then continue end
 		ply:DrawShadow( false )
 		ply:SetMaterial( "models/effects/vol_light001" )
 		ply:SetRenderMode( RENDERMODE_TRANSALPHA )
@@ -799,6 +817,7 @@ local function Paranoia()
 	net.Broadcast()
 	timer.Simple(ActionDuration, function()
 		for k, ply in ipairs(plys) do
+			if not ply:Alive() then continue end
 			ply:DrawShadow( true )
 			ply:SetMaterial( "" )
 			ply:SetRenderMode( RENDERMODE_NORMAL )
@@ -817,6 +836,7 @@ end
 local function Blindness()
 	print("blindness")
 	for k, v in ipairs(player.GetAll()) do
+		if not v:Alive() then continue end
 		v:ScreenFade(SCREENFADE.OUT, Color(0, 0, 0), 1, ActionDuration - 1)
 	end
 end
@@ -825,10 +845,12 @@ local function Deafness()
 	print("deafness")
 	local plys = player.GetAll()
 	for k, v in ipairs(plys) do
+		if not v:Alive() then continue end
 		v:SetDSP(31, false)
 	end
 	timer.Simple(ActionDuration, function()
 		for k, v in ipairs(plys) do
+			if not v:Alive() then continue end
 			v:SetDSP(0, false)
 		end
 	end)
@@ -839,11 +861,13 @@ local function BouncyJump()
 	local plys = player.GetAll()
 	bouncyJump = true
 	for k, v in ipairs(plys) do
+		if not v:Alive() then continue end
 		v:SetJumpPower(600)
 	end
 	timer.Simple(ActionDuration, function()
 		bouncyJump = false
 		for k, v in ipairs(plys) do
+			if not v:Alive() then continue end
 			v:SetJumpPower(200)
 		end
 	end)
@@ -862,7 +886,7 @@ WSFunctions["spawnzombies"] = SpawnZombies
 WSFunctions["masterfov"] = MasterFOV
 WSFunctions["zawarudo"] = ZaWarudo
 WSFunctions["invisiblewarfare"] = InvisibleWarfare
-WSFunctions["ragdolleveryone"] = RagdollEveryone
+WSFunctions["ragdolleveryone"] = RagdollEveryone // doesnt work in ttt
 WSFunctions["speedup"] = SpeedUp
 WSFunctions["slowdown"] = SlowDown
 WSFunctions["reversecontrols"] = ReverseControls
