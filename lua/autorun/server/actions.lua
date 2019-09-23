@@ -875,6 +875,25 @@ local function BouncyJump()
 	end)
 end
 
+local function BackseatGaming()
+	// OK SO... i wanted it to be like one person controls the camera and one controls the movement but idk how that could work...
+end
+
+local function ThirdPerson()
+	local aliveplys = {}
+	for k, v in ipairs(player.GetAll()) do
+		table.insert(aliveplys, v)
+	end
+	net.Start("Thirdperson")
+		net.WriteBool(true)
+	net.Send(aliveplys)
+	timer.Simple(ActionDuration, function()
+		net.Start("Thirdperson")
+			net.WriteBool(false)
+		net.Send(aliveplys)
+	end)
+end
+
 /* UTILITY ACTIONS */
 WSFunctions["printtwitchchat"] = PrintTwitchChat
 WSFunctions["votetime"] = VoteTime
@@ -906,5 +925,7 @@ WSFunctions["paranoia"] = Paranoia
 WSFunctions["blindness"] = Blindness
 WSFunctions["deafness"] = Deafness
 WSFunctions["bouncyjump"] = BouncyJump
+WSFunctions["thirdperson"] = ThirdPerson
+//WSFunctions["backseatgaming"] = BackseatGaming
 //WSFunctions["speedtime"] = SpeedTime
 //WSFunctions["slowtime"] = SlowTime DOES NOT WORK WITHOUT SV_CHEATS

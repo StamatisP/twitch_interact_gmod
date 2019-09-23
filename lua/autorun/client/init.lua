@@ -12,6 +12,8 @@ local Fog_Density = 0
 
 local Paranoia = false
 
+local ThirdPerson = false
+
 local votes = {}
 local ActionDuration = 15
 
@@ -109,7 +111,7 @@ net.Receive("PrintTwitchChat", function()
 	local user = net.ReadString()
 	local message = net.ReadString()
 	math.randomseed(string.byte(user))
-	chat.AddText(TwitchColors[math.random(#TwitchColors)], user .. ": ", Color(255, 255, 255), message)
+	chat.AddText(Color(140, 105, 204), "[", TwitchColors[math.random(#TwitchColors)], user .. ": ", Color(255, 255, 255), message, Color(140, 105, 204), "]")
 end)
 
 hook.Add("OnPlayerChat", "check_tgm_chat", function(ply, text, teamchat, isdead)
@@ -420,4 +422,20 @@ net.Receive("Paranoia", function()
 			Fog_Density = math.Approach(Fog_Density, 0, -0.025)
 		end)
 	end)
+end)
+
+local function TGMCalcView(ply, pos, angles, fov)
+	local view = {}
+
+	view.origin = ThirdPerson and pos - (angles:Forward() * 100) or pos
+	view.drawviewer = ThirdPerson
+
+	return view
+end
+
+hook.Add("CalcView", "TGMCalcView", TGMCalcView)
+
+net.Receive("Thirdperson", function()
+	local bool = net.ReadBool()
+	ThirdPerson = bool
 end)

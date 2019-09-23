@@ -1,7 +1,7 @@
 if game.SinglePlayer() then Error("this cant be run in singleplayer!!") end
 
 require("gwsockets")
-include("actions.lua")
+//include("actions.lua")
 print("runnin!")
 
 // This controls how fast you receive messages, like the twitch chat and etc
@@ -28,6 +28,7 @@ util.AddNetworkString("SpeedUp")
 util.AddNetworkString("SlowDown")
 util.AddNetworkString("AntFight")
 util.AddNetworkString("Paranoia")
+util.AddNetworkString("Thirdperson")
 
 do // add files here precache in shared init.lua
 	for k, v in pairs(file.Find("sound/*", "GAME")) do
