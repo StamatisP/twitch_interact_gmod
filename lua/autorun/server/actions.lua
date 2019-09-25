@@ -932,7 +932,7 @@ do
 	WSFunctions["paranoia"] = Paranoia
 	WSFunctions["blindness"] = Blindness
 	WSFunctions["deafness"] = Deafness
-	//WSFunctions["tinnitus"] = Tinnitus this is super fucking annoying, should i keep it?
+	WSFunctions["tinnitus"] = Tinnitus
 	WSFunctions["bouncyjump"] = BouncyJump
 	WSFunctions["thirdperson"] = ThirdPerson
 end

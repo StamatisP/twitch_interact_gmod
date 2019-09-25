@@ -41,7 +41,8 @@ PrettyFuncs = {
 	["blindness"] = "Blindness",
 	["deafness"] = "Deafness",
 	["tinnitus"] = "Tinnitus",
-	["bouncyjump"] = "Bouncy Jumps"
+	["bouncyjump"] = "Bouncy Jumps",
+	["thirdperson"] = "Thirdperson Mode"
 }
 
 hook.Add("StartCommand", "FuckWithControls", function(ply, cmd)
