@@ -37,8 +37,8 @@ do // add files here precache in shared init.lua
 	resource.AddFile("materials/overlays/vignette01")
 end
 
-local ws_url = "ws://localhost:8765"
-WEBSOCKET = WEBSOCKET or GWSockets.createWebSocket(ws_url, false)
+CreateConVar("tgm_url", "ws://localhost:8765", FCVAR_ARCHIVE + FCVAR_PROTECTED, "The URL pointing to your websocket. example (ws://localhost:8765)")
+WEBSOCKET = WEBSOCKET or GWSockets.createWebSocket(GetConVar("tgm_url"):GetString(), false)
 
 function WEBSOCKET:onMessage(txt)
 	if txt == "null" then return end
@@ -99,6 +99,12 @@ hook.Add("InitPostEntity", "OpenSocket", function()
 	//print("post entity")
 	timer.Simple(5, function()
 		WEBSOCKET:open()
+		timer.Simple(5, function()
+			if WEBSOCKET:isConnected then return end
+			for k, v in ipairs(player.GetAll()) do
+				v:ChatPrint("Websocket connection unsuccessful, read console!")
+			end
+		end)
 	end)
 end)
 
@@ -133,10 +139,10 @@ hook.Add("PlayerSay", "ChangeSettings", function(sender, txt, teamchat)
 			if WEBSOCKET then
 				WEBSOCKET:close()
 				WEBSOCKET = nil
-				WEBSOCKET = GWSockets.createWebSocket(ws_url, false)
+				WEBSOCKET = GWSockets.createWebSocket(GetConVar("tgm_url"):GetString(), false)
 				WEBSOCKET:open()
 			else
-				WEBSOCKET = GWSockets.createWebSocket(ws_url, false)
+				WEBSOCKET = GWSockets.createWebSocket(GetConVar("tgm_url"):GetString(), false)
 				WEBSOCKET:open()
 			end
 		end
@@ -159,8 +165,8 @@ hook.Add("PlayerSay", "ChangeSettings", function(sender, txt, teamchat)
 		end
 	elseif args[1] == "!changewsurl" then
 		if sender:IsAdmin() then
-			ws_url = args[2]
-			print("setting url to ".. ws_url)
+			GetConVar("tgm_url"):SetString(args[2])
+			print("setting url to ".. GetConVar("tgm_url"):GetString())
 		end
 	elseif WSFunctions[string.TrimLeft(args[1], "!")] then
 		print("function found in PlayerSay, running...")
