@@ -11,6 +11,7 @@ local DebugMode = true
 local AutoVoteTimer = true
 local AutoVoteTimerDuration = 60
 local VoteCounter = 0
+local IsVotingTime = false
 
 util.AddNetworkString("PrintTwitchChat")
 util.AddNetworkString("VoteDerma")
@@ -58,7 +59,7 @@ function WEBSOCKET:onMessage(txt)
 		local args = string.Split(txt, "\n")
 		local clean_arg = string.TrimLeft(args[3], "!")
 		WSFunctions[string.lower(args[1])](args[2], clean_arg)
-	elseif WSFunctions[string.lower(txt)] and DebugMode then
+	elseif WSFunctions[string.lower(txt)] and DebugMode and not IsVotingTime then
 		print("function found! running")
 		WSFunctions[string.lower(txt)]()
 	end
@@ -169,15 +170,29 @@ hook.Add("PlayerSay", "ChangeSettings", function(sender, txt, teamchat)
 			print("setting url to ".. GetConVar("tgm_url"):GetString())
 		end
 	elseif WSFunctions[string.TrimLeft(args[1], "!")] then
+		if not sender:IsAdmin() then return "" end
 		print("function found in PlayerSay, running...")
+		local clean_command = string.TrimLeft(args[1], "!")
 
 		if not args[2] then
-			WSFunctions[string.TrimLeft(args[1], "!")]()
+			if IsVotingTime then
+				WSFunctions["voteinfo"](sender:Nick(), clean_command)
+			else
+				WSFunctions[clean_command]()
+			end
 		else
 			if args[2] == "true" or args[2] == "false" then args[2] = tobool(args[2]) else return "" end
-			WSFunctions[string.TrimLeft(args[1], "!")](args[2])
+			WSFunctions[clean_command](args[2])
 		end
 
 		return ""
 	end
+end)
+
+hook.Add("VotingStarted", "VotingBool", function()
+	IsVotingTime = true
+end)
+
+hook.Add("EndVoting", "VotingBoolEnd", function()
+	IsVotingTime = false
 end)

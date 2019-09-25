@@ -111,6 +111,7 @@ surface.CreateFont( "FuncTitle", {
 net.Receive("PrintTwitchChat", function()
 	local user = net.ReadString()
 	local message = net.ReadString()
+	local capped_user = string.gsub(user, "^%1", string.upper)
 	math.randomseed(string.byte(user))
 	chat.AddText(Color(140, 105, 204), "[", TwitchColors[math.random(#TwitchColors)], user .. ": ", Color(255, 255, 255), message, Color(140, 105, 204), "]")
 end)
@@ -216,7 +217,6 @@ net.Receive("UpdateDerma", function()
 	local json = util.Decompress(data)
 	if not json then ErrorNoHalt("why is json nil???") end
 	local votes = util.JSONToTable(json)
-	print("REPLACE VALUES TIME")
 	local maxVotes = 0
 	for k, v in ipairs(votes) do
 		maxVotes = maxVotes + v.value
