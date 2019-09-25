@@ -1,4 +1,4 @@
-WSFunctions = {}
+WSFunctions = WSFunctions or {}
 local votes = {}
 local votable_funcs = {}
 local voting_time = false
@@ -187,32 +187,30 @@ end
 
 local function GetVotableFuncs(tab, isDoubleVote)
 	local used_funcs = {}
-	tab.isDouble = isDoubleVote
 
 	while #tab != 4 do
 		local func, key = table.Random(WSFunctions)
 
-		if isDoubleVote then  // if it is a double vote
+		if key == "printtwitchchat" or key == "voteinfo" or key == "votetime" then
+			continue
+		end
+		
+		if tab.isDouble then  // if it is a double vote
 			local func2, key2 = table.Random(WSFunctions)
 
 			// i hate this if statement so much...
-			if key == "printtwitchchat" or key == "voteinfo" or key == "votetime" or key2 == "printtwitchchat" or key2 == "voteinfo" or key2 == "votetime" then 
+			if key2 == "printtwitchchat" or key2 == "voteinfo" or key2 == "votetime" then 
 				continue
 			else
-				if table.HasValue(used_funcs, key) then continue end
-				if table.HasValue(used_funcs, key2) then continue end
+				if table.HasValue(used_funcs, key) or table.HasValue(used_funcs, key2) then continue end
 				used_funcs[#used_funcs + 1] = key
 				used_funcs[#used_funcs + 1] = key2
 				tab[#tab + 1] = {name = key, name2 = key2, value = 0}
 			end
 		else // if it is a normal vote
-			if key == "printtwitchchat" or key == "voteinfo" or key == "votetime" then 
-				continue
-			else
-				if table.HasValue(used_funcs, key) then continue end
-				used_funcs[#used_funcs + 1] = key
-				tab[#tab + 1] = {name = key, value = 0}
-			end
+			if table.HasValue(used_funcs, key) then continue end
+			used_funcs[#used_funcs + 1] = key
+			tab[#tab + 1] = {name = key, value = 0}
 		end
 	end
 end
