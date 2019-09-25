@@ -111,9 +111,9 @@ surface.CreateFont( "FuncTitle", {
 net.Receive("PrintTwitchChat", function()
 	local user = net.ReadString()
 	local message = net.ReadString()
-	local capped_user = string.gsub(user, "^%1", string.upper)
+	local capped_user = string.gsub(user, "^%l", string.upper)
 	math.randomseed(string.byte(user))
-	chat.AddText(Color(140, 105, 204), "[", TwitchColors[math.random(#TwitchColors)], user .. ": ", Color(255, 255, 255), message, Color(140, 105, 204), "]")
+	chat.AddText(Color(140, 105, 204), "[", TwitchColors[math.random(#TwitchColors)], capped_user .. ": ", Color(255, 255, 255), message, Color(140, 105, 204), "]")
 end)
 
 hook.Add("OnPlayerChat", "check_tgm_chat", function(ply, text, teamchat, isdead)
