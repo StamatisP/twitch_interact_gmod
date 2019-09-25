@@ -10,7 +10,6 @@ local speedup = false
 local slowdown = false
 local oldPlyPos = {}
 local oldPlyView = {}
-
 local bouncyJump = false
 
 local ActionDuration = 15
@@ -91,12 +90,8 @@ local function newZombie(pos, ang, ply, b) // ulib again
 	ent:SetAngles( ang )
 	ent:Spawn()
 	ent:Activate()
-	ent:AddRelationship("player D_NU 98") -- Don't attack other players
+	ent:AddRelationship("player D_HT 98") 
 	ent:AddEntityRelationship( ply, D_HT, 99 ) -- Hate target
-
-	if not b then
-		ent:CallOnRemove( "NoDie", zombieDeath, ply )
-	end
 
 	return ent
 end
@@ -110,21 +105,17 @@ local function SpawnZombies() // ulib
 		local testent = newZombie( Vector( 0, 0, 0 ), Angle( 0, 0, 0 ), v, true ) -- Test ent for traces
 
 		local yawForward = v:EyeAngles().yaw
-		local directions = { -- Directions to try
-			math.NormalizeAngle( yawForward - 180 ) -- Behind first
-		}
+		local direction = math.NormalizeAngle( yawForward - 180 )
 
 		local t = {}
 		t.start = v:GetPos() + Vector( 0, 0, 32 ) -- Move them up a bit so they can travel across the ground
 		t.filter = { v, testent }
 
-		for i=1, #directions do -- Check all directions
-			t.endpos = v:GetPos() + Angle( 0, directions[ i ], 0 ):Forward() * 47 -- (33 is player width, this is sqrt( 33^2 * 2 ))
-			local tr = util.TraceEntity( t, testent )
+		t.endpos = v:GetPos() + Angle( 0, direction, 0 ):Forward() * 47 -- (33 is player width, this is sqrt( 33^2 * 2 ))
+		local tr = util.TraceEntity( t, testent )
 
-			if not tr.Hit then
-				table.insert( pos, v:GetPos() + Angle( 0, directions[ i ], 0 ):Forward() * 47 )
-			end
+		if not tr.Hit then
+			table.insert( pos, v:GetPos() + Angle( 0, direction, 0 ):Forward() * 47 )
 		end
 
 		testent:Remove() -- Don't forget to remove our friend now!
@@ -194,7 +185,7 @@ local function GetVotableFuncs(tab, isDoubleVote)
 		if key == "printtwitchchat" or key == "voteinfo" or key == "votetime" then
 			continue
 		end
-		
+
 		if tab.isDouble then  // if it is a double vote
 			local func2, key2 = table.Random(WSFunctions)
 
@@ -352,6 +343,7 @@ local function InvisibleWarfare()
 	net.Broadcast()
 	for k, ply in ipairs(plys) do // from ulib https://github.com/TeamUlysses/ulib/blob/master/LICENSE.md -- changes were made 
 		if not ply:Alive() then continue end
+		local visibility = 0
 		ply:DrawShadow( false )
 		ply:SetMaterial( "models/effects/vol_light001" )
 		ply:SetRenderMode( RENDERMODE_TRANSALPHA )
@@ -631,7 +623,7 @@ end
 
 local function FloorIsIce()
 	print("the floor is ice!")
-	RunConsoleCommand("sv_friction", 0)
+	RunConsoleCommand("sv_friction", -0.01)
 	timer.Simple(ActionDuration, function()
 		RunConsoleCommand("sv_friction", 8)
 	end)
@@ -652,12 +644,6 @@ local function SwapPositions()
 	end
 	for k, v in ipairs(plys) do
 		if not v:Alive() then continue end
-		/*if #plyPositions >= 2 then
-			local rndpos = plyPositions[math.random(#plyPositions)]
-			if v:GetPos() != rndpos then
-				v:SetPos(rndpos)
-			end
-		end*/
 		if #plyPositions >= 2 then
 			if k % 2 == 0 then
 				v:SetPos(plyPositions[k - 1])
@@ -785,6 +771,7 @@ local function Paranoia()
 	local plys = player.GetAll()
 	for k, ply in ipairs(plys) do // from ulib https://github.com/TeamUlysses/ulib/blob/master/LICENSE.md -- changes were made 
 		if not ply:Alive() then continue end
+		local visibility = 0
 		ply:DrawShadow( false )
 		ply:SetMaterial( "models/effects/vol_light001" )
 		ply:SetRenderMode( RENDERMODE_TRANSALPHA )
@@ -802,17 +789,6 @@ local function Paranoia()
 			end
 		end
 	end
-	/*local plys = player.GetAll()
-	for k, v in ipairs(plys) do
-		local nearbyplys = ents.FindInSphere(v:GetPos(), 280)
-		for k2, v2 in ipairs(nearbyplys) do
-			if v2 == v then continue end
-			if v2:IsPlayer() then
-				v2:SetPreventTransmit(v, false)
-				print("Player " .. v2:Nick() .. " is close to player " .. v:Nick() .. ", preventing transmit")
-			end
-		end
-	end*/
 	net.Start("Paranoia")
 	net.Broadcast()
 	timer.Simple(ActionDuration, function()
