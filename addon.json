@@ -11,6 +11,8 @@
 		"*.md",
 		"*.bat",
 		".gitattributes",
-		".gitignore"
+		".gitignore",
+		"twitch_interact_gmod.jpg",
+		"twitch_interact_gmod.gma"
 	]
 }

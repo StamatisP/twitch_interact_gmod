@@ -41,3 +41,5 @@ luac.out
 
 start.bat
 twitch_interact_gmod.gma
+create gma.bat
+gmpublish_create.bat
