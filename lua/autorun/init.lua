@@ -15,7 +15,7 @@ end
 PrettyFuncs = {
 	["randomizeviews"] = "Randomize Views",
 	["lowergravity"] = "Lower Gravity",
-	["fuckwithscreen"] = "Fuck Their Screens",
+	["deepfry"] = "Deep Fry",
 	["inception"] = "Inception",
 	["spawnzombies"] = "Spawn Zombies",
 	["masterfov"] = "Master FOV",
@@ -40,6 +40,7 @@ PrettyFuncs = {
 	["paranoia"] = "Paranoia",
 	["blindness"] = "Blindness",
 	["deafness"] = "Deafness",
+	["tinnitus"] = "Tinnitus",
 	["bouncyjump"] = "Bouncy Jumps"
 }
 

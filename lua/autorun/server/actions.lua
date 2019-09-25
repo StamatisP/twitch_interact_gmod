@@ -50,11 +50,22 @@ local function LowerGravity()
 	// lower gravity real low
 end
 
-local function FuckWithScreen()
-	print("fucking up their screens")
+local function DeepFry()
+	print("deep frying")
 	// server to client, fuck up saturation and contrast an shit
 	net.Start("FuckWithScreen")
 	net.Broadcast()
+	local plys = player.GetAll()
+	for k, v in ipairs(plys) do
+		if not v:Alive() then continue end
+		v:SetDSP(38, false)
+	end
+	timer.Simple(ActionDuration, function()
+		for k, v in ipairs(plys) do
+			if not v:Alive() then continue end
+			v:SetDSP(1, false)
+		end
+	end)
 end
 
 local function Inception()
@@ -827,7 +838,24 @@ local function Deafness()
 	timer.Simple(ActionDuration, function()
 		for k, v in ipairs(plys) do
 			if not v:Alive() then continue end
-			v:SetDSP(0, false)
+			v:SetDSP(1, false)
+		end
+	end)
+end
+
+local function Tinnitus()
+	print("eeeee tinnitus eeeeee")
+	local plys = player.GetAll()
+	timer.Create("Tinnitus", 1, 14, function()
+		for k, v in ipairs(plys) do
+			if not v:Alive() then continue end
+			v:SetDSP(35, false)
+		end
+	end)
+	timer.Simple(ActionDuration, function()
+		for k, v in ipairs(plys) do
+			if not v:Alive() then continue end
+			v:SetDSP(1, false)
 		end
 	end)
 end
@@ -869,37 +897,45 @@ local function ThirdPerson()
 end
 
 /* UTILITY ACTIONS */
-WSFunctions["printtwitchchat"] = PrintTwitchChat
-WSFunctions["votetime"] = VoteTime
-WSFunctions["voteinfo"] = VoteInfo
+do
+	WSFunctions["printtwitchchat"] = PrintTwitchChat
+	WSFunctions["votetime"] = VoteTime
+	WSFunctions["voteinfo"] = VoteInfo
+end
+
 /* GAME ACTIONS */
-WSFunctions["randomizeviews"] = RandomizeViews
-WSFunctions["lowergravity"] = LowerGravity
-WSFunctions["fuckwithscreen"] = FuckWithScreen
-WSFunctions["inception"] = Inception
-WSFunctions["spawnzombies"] = SpawnZombies
-WSFunctions["masterfov"] = MasterFOV
-WSFunctions["zawarudo"] = ZaWarudo
-WSFunctions["invisiblewarfare"] = InvisibleWarfare
-WSFunctions["ragdolleveryone"] = RagdollEveryone // doesnt work in ttt
-WSFunctions["speedup"] = SpeedUp
-WSFunctions["slowdown"] = SlowDown
-WSFunctions["reversecontrols"] = ReverseControls
-WSFunctions["megaslap"] = MegaSlap
-WSFunctions["floorisice"] = FloorIsIce
-WSFunctions["silenthill"] = SilentHill
-WSFunctions["swappositions"] = SwapPositions
-WSFunctions["timeskip"] = TimeSkip
-WSFunctions["upsidedowncams"] = UpsideDownCameras
-WSFunctions["bomberman"] = Bomberman
-WSFunctions["antfight"] = AntFight
-WSFunctions["bigheadmode"] = BigHeadMode
-WSFunctions["jellymode"] = JellyMode
-WSFunctions["paranoia"] = Paranoia
-WSFunctions["blindness"] = Blindness
-WSFunctions["deafness"] = Deafness
-WSFunctions["bouncyjump"] = BouncyJump
-WSFunctions["thirdperson"] = ThirdPerson
+do
+	WSFunctions["randomizeviews"] = RandomizeViews
+	WSFunctions["lowergravity"] = LowerGravity
+	WSFunctions["deepfry"] = DeepFry
+	WSFunctions["inception"] = Inception
+	WSFunctions["spawnzombies"] = SpawnZombies
+	WSFunctions["masterfov"] = MasterFOV
+	WSFunctions["zawarudo"] = ZaWarudo
+	WSFunctions["invisiblewarfare"] = InvisibleWarfare
+	if GetConVar("gamemode"):GetString() != "terrortown" then
+		WSFunctions["ragdolleveryone"] = RagdollEveryone // doesnt work in ttt
+	end
+	WSFunctions["speedup"] = SpeedUp
+	WSFunctions["slowdown"] = SlowDown
+	WSFunctions["reversecontrols"] = ReverseControls
+	WSFunctions["megaslap"] = MegaSlap
+	WSFunctions["floorisice"] = FloorIsIce
+	WSFunctions["silenthill"] = SilentHill
+	WSFunctions["swappositions"] = SwapPositions
+	WSFunctions["timeskip"] = TimeSkip
+	WSFunctions["upsidedowncams"] = UpsideDownCameras
+	WSFunctions["bomberman"] = Bomberman
+	WSFunctions["antfight"] = AntFight
+	WSFunctions["bigheadmode"] = BigHeadMode
+	WSFunctions["jellymode"] = JellyMode
+	WSFunctions["paranoia"] = Paranoia
+	WSFunctions["blindness"] = Blindness
+	WSFunctions["deafness"] = Deafness
+	//WSFunctions["tinnitus"] = Tinnitus this is super fucking annoying, should i keep it?
+	WSFunctions["bouncyjump"] = BouncyJump
+	WSFunctions["thirdperson"] = ThirdPerson
+end
 //WSFunctions["backseatgaming"] = BackseatGaming
 //WSFunctions["speedtime"] = SpeedTime
 //WSFunctions["slowtime"] = SlowTime DOES NOT WORK WITHOUT SV_CHEATS

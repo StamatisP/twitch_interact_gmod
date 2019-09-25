@@ -100,7 +100,7 @@ hook.Add("InitPostEntity", "OpenSocket", function()
 	timer.Simple(5, function()
 		WEBSOCKET:open()
 		timer.Simple(5, function()
-			if WEBSOCKET:isConnected then return end
+			if WEBSOCKET:isConnected() then return end
 			for k, v in ipairs(player.GetAll()) do
 				v:ChatPrint("Websocket connection unsuccessful, read console!")
 			end

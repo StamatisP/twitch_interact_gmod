@@ -247,7 +247,7 @@ end)
 net.Receive("FuckWithScreen", function()
 	ScreenFuck = true
 	print("this be runnin")
-	timer.Simple(10, function()
+	timer.Simple(ActionDuration, function()
 		ScreenFuck = false
 	end)
 end)
