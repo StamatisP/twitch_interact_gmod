@@ -914,6 +914,69 @@ local function RainingBombs()
 	end)
 end
 
+local function newCrab(pos, ang, ply, b) // ulib again
+	local typeofcrab = math.random(3)
+	local crabtab = {
+		[1] = "npc_headcrab",
+		[2] = "npc_headcrab_fast",
+		[3] = "npc_headcrab_poison"
+	}
+	local ent = ents.Create( crabtab[typeofcrab] )
+	ent:SetPos( pos )
+	ent:SetAngles( ang )
+	ent:Spawn()
+	ent:Activate()
+	ent:AddRelationship("player D_HT 98") 
+	ent:AddEntityRelationship( ply, D_HT, 99 ) -- Hate target
+
+	return ent
+end
+
+local function CrabInfestation()
+	print("spawning crabs")
+	local plys = player.GetAll()
+	for i=1, #plys do
+		local v = plys[i]
+
+		if not v:Alive() then continue end
+		local pos = {}
+		local testent = newCrab( Vector( 0, 0, 0 ), Angle( 0, 0, 0 ), v, true ) -- Test ent for traces
+
+		local yawForward = v:EyeAngles().yaw
+		local directions = {
+			math.NormalizeAngle( yawForward - 180 ), -- Behind first
+			math.NormalizeAngle( yawForward + 90 ), -- Right
+			math.NormalizeAngle( yawForward - 90 ), -- Left
+			yawForward,
+		}
+
+		local t = {}
+		t.start = v:GetPos() + Vector( 0, 0, 64 ) -- Move them up a bit so they can travel across the ground
+		t.filter = { v, testent }
+
+		for i=1, #directions do
+			t.endpos = v:GetPos() + Angle( 0, directions[i], 0 ):Forward() * 47 -- (33 is player width, this is sqrt( 33^2 * 2 ))
+			local tr = util.TraceEntity( t, testent )
+
+			if not tr.Hit then
+				table.insert( pos, v:GetPos() + Angle( 0, directions[i], 0 ):Forward() * 47 )
+			end
+		end
+
+		testent:Remove() -- Don't forget to remove our friend now!
+
+		if #pos > 0 then
+			for _, newpos in ipairs( pos ) do
+				local newang = (v:GetPos() - newpos):Angle()
+
+				local ent = newCrab( newpos, newang, v )
+			end
+		else
+			print("cant find suitable place for zombie, you're safe")
+		end
+	end
+end
+
 /* UTILITY ACTIONS */
 do
 	WSFunctions["printtwitchchat"] = PrintTwitchChat
@@ -954,6 +1017,7 @@ do
 	WSFunctions["bouncyjump"] = BouncyJump
 	WSFunctions["thirdperson"] = ThirdPerson
 	WSFunctions["rainingbombs"] = RainingBombs
+	WSFunctions["crabinfestation"] = CrabInfestation
 end
 //WSFunctions["backseatgaming"] = BackseatGaming
 //WSFunctions["speedtime"] = SpeedTime
