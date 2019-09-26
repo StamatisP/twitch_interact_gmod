@@ -21,6 +21,8 @@ local LoadedSounds = {}
 
 local votes = {}
 local ActionDuration = 15
+local actionTime = actionTime or 0
+local timeText
 
 do // precache here
 	/*util.PrecacheSound( "the_world_time_stop.mp3" )
@@ -67,6 +69,17 @@ local silenthillTab = {
 	[ "$pp_colour_brightness" ] = 0,
 	[ "$pp_colour_contrast" ] = 1,
 	[ "$pp_colour_colour" ] = 0.3,
+	[ "$pp_colour_mulr" ] = 0.3,
+	[ "$pp_colour_mulg" ] = 0,
+	[ "$pp_colour_mulb" ] = 0
+}
+local whoswhoTab = {
+	[ "$pp_colour_addr" ] = 0,
+	[ "$pp_colour_addg" ] = 0,
+	[ "$pp_colour_addb" ] = 0,
+	[ "$pp_colour_brightness" ] = 0,
+	[ "$pp_colour_contrast" ] = 1,
+	[ "$pp_colour_colour" ] = 1,
 	[ "$pp_colour_mulr" ] = 0.3,
 	[ "$pp_colour_mulg" ] = 0,
 	[ "$pp_colour_mulb" ] = 0
@@ -277,7 +290,7 @@ local function TGMRender()
 		DrawSharpen(1.3, 1.3)
 		DrawMaterialOverlay( "overlays/vignette01", 1 )
 	elseif WhosWho then
-		DrawColorModify(silenthillTab)
+		DrawColorModify(whoswhoTab)
 		DrawMaterialOverlay("overlays/vignette01", 1)
 	end
 end
@@ -479,5 +492,40 @@ net.Receive("WhosWho", function()
 	else
 		print("ending")
 		loopsound:FadeOut(1)
+		if timeText then
+			timeText:Close()
+		end
+		timer.Destroy("TimerLower")
 	end
+end)
+
+net.Receive("StartTimer", function()
+	actionTime = net.ReadFloat()
+	actionTime = actionTime - 1
+
+	local guiScale = ScrW() / 1920
+	timeText = vgui.Create("DFrame")
+	timeText:SetSize(250, 150)
+	timeText:CenterHorizontal()
+	timeText:SetPos(timeText:GetPos() + 50 / guiScale, 300 / guiScale)
+	timeText:ShowCloseButton(false)
+	timeText:SetDraggable(false)
+	timeText:SetTitle("")
+	timeText.Paint = function(self, w, h)
+		draw.SimpleTextOutlined(actionTime, "DermaLarge", 2, 2, Color(255, 170, 60), TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP, 2, Color(0, 0, 0))
+	end
+
+	timer.Create("TimerLower", 1, actionTime, function()
+		actionTime = actionTime - 1
+		if WhosWho then
+			whoswhoTab["$pp_colour_colour"] = math.Clamp(actionTime / 15, 0.01, 2)
+		end
+		if actionTime <= 0 or not actionTime then
+			if timeText then
+				timeText:Close()
+				timeText = nil
+			end
+			timer.Destroy("TimerLower")
+		end
+	end)
 end)

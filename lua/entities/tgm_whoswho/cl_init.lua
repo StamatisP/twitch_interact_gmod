@@ -8,7 +8,7 @@ local function Draw3DText( pos, ang, scale, text, flipView )
 
 	cam.Start3D2D( pos, ang, scale )
 		-- Actually draw the text. Customize this to your liking.
-		draw.DrawText( text, "FuncTitle", 0, 0, Color( 0, 255, 0, 255 ), TEXT_ALIGN_CENTER )
+		draw.DrawText( text, "DermaLarge", 0, 0, Color( 0, 255, 0, 255 ), TEXT_ALIGN_CENTER )
 	cam.End3D2D()
 end
 
@@ -45,6 +45,8 @@ function ENT:Draw()
 		ang.pitch = 0
 
 		local scale = math.Clamp(LocalPlayer():GetPos():DistToSqr(self:GetPos()) / 100000, 1, 3)
+
+		self:SetAngles(Angle(0, SysTime() * 100 % 360, 0))
 
 		-- Draw front
 		//Draw3DText( pos, ang, 1, text, false )

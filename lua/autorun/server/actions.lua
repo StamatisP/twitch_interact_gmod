@@ -995,6 +995,9 @@ end
 
 local function WhosWho()
 	//idea: like cods' who's who (sound clip) where you try to find your body within 15-45 seconds and if not you die
+	net.Start("StartTimer")
+		net.WriteFloat(ActionDuration * 2)
+	net.Broadcast()
 	local plys = player.GetAll()
 	for k, v in ipairs(plys) do
 		local plypos = v:GetPos()
