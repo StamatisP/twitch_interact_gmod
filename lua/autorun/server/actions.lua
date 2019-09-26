@@ -394,7 +394,7 @@ local function InvisibleWarfare()
 	end)
 end
 
-local function GetPlayerInfoTGM(player)
+function GetPlayerInfoTGM(player)
 	local result = {}
 
 	local t = {} // also from ulib
@@ -418,7 +418,7 @@ local function GetPlayerInfoTGM(player)
 	t.data = data
 end
 
-local function doWeapons( player, t )
+function DoWeapons( player, t )
 	if not player:IsValid() then return end // also from Ulib
 
 	player:StripAmmo()
@@ -438,14 +438,14 @@ local function doWeapons( player, t )
 	end
 end
 
-local function SpawnPlayer(player)
+function SpawnPlayer(player)
 	player:Spawn()
 
 	if player.SpawnInfo then
 		local t = player.SpawnInfo
 		player:SetHealth( t.health )
 		player:SetArmor( t.armor )
-		timer.Simple( 0.1, function() doWeapons( player, t ) end )
+		timer.Simple( 0.1, function() DoWeapons( player, t ) end )
 		player.SpawnInfo = nil
 	end
 end
@@ -977,6 +977,29 @@ local function CrabInfestation()
 	end
 end
 
+local function WhosWho()
+	//idea: like cods' who's who (sound clip) where you try to find your body within 15-45 seconds and if not you die
+	local plys = player.GetAll()
+	for k, v in ipairs(plys) do
+		local plypos = v:GetPos()
+		local plymodel = v:GetModel()
+		GetPlayerInfoTGM(v)
+		v:Spawn()
+		v:StripWeapons()
+		local whoswhoent = ents.Create("tgm_whoswho")
+		if IsValid(whoswhoent) then
+			whoswhoent:SetPos(plypos)
+			whoswhoent:Spawn()
+			whoswhoent:Activate()
+			whoswhoent:SetPlyName(v:Nick())
+			whoswhoent:SetModel(plymodel)
+		end
+	end
+	net.Start("WhosWho")
+		net.WriteBool(true)
+	net.Broadcast()
+end
+
 /* UTILITY ACTIONS */
 do
 	WSFunctions["printtwitchchat"] = PrintTwitchChat
@@ -1018,6 +1041,7 @@ do
 	WSFunctions["thirdperson"] = ThirdPerson
 	WSFunctions["rainingbombs"] = RainingBombs
 	WSFunctions["crabinfestation"] = CrabInfestation
+	WSFunctions["whoswho"] = WhosWho
 end
 //WSFunctions["backseatgaming"] = BackseatGaming
 //WSFunctions["speedtime"] = SpeedTime

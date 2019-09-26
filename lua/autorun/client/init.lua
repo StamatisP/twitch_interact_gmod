@@ -15,6 +15,10 @@ local Paranoia = false
 
 local ThirdPerson = false
 
+local WhosWho = false
+
+local LoadedSounds = {}
+
 local votes = {}
 local ActionDuration = 15
 
@@ -272,6 +276,9 @@ local function TGMRender()
 		DrawColorModify(paranoiaTab)
 		DrawSharpen(1.3, 1.3)
 		DrawMaterialOverlay( "overlays/vignette01", 1 )
+	elseif WhosWho then
+		DrawColorModify(silenthillTab)
+		DrawMaterialOverlay("overlays/vignette01", 1)
 	end
 end
 
@@ -340,6 +347,25 @@ end
 hook.Add( "SetupWorldFog", "worldfog", SetupWorldFog )
 hook.Add( "SetupSkyboxFog", "skyboxfog", SetupSkyFog )
 
+local function PlayLoopingSound(soundname)
+	local sound
+
+	if not LoadedSounds[soundname] then
+		sound = CreateSound(game.GetWorld(), soundname)
+		if sound then
+			sound:SetSoundLevel(0)
+			LoadedSounds[soundname] = sound
+		end
+	else
+		sound = LoadedSounds[soundname]
+	end
+	if sound then
+		sound:Stop()
+		//sound:PlayEx(volume, 100)
+	end
+	return sound
+end
+
 net.Receive("SilentHill", function()
 	SilentHill = true
 	math.randomseed(os.time())
@@ -395,7 +421,7 @@ net.Receive("Paranoia", function()
 	local rndvo = math.random(1, 5)
 	local rndstart = math.random(1, 2)
 	local rndloop = math.random(1, 5)
-	local loopsnd = CreateSound(LocalPlayer(), "paranoia_loop_"..rndloop..".wav")
+	local loopsnd = PlayLoopingSound("paranoia_loop_"..rndloop..".wav")
 	surface.PlaySound("paranoia_vo_"..rndvo..".mp3")
 	surface.PlaySound("paranoia_start_"..rndstart..".mp3")
 	loopsnd:PlayEx(0.8, 100)
@@ -439,4 +465,19 @@ hook.Add("CalcView", "TGMCalcView", TGMCalcView)
 net.Receive("Thirdperson", function()
 	local bool = net.ReadBool()
 	ThirdPerson = bool
+end)
+
+net.Receive("WhosWho", function()
+	WhosWho = net.ReadBool()
+	local loopsound = PlayLoopingSound("whoswho_loop.wav")
+	if WhosWho then
+		surface.PlaySound("whoswho_sting.mp3")
+		timer.Simple(3, function()
+			loopsound:PlayEx(0.5, 100)
+		end)
+		//loopsnd:ChangeVolume(0.3, 4)
+	else
+		print("ending")
+		loopsound:FadeOut(1)
+	end
 end)
