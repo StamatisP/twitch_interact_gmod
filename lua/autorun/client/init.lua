@@ -529,3 +529,12 @@ net.Receive("StartTimer", function()
 		end
 	end)
 end)
+
+net.Receive("ItsAMystery", function()
+	timer.Create("Mystery", 0, 0, function()
+		LocalPlayer():SetEyeAngles(Angle(0, SysTime() * 50 % 360, 0))
+	end)
+	timer.Simple(ActionDuration, function()
+		timer.Destroy("Mystery")
+	end)
+end)

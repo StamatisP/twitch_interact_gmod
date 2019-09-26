@@ -1034,6 +1034,15 @@ local function WhosWho()
 	end)
 end
 
+local function ItsAMystery()
+	local plys = player.GetAll()
+	net.Start("ItsAMystery")
+	net.Broadcast()
+	for k, v in ipairs(plys) do
+		v:EmitSound("itsamystery.mp3", 0, 100, 0.5, CHAN_AUTO)
+	end
+end
+
 /* UTILITY ACTIONS */
 do
 	WSFunctions["printtwitchchat"] = PrintTwitchChat
@@ -1076,6 +1085,7 @@ do
 	WSFunctions["rainingbombs"] = RainingBombs
 	WSFunctions["crabinfestation"] = CrabInfestation
 	WSFunctions["whoswho"] = WhosWho
+	WSFunctions["itsamystery"] = ItsAMystery
 end
 //WSFunctions["backseatgaming"] = BackseatGaming
 //WSFunctions["speedtime"] = SpeedTime

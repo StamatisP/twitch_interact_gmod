@@ -31,6 +31,7 @@ util.AddNetworkString("Paranoia")
 util.AddNetworkString("Thirdperson")
 util.AddNetworkString("WhosWho")
 util.AddNetworkString("StartTimer")
+util.AddNetworkString("ItsAMystery")
 
 do // add files here precache in shared init.lua
 	for k, v in pairs(file.Find("sound/*", "GAME")) do
