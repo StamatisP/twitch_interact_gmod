@@ -17,6 +17,7 @@ end
 function ENT:Touch(entity)
 	if entity:IsPlayer() then
 		if entity:Nick() == self:GetPlyName() then
+			entity.WhosWho = false
 			net.Start("WhosWho")
 				net.WriteBool(false)
 			net.Send(entity)

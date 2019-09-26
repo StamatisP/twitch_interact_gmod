@@ -1002,6 +1002,7 @@ local function WhosWho()
 		GetPlayerInfoTGM(v)
 		v:Spawn()
 		v:StripWeapons()
+		v.WhosWho = true
 		local whoswhoent = ents.Create("tgm_whoswho")
 		if IsValid(whoswhoent) then
 			whoswhoent:SetPos(plypos)
@@ -1009,11 +1010,25 @@ local function WhosWho()
 			whoswhoent:Activate()
 			whoswhoent:SetPlyName(v:Nick())
 			whoswhoent:SetModel(plymodel)
+			v.WhosWhoEnt = whoswhoent
 		end
 	end
 	net.Start("WhosWho")
 		net.WriteBool(true)
 	net.Broadcast()
+	timer.Simple(ActionDuration * 2, function()
+		local affected_plys = {}
+		for k, v in ipairs(plys) do
+			if v.WhosWho then
+				v.WhosWhoEnt:Remove()
+				v:Kill()
+				affected_plys[k] = v
+			end
+		end
+		net.Start("WhosWho")
+			net.WriteBool(false)
+		net.Send(affected_plys)
+	end)
 end
 
 /* UTILITY ACTIONS */
