@@ -1,5 +1,4 @@
 print("client load!")
-AddCSLuaFile()
 
 CreateClientConVar("tgm_chat", "0", true, true, "If you get Twitch chat printed to your chat.")
 local voting_time = false

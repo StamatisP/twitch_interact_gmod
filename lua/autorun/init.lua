@@ -1,4 +1,3 @@
-AddCSLuaFile()
 print("shared file")
 local controlsReversed = false
 
