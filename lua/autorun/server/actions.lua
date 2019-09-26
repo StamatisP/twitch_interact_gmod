@@ -215,6 +215,7 @@ local function GetVotableFuncs(tab, isDoubleVote)
 			end
 		end
 	end
+	PrintTable(used_funcs)
 end
 
 local function VoteTime(isDoubleVote)
@@ -894,6 +895,10 @@ local function ThirdPerson()
 			net.WriteBool(false)
 		net.Send(aliveplys)
 	end)
+end
+
+local function RainingBombs()
+	// i want to rain HL2 grenades over the map to keep players moving, maybe even over their heads
 end
 
 /* UTILITY ACTIONS */
