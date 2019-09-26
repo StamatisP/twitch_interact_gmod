@@ -5,15 +5,21 @@ voting_time = false
 local vote_length = 15
 //local max_votable_funcs = 2
 
-local isSlapping = false
-local speedup = false
-local slowdown = false
-local oldPlyPos = {}
-local oldPlyView = {}
-local bouncyJump = false
+/* ACTION VARIABLES */
+do
+	local isSlapping = false
+	local Paranoia = false
+	local speedup = false
+	local slowdown = false
+	local oldPlyPos = {}
+	local oldPlyView = {}
+	local bouncyJump = false
+end
 
 local ActionDuration = 15
 
+
+/* ACTIONS */
 local function RandomizeViews()
 	print("randomizing views")
 	//net.Start("TimedActionStart") i might do this idk
@@ -778,8 +784,17 @@ local function JellyMode()
 	end)
 end
 
+local function ParanoiaCalcHear(listener, talker)
+	if Paranoia then
+		return false
+	end
+end
+
+hook.Add("PlayerCanHearPlayersVoice", "ParanoiaDisableVoice", ParanoiaCalcHear)
+
 local function Paranoia()
 	print("darkness...")
+	Paranoia = true
 	local plys = player.GetAll()
 	for k, ply in ipairs(plys) do // from ulib https://github.com/TeamUlysses/ulib/blob/master/LICENSE.md -- changes were made 
 		if not ply:Alive() then continue end
@@ -804,6 +819,7 @@ local function Paranoia()
 	net.Start("Paranoia")
 	net.Broadcast()
 	timer.Simple(ActionDuration, function()
+		Paranoia = false
 		for k, ply in ipairs(plys) do
 			if not ply:Alive() then continue end
 			ply:DrawShadow( true )

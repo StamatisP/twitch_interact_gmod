@@ -152,10 +152,12 @@ hook.Add("PlayerSay", "ChangeSettings", function(sender, txt, teamchat)
 			WEBSOCKET:write("shutdown")
 			WEBSOCKET:close()
 		end
+		return ""
 	elseif args[1] == "!connect" then
 		if sender:IsAdmin() then
 			WEBSOCKET:open()
 		end
+		return ""
 	elseif args[1] == "!anarchymode" then
 		if sender:IsAdmin() then
 			WEBSOCKET:write("anarchymode")
