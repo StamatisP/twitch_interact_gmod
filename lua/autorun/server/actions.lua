@@ -1,7 +1,7 @@
 WSFunctions = WSFunctions or {}
 local votes = {}
 local votable_funcs = {}
-local voting_time = false
+voting_time = false
 local vote_length = 15
 local max_votable_funcs = 2
 

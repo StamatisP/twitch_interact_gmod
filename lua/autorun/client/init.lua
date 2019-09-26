@@ -63,7 +63,7 @@ local silenthillTab = {
 	[ "$pp_colour_brightness" ] = 0,
 	[ "$pp_colour_contrast" ] = 1,
 	[ "$pp_colour_colour" ] = 0.3,
-	[ "$pp_colour_mulr" ] = 0.1,
+	[ "$pp_colour_mulr" ] = 0.2,
 	[ "$pp_colour_mulg" ] = 0,
 	[ "$pp_colour_mulb" ] = 0
 }
