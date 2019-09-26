@@ -1,6 +1,7 @@
 print("client load!")
 
 CreateClientConVar("tgm_chat", "0", true, true, "If you get Twitch chat printed to your chat.")
+
 local voting_time = false
 local isDoubleVote = false
 
@@ -62,7 +63,7 @@ local silenthillTab = {
 	[ "$pp_colour_brightness" ] = 0,
 	[ "$pp_colour_contrast" ] = 1,
 	[ "$pp_colour_colour" ] = 0.3,
-	[ "$pp_colour_mulr" ] = 0.2,
+	[ "$pp_colour_mulr" ] = 0.3,
 	[ "$pp_colour_mulg" ] = 0,
 	[ "$pp_colour_mulb" ] = 0
 }

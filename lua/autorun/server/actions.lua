@@ -3,7 +3,7 @@ local votes = {}
 local votable_funcs = {}
 voting_time = false
 local vote_length = 15
-local max_votable_funcs = 2
+//local max_votable_funcs = 2
 
 local isSlapping = false
 local speedup = false
@@ -899,6 +899,19 @@ end
 
 local function RainingBombs()
 	// i want to rain HL2 grenades over the map to keep players moving, maybe even over their heads
+	timer.Create("RainingBombs", 1, ActionDuration, function()
+		for k, v in ipairs(player.GetAll()) do
+			local grenade = ents.Create("npc_grenade_frag")
+			if IsValid(grenade) then
+				local plypos = v:GetPos()
+				grenade:SetPos(plypos + Vector(0, 0, 100))
+				grenade:Spawn()
+				grenade:Fire("SetTimer", 2.5, 0)
+				//grenade:Fire("SetHealth", 9999, 0)
+				grenade:SetHealth(9999)
+			end
+		end
+	end)
 end
 
 /* UTILITY ACTIONS */
@@ -940,6 +953,7 @@ do
 	WSFunctions["tinnitus"] = Tinnitus
 	WSFunctions["bouncyjump"] = BouncyJump
 	WSFunctions["thirdperson"] = ThirdPerson
+	WSFunctions["rainingbombs"] = RainingBombs
 end
 //WSFunctions["backseatgaming"] = BackseatGaming
 //WSFunctions["speedtime"] = SpeedTime
