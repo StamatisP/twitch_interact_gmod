@@ -9,8 +9,9 @@ local vote_length = 15
 // i want this to do cool effects, like % 10 for a 1/10 chance for somethin different to happen
 SetGlobalInt("ActionCounter", 0)
 local isSlapping = false
-local Paranoia = false
-local Deafness = false
+local ParanoiaVar = false
+local DeafnessVar = false
+local InstakillVar = false
 local speedup = false
 local slowdown = false
 local oldPlyPos = oldPlyPos or {}
@@ -788,7 +789,7 @@ local function JellyMode()
 end
 
 local function TGMCalcHear(listener, talker)
-	if Paranoia or Deafness then
+	if ParanoiaVar or DeafnessVar then
 		return false
 	end
 end
@@ -797,7 +798,7 @@ hook.Add("PlayerCanHearPlayersVoice", "ParanoiaDisableVoice", TGMCalcHear)
 
 local function Paranoia()
 	print("darkness...")
-	Paranoia = true
+	ParanoiaVar = true
 	local plys = player.GetAll()
 	for k, ply in ipairs(plys) do // from ulib https://github.com/TeamUlysses/ulib/blob/master/LICENSE.md -- changes were made 
 		if not ply:Alive() then continue end
@@ -822,7 +823,7 @@ local function Paranoia()
 	net.Start("Paranoia")
 	net.Broadcast()
 	timer.Simple(ActionDuration, function()
-		Paranoia = false
+		ParanoiaVar = false
 		for k, ply in ipairs(plys) do
 			if not ply:Alive() then continue end
 			ply:DrawShadow( true )
@@ -850,14 +851,14 @@ end
 
 local function Deafness()
 	print("deafness")
-	Deafness = true
+	DeafnessVar = true
 	local plys = player.GetAll()
 	for k, v in ipairs(plys) do
 		if not v:Alive() then continue end
 		v:SetDSP(31, false)
 	end
 	timer.Simple(ActionDuration, function()
-		Deafness = false
+		DeafnessVar = false
 		for k, v in ipairs(plys) do
 			if not v:Alive() then continue end
 			v:SetDSP(1, false)
@@ -1005,6 +1006,7 @@ local function WhosWho()
 	net.Broadcast()
 	local plys = player.GetAll()
 	for k, v in ipairs(plys) do
+		if not v:Alive() then continue end
 		local plypos = v:GetPos()
 		local plymodel = v:GetModel()
 		GetPlayerInfoTGM(v)
@@ -1044,12 +1046,29 @@ local function ItsAMystery()
 	net.Start("ItsAMystery")
 	net.Broadcast()
 	for k, v in ipairs(plys) do
+		if not v:Alive() then continue end
 		v:EmitSound("itsamystery.mp3", 0, 100, 0.5, CHAN_AUTO)
 	end
 end
 
 local function Earthquake()
 	util.ScreenShake(Vector(0, 0, 0), 15, 15, ActionDuration, 10000)
+end
+
+hook.Add("EntityTakeDamage", "TGMTakeDamage", function(target, dmginfo)
+	if target:IsPlayer() and InstakillVar then
+		dmginfo:ScaleDamage(99999)
+	end
+end)
+
+local function Instakill()
+	// cods instakill
+	InstakillVar = true
+	net.Start("Instakill")
+	net.Broadcast()
+	timer.Simple(ActionDuration, function()
+		InstakillVar = false
+	end)
 end
 
 /* UTILITY ACTIONS */
@@ -1096,6 +1115,7 @@ do
 	WSFunctions["whoswho"] = WhosWho
 	WSFunctions["itsamystery"] = ItsAMystery
 	WSFunctions["earthquake"] = Earthquake
+	WSFunctions["instakill"] = Instakill
 end
 //WSFunctions["backseatgaming"] = BackseatGaming
 //WSFunctions["speedtime"] = SpeedTime
