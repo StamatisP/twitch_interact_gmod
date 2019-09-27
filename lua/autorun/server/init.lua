@@ -173,6 +173,12 @@ hook.Add("PlayerSay", "ChangeSettings", function(sender, txt, teamchat)
 			GetConVar("tgm_url"):SetString(args[2])
 			print("setting url to ".. GetConVar("tgm_url"):GetString())
 		end
+	elseif args[1] == "!actioncounter" then
+		if sender:IsAdmin() then
+			if tonumber(args[2]) then
+				SetGlobalInt("ActionCounter", tonumber(args[2]))
+			end
+		end
 	elseif WSFunctions[string.TrimLeft(args[1], "!")] then
 		if not sender:IsAdmin() then return "" end
 		print("function found in PlayerSay, running...")

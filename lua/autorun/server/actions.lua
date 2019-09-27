@@ -6,15 +6,16 @@ local vote_length = 15
 //local max_votable_funcs = 2
 
 /* ACTION VARIABLES */
-do
-	local isSlapping = false
-	local Paranoia = false
-	local speedup = false
-	local slowdown = false
-	local oldPlyPos = {}
-	local oldPlyView = {}
-	local bouncyJump = false
-end
+// i want this to do cool effects, like % 10 for a 1/10 chance for somethin different to happen
+SetGlobalInt("ActionCounter", 0)
+local isSlapping = false
+local Paranoia = false
+local Deafness = false
+local speedup = false
+local slowdown = false
+local oldPlyPos = oldPlyPos or {}
+local oldPlyView = oldPlyView or {}
+local bouncyJump = false
 
 local ActionDuration = 15
 
@@ -204,6 +205,7 @@ local function GetVotableFuncs(tab, isDoubleVote)
 		else
 			if isDoubleVote then  // if it is a double vote
 				local func2, key2 = table.Random(WSFunctions)
+				if key2 == key then continue end
 
 				// i hate this if statement so much...
 				if key2 == "printtwitchchat" or key2 == "voteinfo" or key2 == "votetime" then 
@@ -666,6 +668,7 @@ local function SwapPositions()
 			if k % 2 == 0 then
 				v:SetPos(plyPositions[k - 1])
 			else
+				if not plyPositions[k + 1] then continue end
 				v:SetPos(plyPositions[k + 1])
 			end
 		end
@@ -784,13 +787,13 @@ local function JellyMode()
 	end)
 end
 
-local function ParanoiaCalcHear(listener, talker)
-	if Paranoia then
+local function TGMCalcHear(listener, talker)
+	if Paranoia or Deafness then
 		return false
 	end
 end
 
-hook.Add("PlayerCanHearPlayersVoice", "ParanoiaDisableVoice", ParanoiaCalcHear)
+hook.Add("PlayerCanHearPlayersVoice", "ParanoiaDisableVoice", TGMCalcHear)
 
 local function Paranoia()
 	print("darkness...")
@@ -847,12 +850,14 @@ end
 
 local function Deafness()
 	print("deafness")
+	Deafness = true
 	local plys = player.GetAll()
 	for k, v in ipairs(plys) do
 		if not v:Alive() then continue end
 		v:SetDSP(31, false)
 	end
 	timer.Simple(ActionDuration, function()
+		Deafness = false
 		for k, v in ipairs(plys) do
 			if not v:Alive() then continue end
 			v:SetDSP(1, false)

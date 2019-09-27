@@ -466,13 +466,17 @@ end)
 
 net.Receive("WhosWho", function()
 	WhosWho = net.ReadBool()
+	IncrementActionCounter()
 	local loopsound = PlayLoopingSound("whoswho_loop.wav")
 	if WhosWho then
 		surface.PlaySound("whoswho_sting.mp3")
-		timer.Simple(3, function()
-			loopsound:PlayEx(0.5, 100)
-		end)
-		//loopsnd:ChangeVolume(0.3, 4)
+		if GetGlobalInt("ActionCounter", 1) % 10 == 0 then
+			LocalPlayer():EmitSound("whoswho_jingle.mp3", 0, 100, 0.4, CHAN_AUTO)
+		else
+			timer.Simple(3, function()
+				loopsound:PlayEx(0.5, 100)
+			end)
+		end
 	else
 		print("ending")
 		loopsound:FadeOut(1)

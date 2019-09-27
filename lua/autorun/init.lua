@@ -47,6 +47,10 @@ PrettyFuncs = {
 	["earthquake"] = "Earthquake"
 }
 
+function IncrementActionCounter()
+	SetGlobalInt("ActionCounter", GetGlobalInt("ActionCounter", 1) + 1)
+end
+
 hook.Add("StartCommand", "FuckWithControls", function(ply, cmd)
 	if controlsReversed then
 		//cmd:ClearMovement()
