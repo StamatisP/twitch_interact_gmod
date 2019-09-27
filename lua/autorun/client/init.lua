@@ -24,22 +24,6 @@ local ActionDuration = 15
 local actionTime = actionTime or 0
 local timeText
 
-do // precache here
-	/*util.PrecacheSound( "the_world_time_stop.mp3" )
-	util.PrecacheSound( "the_world_time_start.mp3" )
-	if file.Exists("sound/spy_cloak.wav", "GAME") then
-		util.PrecacheSound("spy_cloak.wav")
-		util.PrecacheSound("spy_uncloak.wav")
-	else
-		util.PrecacheSound("invis_on.mp3")
-		util.PrecacheSound("invis_off.mp3")
-	end*/
-
-	for k, v in pairs(file.Find("sound/*", "GAME")) do
-		util.PrecacheSound(v)
-	end
-end
-
 local deepfryTab = {
 	[ "$pp_colour_addr" ] = 0,
 	[ "$pp_colour_addg" ] = 0,
@@ -77,7 +61,7 @@ local whoswhoTab = {
 	[ "$pp_colour_addr" ] = 0,
 	[ "$pp_colour_addg" ] = 0,
 	[ "$pp_colour_addb" ] = 0,
-	[ "$pp_colour_brightness" ] = 0,
+	[ "$pp_colour_brightness" ] = 0.18,
 	[ "$pp_colour_contrast" ] = 1,
 	[ "$pp_colour_colour" ] = 1,
 	[ "$pp_colour_mulr" ] = 0.3,
@@ -518,7 +502,8 @@ net.Receive("StartTimer", function()
 	timer.Create("TimerLower", 1, actionTime, function()
 		actionTime = actionTime - 1
 		if WhosWho then
-			whoswhoTab["$pp_colour_colour"] = math.Clamp(actionTime / 15, 0.01, 2)
+			whoswhoTab["$pp_colour_colour"] = math.Clamp(actionTime / 30, 0.01, 1)
+			whoswhoTab["$pp_colour_brightness"] = Lerp(actionTime / 30, -0.25, 0.18)
 		end
 		if actionTime <= 0 or not actionTime then
 			if timeText then

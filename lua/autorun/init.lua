@@ -4,11 +4,9 @@ local controlsReversed = false
 local ActionDuration = 15 // CHANGE THIS IN ACTIONS TOO
 
 do
-	util.PrecacheSound( "the_world_time_stop.mp3" )
-	util.PrecacheSound( "the_world_time_start.mp3" )
-	util.PrecacheSound("spy_cloak.wav")
-	util.PrecacheSound("spy_uncloak.wav")
-	util.PrecacheSound("inception.mp3")
+	for k, v in pairs(file.Find("sound/*", "GAME")) do
+		util.PrecacheSound(v)
+	end
 end
 
 PrettyFuncs = {
@@ -116,6 +114,7 @@ hook.Add("AntFight", "AntFightShared", function(scale) // bug: crouching hulls d
 end)
 
 net.Receive("AntFight", function()
+	// why the fuck do i do it this way? did i have to and forgot?
 	local scale = net.ReadFloat()
 	hook.Run("AntFight", scale)
 end)
