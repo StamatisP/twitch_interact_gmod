@@ -1043,6 +1043,10 @@ local function ItsAMystery()
 	end
 end
 
+local function Earthquake()
+	util.ScreenShake(Vector(0, 0, 0), 15, 15, ActionDuration, 10000)
+end
+
 /* UTILITY ACTIONS */
 do
 	WSFunctions["printtwitchchat"] = PrintTwitchChat
@@ -1086,6 +1090,7 @@ do
 	WSFunctions["crabinfestation"] = CrabInfestation
 	WSFunctions["whoswho"] = WhosWho
 	WSFunctions["itsamystery"] = ItsAMystery
+	WSFunctions["earthquake"] = Earthquake
 end
 //WSFunctions["backseatgaming"] = BackseatGaming
 //WSFunctions["speedtime"] = SpeedTime
