@@ -258,6 +258,8 @@ net.Receive("the_world_time_start.PlaySound", function()
     surface.PlaySound("the_world_time_start.mp3")
 end)
 
+local wMat = Material("models/debug/debugwhite")
+
 local function TGMRender()
 	if ScreenFuck then
 		//print("please")
@@ -274,6 +276,22 @@ local function TGMRender()
 	elseif WhosWho then
 		DrawColorModify(whoswhoTab)
 		DrawMaterialOverlay("overlays/vignette01", 1)
+	elseif KamikazeVar then
+		cam.Start3D()
+			cam.IgnoreZ(true)
+			render.SuppressEngineLighting(true)
+
+			for k, v in pairs(player.GetAll()) do
+				if v == LocalPlayer() or not v:Alive() then continue end
+
+				render.MaterialOverride(wMat)
+				render.SetColorModulation(1, 0, 0)
+				v:DrawModel()
+			end
+
+			cam.IgnoreZ(false)
+			render.SuppressEngineLighting(false)
+		cam.End3D()
 	end
 end
 

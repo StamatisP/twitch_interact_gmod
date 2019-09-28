@@ -17,6 +17,7 @@ local slowdown = false
 local oldPlyPos = oldPlyPos or {}
 local oldPlyView = oldPlyView or {}
 local bouncyJump = false
+local KamikazeVar = false
 
 local ActionDuration = 15
 
@@ -61,8 +62,23 @@ hook.Add("EntityTakeDamage", "TGMTakeDamage", function(target, dmginfo)
 	if target:IsPlayer() and InstakillVar then
 		dmginfo:ScaleDamage(99999)
 	end
+	if target:IsPlayer() and target.Kamikaze then
+		dmginfo:ScaleDamage(0.01)
+	end
 end)
 
+local function AddAllPlayersToVis(tab)
+	// tab should be players.getall
+	for k, v in ipairs(tab) do
+		AddOriginToPVS(v:GetPos())
+	end
+end
+
+hook.Add("SetupPlayerVisibility", "TGMVis", function(pPlayer, viewentity)
+	if KamikazeVar and pPlayer.Kamikaze then
+		AddAllPlayersToVis(player.GetAll())
+	end
+end)
 
 /* ACTIONS */
 local function RandomizeViews()
@@ -1076,6 +1092,7 @@ end
 
 local function Kamikaze()
 	// one person is chosen as kamikaze, 15 seconds to blow someone up, must blow 3 people up to revive
+	KamikazeVar = true
 	local plys = player.GetAll()
 	math.randomseed(os.time())
 	local randplayer = math.random(#plys)
@@ -1100,6 +1117,7 @@ local function Kamikaze()
 
 	timer.Simple(ActionDuration, function()
 		local alivePlayers = 0
+		KamikazeVar = false
 		for k, v in ipairs(plys) do
 			if v:Alive() then alivePlayers = alivePlayers + 1 end
 		end
