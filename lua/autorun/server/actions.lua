@@ -21,6 +21,49 @@ local bouncyJump = false
 local ActionDuration = 15
 
 
+/* HOOKS */
+hook.Add("Move", "Speedup or Slowdown", function(ply, mv)
+	if speedup or ply.Kamikaze then
+		local speed = mv:GetMaxSpeed() * 3
+		mv:SetMaxSpeed(speed)
+		mv:SetMaxClientSpeed(speed)
+	elseif slowdown then
+		local speed = mv:GetMaxSpeed() / 2
+		mv:SetMaxSpeed(speed)
+		mv:SetMaxClientSpeed(speed)
+	end
+end)
+
+hook.Add("GetFallDamage", "SlapOverwrite", function(ply, speed)
+	if isSlapping or bouncyJump then
+		return 0
+	end
+end)
+
+hook.Add("VotingStarted", "TimeSkipRec", function()
+	table.Empty(oldPlyPos)
+	table.Empty(oldPlyView)
+	for k, v in ipairs(player.GetAll()) do
+		table.insert(oldPlyPos, v:GetPos())
+		table.insert(oldPlyView, v:EyeAngles())
+	end
+end)
+
+local function TGMCalcHear(listener, talker)
+	if ParanoiaVar or DeafnessVar then
+		return false
+	end
+end
+
+hook.Add("PlayerCanHearPlayersVoice", "ParanoiaDisableVoice", TGMCalcHear)
+
+hook.Add("EntityTakeDamage", "TGMTakeDamage", function(target, dmginfo)
+	if target:IsPlayer() and InstakillVar then
+		dmginfo:ScaleDamage(99999)
+	end
+end)
+
+
 /* ACTIONS */
 local function RandomizeViews()
 	print("randomizing views")
@@ -532,18 +575,6 @@ local function SlowTime()
 	end)
 end
 
-hook.Add("Move", "Speedup or Slowdown", function(ply, mv)
-	if speedup or ply.Kamikaze then
-		local speed = mv:GetMaxSpeed() * 3
-		mv:SetMaxSpeed(speed)
-		mv:SetMaxClientSpeed(speed)
-	elseif slowdown then
-		local speed = mv:GetMaxSpeed() / 2
-		mv:SetMaxSpeed(speed)
-		mv:SetMaxClientSpeed(speed)
-	end
-end)
-
 local function SpeedUp()
 	print("speeding up!")
 	speedup = true
@@ -599,12 +630,6 @@ function ApplyAccel( ent, magnitude, direction, dTime ) // Ulib
 		ent:SetVelocity( accel ) -- As it turns out, SetVelocity() is actually SetAccel() in GM10
 	end
 end
-
-hook.Add("GetFallDamage", "SlapOverwrite", function(ply, speed)
-	if isSlapping or bouncyJump then
-		return 0
-	end
-end)
 
 local function MegaSlap() // also from Ulib
 	print("mega slap time")
@@ -676,15 +701,6 @@ local function SwapPositions()
 		end
 	end
 end
-
-hook.Add("VotingStarted", "TimeSkipRec", function()
-	table.Empty(oldPlyPos)
-	table.Empty(oldPlyView)
-	for k, v in ipairs(player.GetAll()) do
-		table.insert(oldPlyPos, v:GetPos())
-		table.insert(oldPlyView, v:EyeAngles())
-	end
-end)
 
 local function TimeSkip()
 	print("time has been skipped!")
@@ -788,14 +804,6 @@ local function JellyMode()
 		end
 	end)
 end
-
-local function TGMCalcHear(listener, talker)
-	if ParanoiaVar or DeafnessVar then
-		return false
-	end
-end
-
-hook.Add("PlayerCanHearPlayersVoice", "ParanoiaDisableVoice", TGMCalcHear)
 
 local function Paranoia()
 	print("darkness...")
@@ -1055,12 +1063,6 @@ end
 local function Earthquake()
 	util.ScreenShake(Vector(0, 0, 0), 15, 15, ActionDuration, 10000)
 end
-
-hook.Add("EntityTakeDamage", "TGMTakeDamage", function(target, dmginfo)
-	if target:IsPlayer() and InstakillVar then
-		dmginfo:ScaleDamage(99999)
-	end
-end)
 
 local function Instakill()
 	// cods instakill

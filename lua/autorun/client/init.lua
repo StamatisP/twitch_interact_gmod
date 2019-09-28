@@ -10,12 +10,10 @@ local ScreenFuck = false
 local SilentHill = false
 local Fog_End = 5600
 local Fog_Density = 0
-
 local Paranoia = false
-
 local ThirdPerson = false
-
 local WhosWho = false
+local KamikazeVar = false
 
 local LoadedSounds = {}
 
@@ -536,6 +534,16 @@ net.Receive("Instakill", function()
 	end)
 end)
 
+hook.Add("PreDrawHalos", "KamikazeWallhacks", function()
+	if KamikazeVar then
+		halo.Add(player.GetAll(), Color(255, 0, 0), 0, 0, 2, true, true)
+	end
+end)
+
 net.Receive("Kamikaze", function()
+	KamikazeVar = true
 	LocalPlayer():ChatPrint("You are the Kamikaze! Kill " .. #player.GetAll() / 5 .." or more players and you will be revived!")
+	timer.Simple(ActionDuration, function()
+		KamikazeVar = false
+	end)
 end)
