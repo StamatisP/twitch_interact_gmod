@@ -258,7 +258,7 @@ net.Receive("the_world_time_start.PlaySound", function()
     surface.PlaySound("the_world_time_start.mp3")
 end)
 
-local wMat = Material("models/debug/debugwhite")
+local wMat = Material("models/debug/debugwhite")	
 
 local function TGMRender()
 	if ScreenFuck then
@@ -552,11 +552,11 @@ net.Receive("Instakill", function()
 	end)
 end)
 
-hook.Add("PreDrawHalos", "KamikazeWallhacks", function()
+/*hook.Add("PreDrawHalos", "KamikazeWallhacks", function()
 	if KamikazeVar then
 		halo.Add(player.GetAll(), Color(255, 0, 0), 0, 0, 2, true, true)
 	end
-end)
+end)*/
 
 net.Receive("Kamikaze", function()
 	KamikazeVar = true
