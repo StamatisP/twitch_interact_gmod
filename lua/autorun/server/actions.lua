@@ -7,7 +7,7 @@ local vote_length = 15
 
 /* ACTION VARIABLES */
 // i want this to do cool effects, like % 10 for a 1/10 chance for somethin different to happen
-SetGlobalInt("ActionCounter", 0)
+SetGlobalInt("ActionCounter", 1)
 local isSlapping = false
 local ParanoiaVar = false
 local DeafnessVar = false
@@ -280,6 +280,7 @@ local function VoteTime(isDoubleVote)
 				PrintMessage(HUD_PRINTTALK, PrettyFuncs[winning_func])
 				WSFunctions[winning_func]()
 			end
+			IncrementActionCounter()
 			
 			table.Empty(votable_funcs)
 			voting_time = false
@@ -532,8 +533,8 @@ local function SlowTime()
 end
 
 hook.Add("Move", "Speedup or Slowdown", function(ply, mv)
-	if speedup then
-		local speed = mv:GetMaxSpeed() * 2
+	if speedup or ply.Kamikaze then
+		local speed = mv:GetMaxSpeed() * 3
 		mv:SetMaxSpeed(speed)
 		mv:SetMaxClientSpeed(speed)
 	elseif slowdown then
@@ -1071,6 +1072,82 @@ local function Instakill()
 	end)
 end
 
+sound.Add( {
+	name = "kamikaze_scream",
+	channel = CHAN_STATIC,
+	volume = 0.8,
+	level = 70,
+	pitch = 100,
+	sound = "kamikaze_loop.wav"
+})
+
+sound.Add( {
+	name = "mario_screaming",
+	channel = CHAN_STATIC,
+	volume = 0.8,
+	level = 70,
+	pitch = 100,
+	sound = "kamikaze_loop_special.wav"
+})
+
+local function Kamikaze()
+	// one person is chosen as kamikaze, 15 seconds to blow someone up, must blow 3 people up to revive
+	local plys = player.GetAll()
+	math.randomseed(os.time())
+	local randplayer = math.random(#plys)
+	local kamikazeplayer = plys[randplayer]
+	if not kamikazeplayer:Alive() then Kamikaze() end
+
+	GetPlayerInfoTGM(kamikazeplayer)
+	kamikazeplayer.Kamikaze = true
+	if GetGlobalInt("ActionCounter") % 10 == 0 then
+		kamikazeplayer:EmitSound("mario_screaming")
+	else
+		kamikazeplayer:EmitSound("kamikaze_scream")
+	end
+	local marker = ents.Create("tgm_kamikazemarker")
+	if IsValid(marker) then
+		marker:SetPos(kamikazeplayer:GetPos() + Vector(0, 0, 16))
+		marker:SetParent(kamikazeplayer)
+		marker:Spawn()
+	end
+	net.Start("Kamikaze")
+	net.Send(kamikazeplayer)
+
+	timer.Simple(ActionDuration, function()
+		local alivePlayers = 0
+		for k, v in ipairs(plys) do
+			if v:Alive() then alivePlayers = alivePlayers + 1 end
+		end
+		kamikazeplayer:StopSound("kamikaze_scream")
+		kamikazeplayer:StopSound("mario_screaming")
+		kamikazeplayer.Kamikaze = false
+		marker:Remove()
+
+		local explode = ents.Create("env_explosion")
+		if IsValid(explode) then
+			explode:SetPos(kamikazeplayer:GetPos())
+			explode:SetOwner(kamikazeplayer)
+			explode:SetKeyValue("iMagnitude", "250")
+			explode:SetKeyValue("spawnflags", "144")
+			explode:Spawn()
+			explode:Fire("Explode", 0, 0)
+			explode:EmitSound("weapon_AWP.Single")
+		end
+
+		timer.Simple(0.1, function()
+			local alivePlayers2 = 0
+			for k, v in ipairs(plys) do
+				if v:Alive() then alivePlayers2 = alivePlayers2 + 1 end
+			end
+			if alivePlayers - alivePlayers2 >= #plys / 5 then
+				print(kamikazeplayer:Nick() .. " has succeeded and will be respawned!")
+				SpawnPlayer(kamikazeplayer)
+			end
+		end)
+	end)
+end
+
 /* UTILITY ACTIONS */
 do
 	WSFunctions["printtwitchchat"] = PrintTwitchChat
@@ -1116,6 +1193,7 @@ do
 	WSFunctions["itsamystery"] = ItsAMystery
 	WSFunctions["earthquake"] = Earthquake
 	WSFunctions["instakill"] = Instakill
+	WSFunctions["kamikaze"] = Kamikaze
 end
 //WSFunctions["backseatgaming"] = BackseatGaming
 //WSFunctions["speedtime"] = SpeedTime

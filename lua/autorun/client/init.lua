@@ -466,7 +466,6 @@ end)
 
 net.Receive("WhosWho", function()
 	WhosWho = net.ReadBool()
-	IncrementActionCounter()
 	local loopsound = PlayLoopingSound("whoswho_loop.wav")
 	if WhosWho then
 		surface.PlaySound("whoswho_sting.mp3")
@@ -535,4 +534,8 @@ net.Receive("Instakill", function()
 	timer.Simple(ActionDuration, function()
 		loopsound:FadeOut(1)
 	end)
+end)
+
+net.Receive("Kamikaze", function()
+	LocalPlayer():ChatPrint("You are the Kamikaze! Kill " .. #player.GetAll() / 5 .." or more players and you will be revived!")
 end)

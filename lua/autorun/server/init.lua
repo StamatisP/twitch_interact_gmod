@@ -33,6 +33,7 @@ util.AddNetworkString("WhosWho")
 util.AddNetworkString("StartTimer")
 util.AddNetworkString("ItsAMystery")
 util.AddNetworkString("Instakill")
+util.AddNetworkString("Kamikaze")
 
 do // add files here precache in shared init.lua
 	for k, v in pairs(file.Find("sound/*", "GAME")) do
@@ -180,10 +181,12 @@ hook.Add("PlayerSay", "ChangeSettings", function(sender, txt, teamchat)
 				SetGlobalInt("ActionCounter", tonumber(args[2]))
 			end
 		end
+		return ""
 	elseif WSFunctions[string.TrimLeft(args[1], "!")] then
 		if not sender:IsAdmin() then return "" end
 		print("function found in PlayerSay, running...")
 		local clean_command = string.TrimLeft(args[1], "!")
+		IncrementActionCounter()
 
 		if not args[2] then
 			if voting_time then
