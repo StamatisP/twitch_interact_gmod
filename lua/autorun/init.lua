@@ -44,7 +44,8 @@ PrettyFuncs = {
 	["crabinfestation"] = "Crab Infestation",
 	["whoswho"] = "Who's Who?",
 	["itsamystery"] = "it is a mystery",
-	["earthquake"] = "Earthquake"
+	["earthquake"] = "Earthquake",
+	["kamikaze"] = "Kamikaze"
 }
 
 function IncrementActionCounter()
