@@ -98,16 +98,14 @@ local function RandomizeViews()
 	print("randomizing views")
 	//net.Start("TimedActionStart") i might do this idk
 	//net.Broadcast()
-	local plys = player.GetAll()
+	local plys = GetAlivePlayers()
 	local plyAngles = {}
 	for k, v in ipairs(plys) do
-		if not v:Alive() then continue end
 		plyAngles[k] = v:EyeAngles()
 		v:SetEyeAngles(AngleRand())
 	end
 	timer.Simple(ActionDuration, function()
 		for k, v in ipairs(plys) do
-			if not v:Alive() then continue end
 			v:SetEyeAngles(Angle(plyAngles[k].pitch, plyAngles[k].yaw, 0))
 		end
 	end)
@@ -116,9 +114,6 @@ end
 
 local function LowerGravity()
 	print("lowering gravity")
-	for k, v in pairs(player.GetAll()) do
-		v:ChatPrint("Lowering gravity!")
-	end
 	local oldgrav = physenv.GetGravity() // default grav is Vector(0, 0, -600)
 	print(oldgrav)
 	local oldnumgrav = GetConVar("sv_gravity"):GetInt()
@@ -137,12 +132,10 @@ local function DeepFry()
 	net.Broadcast()
 	local plys = player.GetAll()
 	for k, v in ipairs(plys) do
-		if not v:Alive() then continue end
 		v:SetDSP(38, false)
 	end
 	timer.Simple(ActionDuration, function()
 		for k, v in ipairs(plys) do
-			if not v:Alive() then continue end
 			v:SetDSP(1, false)
 		end
 	end)
@@ -157,8 +150,7 @@ local function Inception()
 	RunConsoleCommand("sv_sticktoground", "0")
 	net.Start("Inception")
 	net.Broadcast()
-	for k, v in ipairs(player.GetAll()) do
-		if not v:Alive() then continue end
+	for k, v in ipairs(GetAlivePlayers()) do
 		local power = 100
 		local direction = Vector( math.random( 5 )-10, math.random( 5 )-10, math.random( 5 ) )
 		if not v:Alive() then
@@ -189,9 +181,8 @@ end
 
 local function SpawnZombies() // ulib
 	print("spawning zombies")
-	local plys = player.GetAll()
+	local plys = GetAlivePlayers()
 	for k, v in ipairs(plys) do
-		if not v:Alive() then continue end
 		local pos = {}
 		local testent = newZombie( Vector( 0, 0, 0 ), Angle( 0, 0, 0 ), v, true ) -- Test ent for traces
 
@@ -238,10 +229,9 @@ end
 
 local function MasterFOV()
 	print("OH ILL SHOW YA MASTER FOV")
-	local plys = player.GetAll()
+	local plys = GetAlivePlayers()
 	local plyFovs = {}
 	for k, v in pairs(plys) do
-		if not v:Alive() then continue end
 		plyFovs[k] = v:GetFOV()
 		v:SetFOV(177, 1)
 		v:ChatPrint("MASTER FOV ENGAGED")
@@ -394,7 +384,7 @@ end
 
 local function ZaWarudo() // from Vipes, edited for personal use https://steamcommunity.com/id/lordvipes
 	print("ZA WARUDO")
-	local plys = player.GetAll()
+	local plys = GetAlivePlayers()
 	// look at the addon
 	net.Start("the_world_time_stop.PlaySound")
 	net.Broadcast()
@@ -431,12 +421,11 @@ end
 
 local function InvisibleWarfare()
 	print("making everyone invisible!")
-	local plys = player.GetAll()
+	local plys = GetAlivePlayers()
 	net.Start("PlayCloakSound")
 		net.WriteBool(true)
 	net.Broadcast()
 	for k, ply in ipairs(plys) do // from ulib https://github.com/TeamUlysses/ulib/blob/master/LICENSE.md -- changes were made 
-		if not ply:Alive() then continue end
 		local visibility = 0
 		ply:DrawShadow( false )
 		ply:SetMaterial( "models/effects/vol_light001" )
@@ -460,7 +449,6 @@ local function InvisibleWarfare()
 			net.WriteBool(false)
 		net.Broadcast()
 		for k, ply in ipairs(plys) do
-			if not ply:Alive() then continue end
 			ply:DrawShadow( true )
 			ply:SetMaterial( "" )
 			ply:SetRenderMode( RENDERMODE_NORMAL )
@@ -539,7 +527,7 @@ end
 
 local function RagdollEveryone()
 	print("ragdolling everyone!")
-	local plys = player.GetAll()
+	local plys = GetAlivePlayers()
 	for k, v in ipairs(plys) do
 		if v:Alive() then
 			GetPlayerInfoTGM(v)
@@ -620,26 +608,24 @@ end
 local function SlowDown()
 	print("slowing down!")
 	slowdown = true
-	local plys = player.GetAll()
-	for k, v in ipairs(plys) do
-		if not v:Alive() then continue end
+	local plys = GetAlivePlayers()
+	/*for k, v in ipairs(plys) do
 		v:SetWalkSpeed(50)
 		v:SetRunSpeed(125)
-	end	
+	end*/
 	timer.Simple(ActionDuration, function()
 		slowdown = false
-		for k, v in ipairs(plys) do
-			if not v:Alive() then continue end
+		/*for k, v in ipairs(plys) do
 			v:SetWalkSpeed(250)
 			v:SetRunSpeed(500)
-		end
+		end*/
 	end)
 end
 
 local function ReverseControls()
 	print("reversing controls")
 	net.Start("ReverseControls")
-	net.Broadcast()	
+	net.Send(GetAlivePlayers())
 end
 
 function ApplyAccel( ent, magnitude, direction, dTime ) // Ulib
@@ -667,7 +653,7 @@ end
 
 local function MegaSlap() // also from Ulib
 	print("mega slap time")
-	local plys = player.GetAll()
+	local plys = GetAlivePlayers()
 	isSlapping = true
 	for k, v in ipairs(plys) do
 		if v:GetMoveType() == MOVETYPE_OBSERVER then return end
@@ -718,13 +704,12 @@ end
 
 local function SwapPositions()
 	print("swap positions")
-	local plys = player.GetAll()
+	local plys = GetAlivePlayers()
 	local plyPositions = {}
 	for k, v in ipairs(plys) do
 		table.insert(plyPositions, v:GetPos())
 	end
 	for k, v in ipairs(plys) do
-		if not v:Alive() then continue end
 		if #plyPositions >= 2 then
 			if k % 2 == 0 then
 				v:SetPos(plyPositions[k - 1])
@@ -738,8 +723,7 @@ end
 
 local function TimeSkip()
 	print("time has been skipped!")
-	for k, v in ipairs(player.GetAll()) do
-		if not v:Alive() then continue end
+	for k, v in ipairs(GetAlivePlayers()) do
 		if not oldPlyPos[k] then continue end
 		if not oldPlyView[k] then continue end
 		v:SetPos(oldPlyPos[k])
@@ -749,15 +733,13 @@ end
 
 local function UpsideDownCameras()
 	print("the cameras are upside down!")
-	local plys = player.GetAll()
+	local plys = GetAlivePlayers()
 	for k, v in ipairs(plys) do
-		if not v:Alive() then continue end
 		local plyAngles = v:EyeAngles()
 		v:SetEyeAngles(Angle(plyAngles.pitch, plyAngles.yaw, 180))
 	end
 	timer.Simple(ActionDuration, function()
 		for k, v in ipairs(plys) do
-			if not v:Alive() then continue end
 			local angs = v:EyeAngles()
 			v:SetEyeAngles(Angle(angs.pitch, angs.yaw, 0))
 		end
@@ -784,20 +766,19 @@ local function AntFight()
 	hook.Run("AntFight", 0.3)
 	net.Start("AntFight")
 		net.WriteFloat(0.3)
-	net.Broadcast()
+	net.Send(GetAlivePlayers())
 	timer.Simple(ActionDuration, function()
 		net.Start("AntFight")
 			net.WriteFloat(1)
-		net.Broadcast()
+		net.Send(GetAlivePlayers())
 		hook.Run("AntFight", 1)
 	end)
 end
 
 local function BigHeadMode() // can be laggy if lots of players
 	print("ya got a big head")
-	local plys = player.GetAll()
+	local plys = GetAlivePlayers()
 	for k, v in ipairs(plys) do
-		if not v:Alive() then continue end
 		local bone = v:LookupBone("ValveBiped.Bip01_Head1")
 		if bone then
 			v:ManipulateBoneScale(bone, Vector(10, 10, 10))
@@ -805,7 +786,6 @@ local function BigHeadMode() // can be laggy if lots of players
 	end
 	timer.Simple(ActionDuration, function()
 		for k, v in ipairs(plys) do
-			if not v:Alive() then continue end
 			local bone = v:LookupBone("ValveBiped.Bip01_Head1")
 			if bone then
 				v:ManipulateBoneScale(bone, Vector(1, 1, 1))
@@ -816,9 +796,8 @@ end
 
 local function JellyMode()
 	print("jelly mode")
-	local plys = player.GetAll()
+	local plys = GetAlivePlayers()
 	for k, v in ipairs(plys) do
-		if not v:Alive() then continue end
 		local i = 0
 
 		while i < v:GetBoneCount() do
@@ -828,7 +807,6 @@ local function JellyMode()
 	end
 	timer.Simple(ActionDuration, function()
 		for k, v in ipairs(plys) do
-			if not v:Alive() then continue end
 			local i = 0
 
 			while i < v:GetBoneCount() do
@@ -842,9 +820,8 @@ end
 local function Paranoia()
 	print("darkness...")
 	ParanoiaVar = true
-	local plys = player.GetAll()
+	local plys = GetAlivePlayers()
 	for k, ply in ipairs(plys) do // from ulib https://github.com/TeamUlysses/ulib/blob/master/LICENSE.md -- changes were made 
-		if not ply:Alive() then continue end
 		local visibility = 0
 		ply:DrawShadow( false )
 		ply:SetMaterial( "models/effects/vol_light001" )
@@ -868,7 +845,6 @@ local function Paranoia()
 	timer.Simple(ActionDuration, function()
 		ParanoiaVar = false
 		for k, ply in ipairs(plys) do
-			if not ply:Alive() then continue end
 			ply:DrawShadow( true )
 			ply:SetMaterial( "" )
 			ply:SetRenderMode( RENDERMODE_NORMAL )
@@ -886,8 +862,7 @@ end
 
 local function Blindness()
 	print("blindness")
-	for k, v in ipairs(player.GetAll()) do
-		if not v:Alive() then continue end
+	for k, v in ipairs(GetAlivePlayers()) do
 		v:ScreenFade(SCREENFADE.OUT, Color(0, 0, 0), 3, ActionDuration - 1)
 	end
 end
@@ -895,15 +870,13 @@ end
 local function Deafness()
 	print("deafness")
 	DeafnessVar = true
-	local plys = player.GetAll()
+	local plys = GetAlivePlayers()
 	for k, v in ipairs(plys) do
-		if not v:Alive() then continue end
 		v:SetDSP(31, false)
 	end
 	timer.Simple(ActionDuration, function()
 		DeafnessVar = false
 		for k, v in ipairs(plys) do
-			if not v:Alive() then continue end
 			v:SetDSP(1, false)
 		end
 	end)
@@ -911,16 +884,14 @@ end
 
 local function Tinnitus()
 	print("eeeee tinnitus eeeeee")
-	local plys = player.GetAll()
+	local plys = GetAlivePlayers()
 	timer.Create("Tinnitus", 1, 14, function()
 		for k, v in ipairs(plys) do
-			if not v:Alive() then continue end
 			v:SetDSP(35, false)
 		end
 	end)
 	timer.Simple(ActionDuration, function()
 		for k, v in ipairs(plys) do
-			if not v:Alive() then continue end
 			v:SetDSP(1, false)
 		end
 	end)
@@ -928,16 +899,14 @@ end
 
 local function BouncyJump()
 	print("bouncy time")
-	local plys = player.GetAll()
+	local plys = GetAlivePlayers()
 	bouncyJump = true
 	for k, v in ipairs(plys) do
-		if not v:Alive() then continue end
 		v:SetJumpPower(600)
 	end
 	timer.Simple(ActionDuration, function()
 		bouncyJump = false
 		for k, v in ipairs(plys) do
-			if not v:Alive() then continue end
 			v:SetJumpPower(200)
 		end
 	end)
@@ -948,10 +917,7 @@ local function BackseatGaming()
 end
 
 local function ThirdPerson()
-	local aliveplys = {}
-	for k, v in ipairs(player.GetAll()) do
-		table.insert(aliveplys, v)
-	end
+	local aliveplys = GetAlivePlayers()
 	net.Start("Thirdperson")
 		net.WriteBool(true)
 	net.Send(aliveplys)
@@ -999,11 +965,10 @@ end
 
 local function CrabInfestation()
 	print("spawning crabs")
-	local plys = player.GetAll()
+	local plys = GetAlivePlayers()
 	for i=1, #plys do
 		local v = plys[i]
 
-		if not v:Alive() then continue end
 		local pos = {}
 		local testent = newCrab( Vector( 0, 0, 0 ), Angle( 0, 0, 0 ), v, true ) -- Test ent for traces
 
@@ -1047,9 +1012,8 @@ local function WhosWho()
 	net.Start("StartTimer")
 		net.WriteFloat(ActionDuration * 2)
 	net.Broadcast()
-	local plys = player.GetAll()
+	local plys = GetAlivePlayers()
 	for k, v in ipairs(plys) do
-		if not v:Alive() then continue end
 		local plypos = v:GetPos()
 		local plymodel = v:GetModel()
 		GetPlayerInfoTGM(v)
@@ -1068,7 +1032,7 @@ local function WhosWho()
 	end
 	net.Start("WhosWho")
 		net.WriteBool(true)
-	net.Broadcast()
+	net.Send(plys)
 	timer.Simple(ActionDuration * 2, function()
 		local affected_plys = {}
 		for k, v in ipairs(plys) do
@@ -1086,11 +1050,10 @@ local function WhosWho()
 end
 
 local function ItsAMystery()
-	local plys = player.GetAll()
+	local plys = GetAlivePlayers()
 	net.Start("ItsAMystery")
-	net.Broadcast()
+	net.Send(plys)
 	for k, v in ipairs(plys) do
-		if not v:Alive() then continue end
 		v:EmitSound("itsamystery.mp3", 0, 100, 0.5, CHAN_AUTO)
 	end
 end
