@@ -1150,6 +1150,11 @@ local function Kamikaze()
 	end)
 end
 
+local function MobaMode()
+	net.Start("MobaMode")
+	net.Broadcast()
+end
+
 /* UTILITY ACTIONS */
 do
 	WSFunctions["printtwitchchat"] = PrintTwitchChat
@@ -1196,6 +1201,7 @@ do
 	WSFunctions["earthquake"] = Earthquake
 	WSFunctions["instakill"] = Instakill
 	WSFunctions["kamikaze"] = Kamikaze
+	WSFunctions["mobamode"] = MobaMode
 end
 //WSFunctions["backseatgaming"] = BackseatGaming
 //WSFunctions["speedtime"] = SpeedTime

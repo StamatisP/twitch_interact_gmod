@@ -14,6 +14,7 @@ local Paranoia = false
 local ThirdPerson = false
 local WhosWho = false
 local KamikazeVar = false
+local MobaMode = false
 
 local LoadedSounds = {}
 
@@ -465,12 +466,22 @@ net.Receive("Paranoia", function()
 end)
 
 local function TGMCalcView(ply, pos, angles, fov)
-	local view = {}
+	if ThirdPerson then
+		local view = {}
 
-	view.origin = ThirdPerson and pos - (angles:Forward() * 100) or pos
-	view.drawviewer = ThirdPerson
+		view.origin = pos - (angles:Forward() * 100)
+		view.drawviewer = true
 
-	return view
+		return view
+	elseif MobaMode then
+		local view = {}
+
+		view.origin = pos + Vector(0, 0, 256)
+		view.angles = Angle(90, -180, 0)
+		view.drawviewer = true
+
+		return view
+	end
 end
 
 hook.Add("CalcView", "TGMCalcView", TGMCalcView)
@@ -563,5 +574,12 @@ net.Receive("Kamikaze", function()
 	LocalPlayer():ChatPrint("You are the Kamikaze! Kill " .. #player.GetAll() / 5 .." or more players and you will be revived!")
 	timer.Simple(ActionDuration, function()
 		KamikazeVar = false
+	end)
+end)
+
+net.Receive("MobaMode", function()
+	MobaMode = true
+	timer.Simple(ActionDuration, function()
+		MobaMode = false
 	end)
 end)

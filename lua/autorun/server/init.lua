@@ -34,6 +34,7 @@ util.AddNetworkString("StartTimer")
 util.AddNetworkString("ItsAMystery")
 util.AddNetworkString("Instakill")
 util.AddNetworkString("Kamikaze")
+util.AddNetworkString("MobaMode")
 
 do // add files here precache in shared init.lua
 	for k, v in pairs(file.Find("sound/*", "GAME")) do
