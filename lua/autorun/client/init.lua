@@ -67,6 +67,17 @@ local whoswhoTab = {
 	[ "$pp_colour_mulg" ] = 0,
 	[ "$pp_colour_mulb" ] = 0
 }
+local kamikazeTab = {
+	[ "$pp_colour_addr" ] = 0,
+	[ "$pp_colour_addg" ] = 0,
+	[ "$pp_colour_addb" ] = 0,
+	[ "$pp_colour_brightness" ] = 0,
+	[ "$pp_colour_contrast" ] = 1,
+	[ "$pp_colour_colour" ] = 0.3,
+	[ "$pp_colour_mulr" ] = 1,
+	[ "$pp_colour_mulg" ] = 0,
+	[ "$pp_colour_mulb" ] = 0
+}
 
 local f
 local label1, label2, label3, label4
@@ -278,6 +289,8 @@ local function TGMRender()
 		DrawColorModify(whoswhoTab)
 		DrawMaterialOverlay("overlays/vignette01", 1)
 	elseif KamikazeVar then
+		DrawColorModify(kamikazeTab)
+		DrawMaterialOverlay("overlays/vignette01", 1)
 		cam.Start3D()
 			cam.IgnoreZ(true)
 			render.SuppressEngineLighting(true)

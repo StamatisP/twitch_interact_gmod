@@ -21,11 +21,12 @@ local KamikazeVar = false
 
 local ActionDuration = 15
 
+local _gamemode = GetConVar("gamemode"):GetString()
 
 /* HOOKS */
 hook.Add("Move", "Speedup or Slowdown", function(ply, mv)
-	if speedup or ply.Kamikaze then
-		local speed = mv:GetMaxSpeed() * 3
+	if speedup or ply.Kamikaze or ply.WhosWho then
+		local speed = mv:GetMaxSpeed() * 2.5
 		mv:SetMaxSpeed(speed)
 		mv:SetMaxClientSpeed(speed)
 	elseif slowdown then
@@ -64,6 +65,9 @@ hook.Add("EntityTakeDamage", "TGMTakeDamage", function(target, dmginfo)
 	end
 	if target:IsPlayer() and target.Kamikaze then
 		dmginfo:ScaleDamage(0.01)
+	end
+	if target:IsPlayer() and target.WhosWho then
+		dmginfo:ScaleDamage(0.0001)
 	end
 end)
 
@@ -518,7 +522,7 @@ function DoWeapons( player, t )
 end
 
 function SpawnPlayer(player)
-	if GetConVar("gamemode"):GetString() == "terrortown" then
+	if _gamemode == "terrortown" then
 		player:SpawnForRound(true)
 	else
 		player:Spawn()
@@ -884,7 +888,7 @@ local function Blindness()
 	print("blindness")
 	for k, v in ipairs(player.GetAll()) do
 		if not v:Alive() then continue end
-		v:ScreenFade(SCREENFADE.OUT, Color(0, 0, 0), 1, ActionDuration - 1)
+		v:ScreenFade(SCREENFADE.OUT, Color(0, 0, 0), 3, ActionDuration - 1)
 	end
 end
 
@@ -967,7 +971,7 @@ local function RainingBombs()
 				local plypos = v:GetPos()
 				grenade:SetPos(plypos + Vector(0, 0, 100))
 				grenade:Spawn()
-				grenade:Fire("SetTimer", 2.5, 0)
+				grenade:Fire("SetTimer", 3, 0)
 				//grenade:Fire("SetHealth", 9999, 0)
 				grenade:SetHealth(9999)
 			end
@@ -1069,6 +1073,7 @@ local function WhosWho()
 		local affected_plys = {}
 		for k, v in ipairs(plys) do
 			if v.WhosWho then
+				v.WhosWho = false
 				v.WhosWhoEnt:Remove()
 				v:Kill()
 				affected_plys[k] = v
@@ -1091,7 +1096,7 @@ local function ItsAMystery()
 end
 
 local function Earthquake()
-	util.ScreenShake(Vector(0, 0, 0), 15, 15, ActionDuration, 10000)
+	util.ScreenShake(Vector(0, 0, 0), 30, 30, ActionDuration, 10000)
 end
 
 local function Instakill()
@@ -1109,8 +1114,19 @@ local function Kamikaze()
 	KamikazeVar = true
 	local plys = GetAlivePlayers()
 	math.randomseed(os.time())
-	local randplayer = math.random(#plys)
-	local kamikazeplayer = plys[randplayer]
+	local kamikazeplayer
+	if _gamemode == "terrortown" then
+		local randplayer = math.random(#plys)
+		for k, v in RandomPairs(plys) do
+			if v:IsActiveTraitor() or v:IsActiveDetective() then
+				kamikazeplayer = v
+				break
+			end
+		end
+	else
+		local randplayer = math.random(#plys)
+		kamikazeplayer = plys[randplayer]
+	end
 	if not kamikazeplayer:Alive() then print("kamikaze is dead, rerunning") Kamikaze() end
 
 	GetPlayerInfoTGM(kamikazeplayer)
@@ -1130,6 +1146,7 @@ local function Kamikaze()
 	net.Send(kamikazeplayer)
 
 	timer.Simple(ActionDuration, function()
+		kamikazeplayer:Kill()
 		local alivePlayers = #GetAlivePlayers()
 		KamikazeVar = false
 		kamikazeplayer:StopSound("kamikaze_scream")
@@ -1181,7 +1198,7 @@ do
 	WSFunctions["masterfov"] = MasterFOV
 	WSFunctions["zawarudo"] = ZaWarudo
 	WSFunctions["invisiblewarfare"] = InvisibleWarfare
-	if GetConVar("gamemode"):GetString() != "terrortown" then
+	if _gamemode != "terrortown" then
 		WSFunctions["ragdolleveryone"] = RagdollEveryone // doesnt work in ttt
 	end
 	WSFunctions["speedup"] = SpeedUp

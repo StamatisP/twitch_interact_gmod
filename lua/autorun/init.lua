@@ -75,6 +75,7 @@ hook.Add("StartCommand", "FuckWithControls", function(ply, cmd)
 			//print(sidespeed)
 			cmd:SetSideMove(-sidespeed)
 		end
+		//cmd:SetMouseWheel(-cmd:GetMouseWheel())
 	end
 end)
 
