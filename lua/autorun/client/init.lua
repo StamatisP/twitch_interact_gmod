@@ -222,15 +222,15 @@ net.Receive("UpdateDerma", function()
 		maxVotes = maxVotes + v.value
 	end
 	if isDoubleVote then
-		label1:SetText2(PrettyFuncs[votes[1].name] .. " + " .. PrettyFuncs[votes[1].name2] .. " (!" .. votes[1].name .. ")")
-		label2:SetText2(PrettyFuncs[votes[2].name] .. " + " .. PrettyFuncs[votes[2].name2] .. " (!" .. votes[2].name .. ")")
-		label3:SetText2(PrettyFuncs[votes[3].name] .. " + " .. PrettyFuncs[votes[3].name2] .. " (!" .. votes[3].name .. ")")
-		label4:SetText2(PrettyFuncs[votes[4].name] .. " + " .. PrettyFuncs[votes[4].name2] .. " (!" .. votes[4].name .. ")")
+		label1:SetText2( (PrettyFuncs[votes[1].name] or votes[1].name) .. " + " .. (PrettyFuncs[votes[1].name2] or votes[1].name2) .. " (!" .. votes[1].name .. ")")
+		label2:SetText2( (PrettyFuncs[votes[2].name] or votes[2].name) .. " + " .. (PrettyFuncs[votes[2].name2] or votes[2].name2) .. " (!" .. votes[2].name .. ")")
+		label3:SetText2( (PrettyFuncs[votes[3].name] or votes[3].name) .. " + " .. (PrettyFuncs[votes[3].name2] or votes[3].name2) .. " (!" .. votes[3].name .. ")")
+		label4:SetText2( (PrettyFuncs[votes[4].name] or votes[4].name) .. " + " .. (PrettyFuncs[votes[4].name2] or votes[4].name2) .. " (!" .. votes[4].name .. ")")
 	else
-		label1:SetText2(PrettyFuncs[votes[1].name] .. " (!" .. votes[1].name .. ")")
-		label2:SetText2(PrettyFuncs[votes[2].name] .. " (!" .. votes[2].name .. ")")
-		label3:SetText2(PrettyFuncs[votes[3].name] .. " (!" .. votes[3].name .. ")")
-		label4:SetText2(PrettyFuncs[votes[4].name] .. " (!" .. votes[4].name .. ")")
+		label1:SetText2( (PrettyFuncs[votes[1].name] or votes[1].name) .. " (!" .. votes[1].name .. ")")
+		label2:SetText2( (PrettyFuncs[votes[2].name] or votes[2].name) .. " (!" .. votes[2].name .. ")")
+		label3:SetText2( (PrettyFuncs[votes[3].name] or votes[3].name) .. " (!" .. votes[3].name .. ")")
+		label4:SetText2( (PrettyFuncs[votes[4].name] or votes[4].name) .. " (!" .. votes[4].name .. ")")
 	end
 
 	progbar1:SetFraction(votes[1].value / maxVotes)

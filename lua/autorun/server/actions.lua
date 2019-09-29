@@ -80,6 +80,15 @@ hook.Add("SetupPlayerVisibility", "TGMVis", function(pPlayer, viewentity)
 	end
 end)
 
+local function GetAlivePlayers()
+	local alivePlayers = {}
+	for k, v in ipairs(player.GetAll()) do
+		if v:Alive() then table.insert(alivePlayers, v) end
+	end
+
+	return alivePlayers
+end
+
 /* ACTIONS */
 local function RandomizeViews()
 	print("randomizing views")
@@ -496,6 +505,7 @@ function DoWeapons( player, t )
 	for printname, data in pairs( t.data ) do
 		player:Give( printname )
 		local weapon = player:GetWeapon( printname )
+		if not weapon.SetClip1 or not weapon.SetClip2 then continue end
 		weapon:SetClip1( data.clip1 )
 		weapon:SetClip2( data.clip2 )
 		player:SetAmmo( data.ammo1, weapon:GetPrimaryAmmoType() )
@@ -508,8 +518,12 @@ function DoWeapons( player, t )
 end
 
 function SpawnPlayer(player)
-	player:Spawn()
-
+	if GetConVar("gamemode"):GetString() == "terrortown" then
+		player:SpawnForRound(true)
+	else
+		player:Spawn()
+	end
+	
 	if player.SpawnInfo then
 		local t = player.SpawnInfo
 		player:SetHealth( t.health )
@@ -1093,11 +1107,11 @@ end
 local function Kamikaze()
 	// one person is chosen as kamikaze, 15 seconds to blow someone up, must blow 3 people up to revive
 	KamikazeVar = true
-	local plys = player.GetAll()
+	local plys = GetAlivePlayers()
 	math.randomseed(os.time())
 	local randplayer = math.random(#plys)
 	local kamikazeplayer = plys[randplayer]
-	if not kamikazeplayer:Alive() then Kamikaze() end
+	if not kamikazeplayer:Alive() then print("kamikaze is dead, rerunning") Kamikaze() end
 
 	GetPlayerInfoTGM(kamikazeplayer)
 	kamikazeplayer.Kamikaze = true
@@ -1116,11 +1130,8 @@ local function Kamikaze()
 	net.Send(kamikazeplayer)
 
 	timer.Simple(ActionDuration, function()
-		local alivePlayers = 0
+		local alivePlayers = #GetAlivePlayers()
 		KamikazeVar = false
-		for k, v in ipairs(plys) do
-			if v:Alive() then alivePlayers = alivePlayers + 1 end
-		end
 		kamikazeplayer:StopSound("kamikaze_scream")
 		kamikazeplayer:StopSound("mario_screaming")
 		kamikazeplayer.Kamikaze = false
@@ -1138,10 +1149,7 @@ local function Kamikaze()
 		end
 
 		timer.Simple(0.1, function()
-			local alivePlayers2 = 0
-			for k, v in ipairs(plys) do
-				if v:Alive() then alivePlayers2 = alivePlayers2 + 1 end
-			end
+			local alivePlayers2 = #GetAlivePlayers()
 			if alivePlayers - alivePlayers2 >= #plys / 5 then
 				print(kamikazeplayer:Nick() .. " has succeeded and will be respawned!")
 				SpawnPlayer(kamikazeplayer)
@@ -1151,8 +1159,9 @@ local function Kamikaze()
 end
 
 local function MobaMode()
+	local plys = GetAlivePlayers()
 	net.Start("MobaMode")
-	net.Broadcast()
+	net.Send(plys)
 end
 
 /* UTILITY ACTIONS */
