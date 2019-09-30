@@ -70,7 +70,7 @@ hook.Add("EntityTakeDamage", "TGMTakeDamage", function(target, dmginfo)
 		dmginfo:ScaleDamage(0.1)
 	end
 	if target:IsPlayer() and target.WhosWho then
-		dmginfo:ScaleDamage(0.0001)
+		dmginfo:ScaleDamage(0)
 	end
 end)
 
@@ -1140,8 +1140,7 @@ local function Kamikaze()
 
 	timer.Create("KamikazeExplode", ActionDuration, 1, function()
 		if kamikazeplayer:Alive() then
-			kamikazeplayer:Kill()
-			local alivePlayers = #GetAlivePlayers()
+			local alivePlayers = #GetAlivePlayers() - 1
 
 			local explode = ents.Create("env_explosion")
 			if IsValid(explode) then
