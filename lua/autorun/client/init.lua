@@ -490,7 +490,7 @@ local function TGMCalcView(ply, pos, angles, fov)
 	elseif MobaMode then
 		local view = {}
 
-		view.origin = pos + Vector(0, 0, 256)
+		view.origin = pos + Vector(0, 0, 350)
 		view.angles = Angle(90, -180, 0)
 		view.drawviewer = true
 
@@ -577,12 +577,6 @@ net.Receive("Instakill", function()
 	end)
 end)
 
-/*hook.Add("PreDrawHalos", "KamikazeWallhacks", function()
-	if KamikazeVar then
-		halo.Add(player.GetAll(), Color(255, 0, 0), 0, 0, 2, true, true)
-	end
-end)*/
-
 net.Receive("Kamikaze", function()
 	local ply = net.ReadUInt(8)
 	ply = Player(ply)
@@ -597,6 +591,14 @@ net.Receive("Kamikaze", function()
 	timer.Simple(ActionDuration, function()
 		ply.Kamikaze = false
 	end)
+end)
+
+hook.Add("PostPlayerDraw", "DrawMobaLines", function(ply)
+	if not IsValid(ply) then return end
+	local eyetrace = ply:GetEyeTrace()
+	if MobaMode then
+		render.DrawLine(ply:GetShootPos(), eyetrace.HitPos, Color(255, 0, 0))
+	end
 end)
 
 net.Receive("MobaMode", function()
