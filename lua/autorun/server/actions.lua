@@ -17,7 +17,10 @@ local slowdown = false
 local oldPlyPos = oldPlyPos or {}
 local oldPlyView = oldPlyView or {}
 local bouncyJump = false
+
 local KamikazeVar = false
+local KamikazePlayer = nil
+local KamikazeMarker = nil
 
 local ActionDuration = 15
 
@@ -64,7 +67,7 @@ hook.Add("EntityTakeDamage", "TGMTakeDamage", function(target, dmginfo)
 		dmginfo:ScaleDamage(99999)
 	end
 	if target:IsPlayer() and target.Kamikaze then
-		dmginfo:ScaleDamage(0.01)
+		dmginfo:ScaleDamage(0.1)
 	end
 	if target:IsPlayer() and target.WhosWho then
 		dmginfo:ScaleDamage(0.0001)
@@ -78,9 +81,31 @@ local function AddAllPlayersToVis(tab)
 	end
 end
 
+local function HandleKamikazeDeath(ply, marker)
+	KamikazePlayer = nil
+	KamikazeMarker = nil
+	ply:StopSound("kamikaze_scream")
+	ply:StopSound("mario_screaming")
+	KamikazeVar = false
+	ply.Kamikaze = false
+	marker:Remove()
+	timer.Remove("KamikazeExplode")
+end
+
+hook.Add("PlayerDeath", "TGMPlayerDeath", function(victim, inflictor, attacker)
+	if victim == KamikazePlayer then
+		print("The Kamikaze has been slain!")
+		HandleKamikazeDeath(victim, KamikazeMarker)
+	end
+end)
+
 hook.Add("SetupPlayerVisibility", "TGMVis", function(pPlayer, viewentity)
-	if KamikazeVar and pPlayer.Kamikaze then
-		AddAllPlayersToVis(player.GetAll())
+	if KamikazeVar then
+		if pPlayer.Kamikaze then
+			AddAllPlayersToVis(player.GetAll())
+		else
+			AddOriginToPVS(KamikazePlayer:GetPos())
+		end
 	end
 end)
 
@@ -1091,6 +1116,7 @@ local function Kamikaze()
 		kamikazeplayer = plys[randplayer]
 	end
 	if not kamikazeplayer:Alive() then print("kamikaze is dead, rerunning") Kamikaze() end
+	KamikazePlayer = kamikazeplayer
 
 	GetPlayerInfoTGM(kamikazeplayer)
 	kamikazeplayer.Kamikaze = true
@@ -1105,36 +1131,38 @@ local function Kamikaze()
 		marker:SetParent(kamikazeplayer)
 		marker:Spawn()
 	end
+	KamikazeMarker = marker
+
+	local id = kamikazeplayer:UserID()
 	net.Start("Kamikaze")
-	net.Send(kamikazeplayer)
+		net.WriteUInt(id, 8)
+	net.Broadcast()
 
-	timer.Simple(ActionDuration, function()
-		kamikazeplayer:Kill()
-		local alivePlayers = #GetAlivePlayers()
-		KamikazeVar = false
-		kamikazeplayer:StopSound("kamikaze_scream")
-		kamikazeplayer:StopSound("mario_screaming")
-		kamikazeplayer.Kamikaze = false
-		marker:Remove()
+	timer.Create("KamikazeExplode", ActionDuration, 1, function()
+		if kamikazeplayer:Alive() then
+			kamikazeplayer:Kill()
+			local alivePlayers = #GetAlivePlayers()
 
-		local explode = ents.Create("env_explosion")
-		if IsValid(explode) then
-			explode:SetPos(kamikazeplayer:GetPos())
-			explode:SetOwner(kamikazeplayer)
-			explode:SetKeyValue("iMagnitude", "250")
-			explode:SetKeyValue("spawnflags", "144")
-			explode:Spawn()
-			explode:Fire("Explode", 0, 0)
-			explode:EmitSound("weapon_AWP.Single")
-		end
-
-		timer.Simple(0.1, function()
-			local alivePlayers2 = #GetAlivePlayers()
-			if alivePlayers - alivePlayers2 >= #plys / 5 then
-				print(kamikazeplayer:Nick() .. " has succeeded and will be respawned!")
-				SpawnPlayer(kamikazeplayer)
+			local explode = ents.Create("env_explosion")
+			if IsValid(explode) then
+				explode:SetPos(kamikazeplayer:GetPos())
+				explode:SetOwner(kamikazeplayer)
+				explode:SetKeyValue("iMagnitude", "250")
+				explode:SetKeyValue("spawnflags", "144")
+				explode:Spawn()
+				explode:Fire("Explode", 0, 0)
+				explode:EmitSound("weapon_AWP.Single")
 			end
-		end)
+
+			timer.Simple(0.1, function()
+				local alivePlayers2 = #GetAlivePlayers()
+				if alivePlayers - alivePlayers2 >= #plys / 5 then
+					print(kamikazeplayer:Nick() .. " has succeeded and will be respawned!")
+					SpawnPlayer(kamikazeplayer)
+				end
+			end)
+		end
+		HandleKamikazeDeath(kamikazeplayer, marker)
 	end)
 end
 
@@ -1142,6 +1170,18 @@ local function MobaMode()
 	local plys = GetAlivePlayers()
 	net.Start("MobaMode")
 	net.Send(plys)
+end
+
+local function ReviveEveryone()
+	for k, v in ipairs(player.GetAll()) do
+		if not v:Alive() then
+			if _gamemode == "terrortown" then
+				v:SpawnForRound(true)
+			else
+				v:Spawn()
+			end
+		end
+	end
 end
 
 /* UTILITY ACTIONS */
@@ -1191,6 +1231,7 @@ do
 	WSFunctions["instakill"] = Instakill
 	WSFunctions["kamikaze"] = Kamikaze
 	WSFunctions["mobamode"] = MobaMode
+	WSFunctions["reviveeveryone"] = ReviveEveryone
 end
 //WSFunctions["backseatgaming"] = BackseatGaming
 //WSFunctions["speedtime"] = SpeedTime

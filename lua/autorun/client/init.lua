@@ -1,6 +1,7 @@
 print("client load!")
 
 CreateClientConVar("tgm_chat", "0", true, true, "If you get Twitch chat printed to your chat.")
+local bombmat = Material("icon16/bomb.png")
 
 local voting_time = false
 local isDoubleVote = false
@@ -583,10 +584,18 @@ end)
 end)*/
 
 net.Receive("Kamikaze", function()
-	KamikazeVar = true
-	LocalPlayer():ChatPrint("You are the Kamikaze! Kill " .. #player.GetAll() / 5 .." or more players and you will be revived!")
+	local ply = net.ReadUInt(8)
+	ply = Player(ply)
+	ply.Kamikaze = true
+	if ply == LocalPlayer() then
+		KamikazeVar = true
+		LocalPlayer():ChatPrint("You are the Kamikaze! Kill " .. math.Clamp(#player.GetAll() / 5, 1, 200) .." or more players and you will be revived!")
+		timer.Simple(ActionDuration, function()
+			KamikazeVar = false
+		end)
+	end
 	timer.Simple(ActionDuration, function()
-		KamikazeVar = false
+		ply.Kamikaze = false
 	end)
 end)
 
@@ -595,4 +604,19 @@ net.Receive("MobaMode", function()
 	timer.Simple(ActionDuration, function()
 		MobaMode = false
 	end)
+end)
+
+hook.Add("PostDrawTranslucentRenderables", "KamikazeBomb", function(bDepth, bSkybox)
+	for k, v in ipairs(player.GetAll()) do
+		if v.Kamikaze then
+			render.SetMaterial(bombmat)
+			local dir = LocalPlayer():GetForward() * -1
+			local pos = v:GetPos()
+			pos.z = pos.z + 128
+
+			cam.IgnoreZ(true)
+			render.DrawQuadEasy(pos, dir, 64, 64, Color(255, 255, 255, 255), 180)
+			cam.IgnoreZ(false)
+		end
+	end
 end)
