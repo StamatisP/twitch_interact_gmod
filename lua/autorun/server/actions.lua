@@ -1112,19 +1112,22 @@ local function Kamikaze()
 			end
 		end
 	else
-		local randplayer = math.random(#plys)
-		kamikazeplayer = plys[randplayer]
+		for k, v in RandomPairs(plys) do
+			if v:Alive() then kamikazeplayer = v break end
+		end
 	end
-	if not kamikazeplayer:Alive() then print("kamikaze is dead, rerunning") Kamikaze() end
+	if not kamikazeplayer:Alive() then print("kamikaze is dead, rerunning") Kamikaze() end // failsafe
 	KamikazePlayer = kamikazeplayer
 
 	GetPlayerInfoTGM(kamikazeplayer)
 	kamikazeplayer.Kamikaze = true
+
 	if GetGlobalInt("ActionCounter") % 10 == 0 then
 		kamikazeplayer:EmitSound("mario_screaming")
 	else
 		kamikazeplayer:EmitSound("kamikaze_scream")
 	end
+
 	local marker = ents.Create("tgm_kamikazemarker")
 	if IsValid(marker) then
 		marker:SetPos(kamikazeplayer:GetPos() + Vector(0, 0, 16))
@@ -1161,6 +1164,7 @@ local function Kamikaze()
 				end
 			end)
 		end
+
 		HandleKamikazeDeath(kamikazeplayer, marker)
 	end)
 end
