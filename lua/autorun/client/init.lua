@@ -22,7 +22,7 @@ local Boss_CurrentMusic
 local LoadedSounds = {}
 
 local votes = {}
-local ActionDuration = 15
+ActionDuration = ActionDuration or 15
 local actionTime = actionTime or 0
 local timeText
 
@@ -638,18 +638,6 @@ net.Receive("MobaMode", function()
 		MobaMode = false
 	end)
 end)
-
-local last_rand
-function GetPseudoRandomNumber(max_num)
-	math.randomseed(os.time())
-	local rand = math.random(max_num)
-	while last_rand == rand do
-		rand = math.random(max_num)
-	end
-	last_rand = rand
-
-	return rand
-end
 
 local function TestSoundDuration()
 	for k, v in pairs(boss_music) do

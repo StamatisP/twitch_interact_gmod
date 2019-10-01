@@ -20,8 +20,7 @@ local bouncyJump = false
 local KamikazeVar = false
 local KamikazePlayer = nil
 local KamikazeMarker = nil
-
-local ActionDuration = 15
+ActionDuration = ActionDuration or 15
 
 local _gamemode = GetConVar("gamemode"):GetString()
 
@@ -103,17 +102,28 @@ local function HandleKamikazeDeath(ply, marker)
 	timer.Remove("KamikazeExplode")
 end
 
+function GetBossPlayers()
+	local bosses = {}
+	for k, v in ipairs(GetAlivePlayers()) do
+		if v.IsBoss then table.insert(bosses, v) end
+	end
+
+	return bosses
+end
+
 hook.Add("PlayerDeath", "TGMPlayerDeath", function(victim, inflictor, attacker)
 	if victim == KamikazePlayer then
 		print("The Kamikaze has been slain!")
 		HandleKamikazeDeath(victim, KamikazeMarker)
 	end
 	if victim.IsBoss then
-		PrintMessage(HUD_PRINTTALK, "The Boss has been slain!")
 		victim.IsBoss = false
-		net.Start("BossMode")
-			net.WriteBool(false)
-		net.Broadcast()
+		PrintMessage(HUD_PRINTTALK, "The Boss " .. victim:Nick() .. " has been slain!")
+		if #GetBossPlayers() == 0 then
+			net.Start("BossMode")
+				net.WriteBool(false)
+			net.Broadcast()
+		end
 	end
 end)
 
@@ -1188,13 +1198,14 @@ end
 local function BossMode()
 	// one person is chosen as The Boss, in TTT they would be the only Traitor in a game of Innocents
 	// the damage done to the boss should scale with the amount of players, 1 player = 100% damage, 5 = 20%
-	net.Start("BossMode")
-		net.WriteBool(true)
-	net.Broadcast()
+	if #GetBossPlayers() == 0 then
+		net.Start("BossMode")
+			net.WriteBool(true)
+		net.Broadcast()
+	end
 	local plys = GetAlivePlayers()
-	math.randomseed(os.time())
-	local boss = plys[math.random(#plys)]
-	print(boss:Nick() .. " is the boss!")
+	local boss = plys[GetPseudoRandomNumber(#plys)]
+	if boss.IsBoss then BossMode() return end
 	boss.IsBoss = true
 	if _gamemode == "terrortown" then
 		local _innocent = 0
@@ -1216,6 +1227,11 @@ local function BossMode()
 	end
 	boss:SetHealth(150)
 	PrintMessage(HUD_PRINTTALK, boss:Nick() .. " is the Boss! Kill them quickly!")
+	if GetGlobalInt("ActionCounter", 1) % 10 == 0 then
+		PrintMessage(HUD_PRINTTALK, "DOUBLE BOSS!")
+		IncrementActionCounter()
+		BossMode()
+	end
 end
 
 /* UTILITY ACTIONS */

@@ -1,7 +1,7 @@
 print("shared file")
 local controlsReversed = false
 
-local ActionDuration = 15 // CHANGE THIS IN ACTIONS TOO
+ActionDuration = 15 // CHANGE THIS IN ACTIONS TOO
 
 do
 	for k, v in pairs(file.Find("sound/*", "THIRDPARTY")) do
@@ -129,3 +129,15 @@ net.Receive("AntFight", function()
 	local scale = net.ReadFloat()
 	hook.Run("AntFight", scale)
 end)
+
+local last_rand
+function GetPseudoRandomNumber(max_num)
+	math.randomseed(os.time())
+	local rand = math.random(max_num)
+	while last_rand == rand do
+		rand = math.random(max_num)
+	end
+	last_rand = rand
+
+	return rand
+end
