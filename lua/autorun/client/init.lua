@@ -17,6 +17,7 @@ local ThirdPerson = false
 local WhosWho = false
 local KamikazeVar = false
 local MobaMode = false
+local Boss_CurrentMusic
 
 local LoadedSounds = {}
 
@@ -121,6 +122,15 @@ surface.CreateFont( "FuncTitle", {
 	additive = false,
 	outline = false,
 })
+
+local last_boss_music
+local boss_music = {
+	[1] = {song = "music/hl1_song10.mp3", duration = 104},
+	[2] = {song = "music/hl2_song12_long.mp3", duration = 74},
+	[3] = {song = "music/hl2_song14.mp3", duration = 159},
+	[4] = {song = "music/hl2_song29.mp3", duration = 135},
+	[5] = {song ="music/hl2_song20_submix4.mp3", duration = 139}
+}
 
 /* HOOKS */
 
@@ -627,4 +637,52 @@ net.Receive("MobaMode", function()
 	timer.Simple(ActionDuration, function()
 		MobaMode = false
 	end)
+end)
+
+local last_rand
+function GetPseudoRandomNumber(max_num)
+	math.randomseed(os.time())
+	local rand = math.random(max_num)
+	while last_rand == rand do
+		rand = math.random(max_num)
+	end
+
+	return rand
+end
+
+local function TestSoundDuration()
+	for k, v in pairs(boss_music) do
+		print("Sound: ".. v.song)
+		print("Actual duration: ".. v.duration)
+		print("SoundDuration result: ".. SoundDuration(v.song))
+	end
+	print("Sound: paranoia_loop_1.wav")
+	print("Actual duration: 5")
+	print("SoundDuration result: " .. SoundDuration("paranoia_loop_1.wav"))
+end
+
+local function PlayBossMusic()
+	local music_duration = 1
+	if timer.Exists("BossMusic") then timer.Remove("BossMusic") end
+	timer.Create("BossMusic", music_duration, 0, function()
+		print("boss music change")
+		math.randomseed(os.time())
+		Boss_CurrentMusic = boss_music[GetPseudoRandomNumber(#boss_music)]
+		last_boss_music = Boss_CurrentMusic
+		PrintTable(Boss_CurrentMusic)
+		LocalPlayer():EmitSound(Boss_CurrentMusic.song, 0, 100, 0.8, CHAN_AUTO)
+		music_duration = Boss_CurrentMusic.duration
+		timer.Adjust("BossMusic", music_duration)
+	end)
+end
+//TestSoundDuration()
+
+net.Receive("BossMode", function()
+	local bool = net.ReadBool()
+	print("do this be runnin")
+	if bool then
+		PlayBossMusic()
+	else
+		LocalPlayer():StopSound(Boss_CurrentMusic.song)
+	end
 end)

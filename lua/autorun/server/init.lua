@@ -1,4 +1,4 @@
-if game.SinglePlayer() then Error("this cant be run in singleplayer!!") end
+if game.SinglePlayer() then ErrorNoHalt("Twitch Interaction cant be run in singleplayer!") end
 
 require("gwsockets")
 //include("actions.lua")
@@ -35,12 +35,13 @@ util.AddNetworkString("ItsAMystery")
 util.AddNetworkString("Instakill")
 util.AddNetworkString("Kamikaze")
 util.AddNetworkString("MobaMode")
+util.AddNetworkString("BossMode")
 
 do // add files here precache in shared init.lua
-	for k, v in pairs(file.Find("sound/*", "GAME")) do
+	for k, v in pairs(file.Find("sound/*", "THIRDPARTY")) do
 		resource.AddFile("sound/" .. v)
 	end
-	resource.AddFile("materials/overlays/vignette01")
+	resource.AddFile("materials/overlays/vignette01.vmt")
 end
 
 CreateConVar("tgm_url", "ws://localhost:8765", FCVAR_ARCHIVE + FCVAR_PROTECTED, "The URL pointing to your websocket. example (ws://localhost:8765)")

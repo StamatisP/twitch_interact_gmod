@@ -23,7 +23,7 @@ SWEP.PrintName = "Minigun"
 SWEP.UseHands = true
 
 if CLIENT then
-	killicon.Add("weapon_mini_gun_v3", "HUD/killicons/minigun_swep", Color( 255, 80, 0, 255 ));
+	killicon.Add("weapon_mini_gun_v3", "hud/killicons/minigun_swep", Color( 255, 80, 0, 255 ));
 end
 
 function SWEP:Deploy()

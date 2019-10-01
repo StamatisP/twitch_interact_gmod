@@ -1,5 +1,4 @@
 WSFunctions = WSFunctions or {}
-local votes = {}
 local votable_funcs = {}
 voting_time = false
 local vote_length = 15
@@ -112,7 +111,9 @@ hook.Add("PlayerDeath", "TGMPlayerDeath", function(victim, inflictor, attacker)
 	if victim.IsBoss then
 		print("The Boss has been slain!")
 		victim.IsBoss = false
-		victim:StopSound("boss_music")
+		net.Start("BossMode")
+			net.WriteBool(false)
+		net.Broadcast()
 	end
 end)
 
@@ -641,17 +642,8 @@ end
 local function SlowDown()
 	print("slowing down!")
 	slowdown = true
-	local plys = GetAlivePlayers()
-	/*for k, v in ipairs(plys) do
-		v:SetWalkSpeed(50)
-		v:SetRunSpeed(125)
-	end*/
 	timer.Simple(ActionDuration, function()
 		slowdown = false
-		/*for k, v in ipairs(plys) do
-			v:SetWalkSpeed(250)
-			v:SetRunSpeed(500)
-		end*/
 	end)
 end
 
@@ -1120,9 +1112,7 @@ local function Kamikaze()
 			end
 		end
 	else
-		for k, v in RandomPairs(plys) do
-			if v:Alive() then kamikazeplayer = v break end
-		end
+		kamikazeplayer = plys[math.random(#plys)]
 	end
 	if not kamikazeplayer:Alive() then print("kamikaze is dead, rerunning") Kamikaze() end // failsafe
 	KamikazePlayer = kamikazeplayer
@@ -1198,6 +1188,9 @@ end
 local function BossMode()
 	// one person is chosen as The Boss, in TTT they would be the only Traitor in a game of Innocents
 	// the damage done to the boss should scale with the amount of players, 1 player = 100% damage, 5 = 20%
+	net.Start("BossMode")
+		net.WriteBool(true)
+	net.Broadcast()
 	local plys = GetAlivePlayers()
 	math.randomseed(os.time())
 	local boss = plys[math.random(#plys)]
@@ -1219,9 +1212,9 @@ local function BossMode()
 		boss:StripAll()
 		boss:Give("tgm_bossminigun_ttt")
 	else
+		boss:StripWeapons()
 		boss:Give("tgm_bossminigun")
 	end
-	boss:EmitSound("boss_music")
 	PrintMessage(HUD_PRINTTALK, boss:Nick() .. " is the Boss! Kill them quickly!")
 end
 

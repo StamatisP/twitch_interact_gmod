@@ -4,7 +4,7 @@ local controlsReversed = false
 local ActionDuration = 15 // CHANGE THIS IN ACTIONS TOO
 
 do
-	for k, v in pairs(file.Find("sound/*", "GAME")) do
+	for k, v in pairs(file.Find("sound/*", "THIRDPARTY")) do
 		util.PrecacheSound(v)
 	end
 end
