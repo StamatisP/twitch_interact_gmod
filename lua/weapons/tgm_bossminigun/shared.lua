@@ -32,7 +32,7 @@ function SWEP:Deploy()
       return true
 end
 
-SWEP.Primary.NumberofShots = 10
+SWEP.Primary.NumberofShots = 12
 SWEP.Primary.Ammo = "none"
 SWEP.Primary.Spread = 1
 SWEP.Primary.ClipSize = -1
@@ -114,7 +114,6 @@ sound.Add({
 })
 
 function SWEP:Think()
-
 	self:SetWeaponHoldType( self.HoldType )
 
 	if 	self.Owner:KeyPressed(IN_ATTACK) then 
@@ -149,7 +148,6 @@ function SWEP:Initialize()
 end
 
 function SWEP:PrimaryAttack()
-
 	randompitch = math.Rand(90, 130)
 	
 	local bullet = {}

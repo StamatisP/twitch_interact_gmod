@@ -120,7 +120,6 @@ sound.Add({
 })
 
 function SWEP:Think()
-
 	self:SetWeaponHoldType( self.HoldType )
 
 	if 	self.Owner:KeyPressed(IN_ATTACK) then 
@@ -155,7 +154,6 @@ function SWEP:Initialize()
 end
 
 function SWEP:PrimaryAttack()
-
 	randompitch = math.Rand(90, 130)
 	
 	local bullet = {}
