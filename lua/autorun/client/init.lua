@@ -2,6 +2,7 @@ print("client load!")
 
 CreateClientConVar("tgm_chat", "0", true, true, "If you get Twitch chat printed to your chat.")
 local bombmat = Material("icon16/bomb.png")
+local wMat = Material("models/debug/debugwhite")
 
 local voting_time = false
 local isDoubleVote = false
@@ -24,6 +25,11 @@ local ActionDuration = 15
 local actionTime = actionTime or 0
 local timeText
 
+local f
+local label1, label2, label3, label4
+local progbar1, progbar2, progbar3, progbar4
+
+/* COLOR MODIFY TABS */
 local deepfryTab = {
 	[ "$pp_colour_addr" ] = 0,
 	[ "$pp_colour_addg" ] = 0,
@@ -80,10 +86,6 @@ local kamikazeTab = {
 	[ "$pp_colour_mulb" ] = 0
 }
 
-local f
-local label1, label2, label3, label4
-local progbar1, progbar2, progbar3, progbar4
-
 local TwitchColors = {
 	Color(255, 0, 0),
 	Color(0, 0, 255),
@@ -120,13 +122,46 @@ surface.CreateFont( "FuncTitle", {
 	outline = false,
 })
 
-net.Receive("PrintTwitchChat", function()
-	local user = net.ReadString()
-	local message = net.ReadString()
-	local capped_user = string.gsub(user, "^%l", string.upper)
-	math.randomseed(string.byte(user))
-	chat.AddText(Color(140, 105, 204), "[", TwitchColors[math.random(#TwitchColors)], capped_user .. ": ", Color(255, 255, 255), message, Color(140, 105, 204), "]")
-end)
+/* HOOKS */
+
+local function TGMRender()
+	if ScreenFuck then
+		//print("please")
+		DrawColorModify(deepfryTab)
+		DrawSobel(0.5)
+		DrawSharpen(3, 3)
+	elseif SilentHill then
+		DrawColorModify(silenthillTab)
+		DrawMaterialOverlay( "overlays/vignette01", 1 )
+	elseif Paranoia then
+		DrawColorModify(paranoiaTab)
+		DrawSharpen(1.3, 1.3)
+		DrawMaterialOverlay( "overlays/vignette01", 1 )
+	elseif WhosWho then
+		DrawColorModify(whoswhoTab)
+		DrawMaterialOverlay("overlays/vignette01", 1)
+	elseif KamikazeVar then
+		DrawColorModify(kamikazeTab)
+		DrawMaterialOverlay("overlays/vignette01", 1)
+		cam.Start3D()
+			cam.IgnoreZ(true)
+			render.SuppressEngineLighting(true)
+
+			for k, v in pairs(player.GetAll()) do
+				if v == LocalPlayer() or not v:Alive() then continue end
+
+				render.MaterialOverride(wMat)
+				render.SetColorModulation(1, 0, 0)
+				v:DrawModel()
+			end
+
+			cam.IgnoreZ(false)
+			render.SuppressEngineLighting(false)
+		cam.End3D()
+	end
+end
+
+hook.Add("RenderScreenspaceEffects", "TGMRender", TGMRender)
 
 hook.Add("OnPlayerChat", "check_tgm_chat", function(ply, text, teamchat, isdead)
 	if text == "!chat" then
@@ -141,6 +176,115 @@ hook.Add("OnPlayerChat", "check_tgm_chat", function(ply, text, teamchat, isdead)
 		return true
 	end
 end)
+
+function SetupWorldFog()
+	if SilentHill then
+		//print("world fog")
+		render.FogMode( MATERIAL_FOG_LINEAR )
+		render.FogStart( 0 )
+		render.FogEnd( Fog_End )
+		render.FogMaxDensity( Fog_Density )
+		render.FogColor( 0.98 * 255, 0.98 * 255, 0.98 * 255)
+
+		//return true
+	elseif Paranoia then
+		render.FogMode( MATERIAL_FOG_LINEAR )
+		render.FogStart( 0 )
+		render.FogEnd( Fog_End )
+		render.FogMaxDensity( Fog_Density )
+		render.FogColor( 0, 0, 0)
+
+		//return true
+	else
+		render.FogMode( MATERIAL_FOG_LINEAR )
+		render.FogStart( 0 )
+		render.FogEnd( Fog_End )
+		render.FogMaxDensity( Fog_Density )
+		render.FogColor( 0.6 * 255, 0.7 * 255, 0.8 * 255)
+
+		//return true
+	end
+	return true
+end
+
+function SetupSkyFog( skyboxscale )
+	if SilentHill then
+		//print("skybox fog")
+		render.FogMode( MATERIAL_FOG_LINEAR )
+		render.FogStart( 0 * skyboxscale )
+		render.FogEnd( Fog_End * skyboxscale )
+		render.FogMaxDensity( Fog_Density )
+		render.FogColor( 0.98 * 255, 0.98 * 255, 0.98 * 255)
+
+		//return true
+	elseif Paranoia then
+		render.FogMode( MATERIAL_FOG_LINEAR )
+		render.FogStart( 0 * skyboxscale )
+		render.FogEnd( Fog_End * skyboxscale )
+		render.FogMaxDensity( Fog_Density )
+		render.FogColor( 0, 0, 0)
+
+		//return true
+	else
+		render.FogMode( MATERIAL_FOG_LINEAR )
+		render.FogStart( 0 * skyboxscale )
+		render.FogEnd( Fog_End * skyboxscale )
+		render.FogMaxDensity( Fog_Density )
+		render.FogColor( 0.6 * 255, 0.7 * 255, 0.8 * 255)
+
+		//return true
+	end
+	return true
+end
+
+hook.Add( "SetupWorldFog", "worldfog", SetupWorldFog )
+hook.Add( "SetupSkyboxFog", "skyboxfog", SetupSkyFog )
+
+local function TGMCalcView(ply, pos, angles, fov)
+	if ThirdPerson then
+		local view = {}
+
+		view.origin = pos - (angles:Forward() * 100)
+		view.drawviewer = true
+
+		return view
+	elseif MobaMode then
+		local view = {}
+
+		view.origin = pos + Vector(0, 0, 350)
+		view.angles = Angle(90, -180, 0)
+		view.drawviewer = true
+
+		return view
+	end
+end
+
+hook.Add("CalcView", "TGMCalcView", TGMCalcView)
+
+hook.Add("PostDrawTranslucentRenderables", "KamikazeBomb", function(bDepth, bSkybox)
+	for k, v in ipairs(player.GetAll()) do
+		if v.Kamikaze then
+			render.SetMaterial(bombmat)
+			local dir = LocalPlayer():GetForward() * -1
+			local pos = v:GetPos()
+			pos.z = pos.z + 128
+
+			cam.IgnoreZ(true)
+			render.DrawQuadEasy(pos, dir, 64, 64, Color(255, 255, 255, 255), 180)
+			cam.IgnoreZ(false)
+		end
+	end
+end)
+
+hook.Add("PostPlayerDraw", "DrawMobaLines", function(ply)
+	if not IsValid(ply) then return end
+	local eyetrace = ply:GetEyeTrace()
+	if MobaMode then
+		render.DrawLine(ply:GetShootPos(), eyetrace.HitPos, Color(255, 0, 0))
+	end
+end)
+
+/* VOTING */
 
 local FuncLabel = {}
 function FuncLabel:Init()
@@ -256,6 +400,8 @@ net.Receive("EndVoting", function()
 	f:Close()
 end)
 
+/* NET RECEIVES */
+
 net.Receive("FuckWithScreen", function()
 	ScreenFuck = true
 	print("this be runnin")
@@ -264,116 +410,20 @@ net.Receive("FuckWithScreen", function()
 	end)
 end)
 
+net.Receive("PrintTwitchChat", function()
+	local user = net.ReadString()
+	local message = net.ReadString()
+	local capped_user = string.gsub(user, "^%l", string.upper)
+	math.randomseed(string.byte(user))
+	chat.AddText(Color(140, 105, 204), "[", TwitchColors[math.random(#TwitchColors)], capped_user .. ": ", Color(255, 255, 255), message, Color(140, 105, 204), "]")
+end)
+
 net.Receive("the_world_time_stop.PlaySound", function()
     surface.PlaySound("the_world_time_stop.mp3")
 end)
 net.Receive("the_world_time_start.PlaySound", function()
     surface.PlaySound("the_world_time_start.mp3")
-end)
-
-local wMat = Material("models/debug/debugwhite")	
-
-local function TGMRender()
-	if ScreenFuck then
-		//print("please")
-		DrawColorModify(deepfryTab)
-		DrawSobel(0.5)
-		DrawSharpen(3, 3)
-	elseif SilentHill then
-		DrawColorModify(silenthillTab)
-		DrawMaterialOverlay( "overlays/vignette01", 1 )
-	elseif Paranoia then
-		DrawColorModify(paranoiaTab)
-		DrawSharpen(1.3, 1.3)
-		DrawMaterialOverlay( "overlays/vignette01", 1 )
-	elseif WhosWho then
-		DrawColorModify(whoswhoTab)
-		DrawMaterialOverlay("overlays/vignette01", 1)
-	elseif KamikazeVar then
-		DrawColorModify(kamikazeTab)
-		DrawMaterialOverlay("overlays/vignette01", 1)
-		cam.Start3D()
-			cam.IgnoreZ(true)
-			render.SuppressEngineLighting(true)
-
-			for k, v in pairs(player.GetAll()) do
-				if v == LocalPlayer() or not v:Alive() then continue end
-
-				render.MaterialOverride(wMat)
-				render.SetColorModulation(1, 0, 0)
-				v:DrawModel()
-			end
-
-			cam.IgnoreZ(false)
-			render.SuppressEngineLighting(false)
-		cam.End3D()
-	end
-end
-
-hook.Add("RenderScreenspaceEffects", "TGMRender", TGMRender)
-
-function SetupWorldFog()
-	if SilentHill then
-		//print("world fog")
-		render.FogMode( MATERIAL_FOG_LINEAR )
-		render.FogStart( 0 )
-		render.FogEnd( Fog_End )
-		render.FogMaxDensity( Fog_Density )
-		render.FogColor( 0.98 * 255, 0.98 * 255, 0.98 * 255)
-
-		//return true
-	elseif Paranoia then
-		render.FogMode( MATERIAL_FOG_LINEAR )
-		render.FogStart( 0 )
-		render.FogEnd( Fog_End )
-		render.FogMaxDensity( Fog_Density )
-		render.FogColor( 0, 0, 0)
-
-		//return true
-	else
-		render.FogMode( MATERIAL_FOG_LINEAR )
-		render.FogStart( 0 )
-		render.FogEnd( Fog_End )
-		render.FogMaxDensity( Fog_Density )
-		render.FogColor( 0.6 * 255, 0.7 * 255, 0.8 * 255)
-
-		//return true
-	end
-	return true
-end
-
-function SetupSkyFog( skyboxscale )
-	if SilentHill then
-		//print("skybox fog")
-		render.FogMode( MATERIAL_FOG_LINEAR )
-		render.FogStart( 0 * skyboxscale )
-		render.FogEnd( Fog_End * skyboxscale )
-		render.FogMaxDensity( Fog_Density )
-		render.FogColor( 0.98 * 255, 0.98 * 255, 0.98 * 255)
-
-		//return true
-	elseif Paranoia then
-		render.FogMode( MATERIAL_FOG_LINEAR )
-		render.FogStart( 0 * skyboxscale )
-		render.FogEnd( Fog_End * skyboxscale )
-		render.FogMaxDensity( Fog_Density )
-		render.FogColor( 0, 0, 0)
-
-		//return true
-	else
-		render.FogMode( MATERIAL_FOG_LINEAR )
-		render.FogStart( 0 * skyboxscale )
-		render.FogEnd( Fog_End * skyboxscale )
-		render.FogMaxDensity( Fog_Density )
-		render.FogColor( 0.6 * 255, 0.7 * 255, 0.8 * 255)
-
-		//return true
-	end
-	return true
-end
-
-hook.Add( "SetupWorldFog", "worldfog", SetupWorldFog )
-hook.Add( "SetupSkyboxFog", "skyboxfog", SetupSkyFog )
+end)	
 
 local function PlayLoopingSound(soundname)
 	local sound
@@ -479,27 +529,6 @@ net.Receive("Paranoia", function()
 	end)
 end)
 
-local function TGMCalcView(ply, pos, angles, fov)
-	if ThirdPerson then
-		local view = {}
-
-		view.origin = pos - (angles:Forward() * 100)
-		view.drawviewer = true
-
-		return view
-	elseif MobaMode then
-		local view = {}
-
-		view.origin = pos + Vector(0, 0, 350)
-		view.angles = Angle(90, -180, 0)
-		view.drawviewer = true
-
-		return view
-	end
-end
-
-hook.Add("CalcView", "TGMCalcView", TGMCalcView)
-
 net.Receive("Thirdperson", function()
 	local bool = net.ReadBool()
 	ThirdPerson = bool
@@ -593,32 +622,9 @@ net.Receive("Kamikaze", function()
 	end)
 end)
 
-hook.Add("PostPlayerDraw", "DrawMobaLines", function(ply)
-	if not IsValid(ply) then return end
-	local eyetrace = ply:GetEyeTrace()
-	if MobaMode then
-		render.DrawLine(ply:GetShootPos(), eyetrace.HitPos, Color(255, 0, 0))
-	end
-end)
-
 net.Receive("MobaMode", function()
 	MobaMode = true
 	timer.Simple(ActionDuration, function()
 		MobaMode = false
 	end)
-end)
-
-hook.Add("PostDrawTranslucentRenderables", "KamikazeBomb", function(bDepth, bSkybox)
-	for k, v in ipairs(player.GetAll()) do
-		if v.Kamikaze then
-			render.SetMaterial(bombmat)
-			local dir = LocalPlayer():GetForward() * -1
-			local pos = v:GetPos()
-			pos.z = pos.z + 128
-
-			cam.IgnoreZ(true)
-			render.DrawQuadEasy(pos, dir, 64, 64, Color(255, 255, 255, 255), 180)
-			cam.IgnoreZ(false)
-		end
-	end
 end)

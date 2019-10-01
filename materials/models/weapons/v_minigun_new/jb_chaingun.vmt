@@ -1,0 +1,12 @@
+"VertexLitGeneric"
+{
+	"$basetexture"	"models\Weapons\V_minigun_new\jb_chaingun"	
+	"$bumpmap" "models\Weapons\V_minigun_new\jb_chaingun_normal"
+
+	"$phong" "1"
+	"$phongexponent" "3"
+	"$phongboost" ".8"	
+	"$lightwarptexture" "dev/identitylightwarp"
+	"$phongfresnelranges"	"[2 0 2]"
+	"$basemapalphaphongmask" "1"
+}

@@ -48,7 +48,8 @@ PrettyFuncs = {
 	["kamikaze"] = "Kamikaze",
 	["mobamode"] = "MOBA Mode",
 	["instakill"] = "Instakill",
-	["reviveeveryone"] = "Revive Everyone"
+	["reviveeveryone"] = "Revive Everyone",
+	["bossmode"] = "Boss Mode"
 }
 
 function IncrementActionCounter()

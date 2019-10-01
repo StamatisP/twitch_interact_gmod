@@ -28,7 +28,7 @@ local _gamemode = GetConVar("gamemode"):GetString()
 
 /* HOOKS */
 hook.Add("Move", "Speedup or Slowdown", function(ply, mv)
-	if speedup or ply.Kamikaze or ply.WhosWho then
+	if speedup or ply.Kamikaze or ply.WhosWho or ply.IsBoss then
 		local speed = mv:GetMaxSpeed() * 2.5
 		mv:SetMaxSpeed(speed)
 		mv:SetMaxClientSpeed(speed)
@@ -62,6 +62,15 @@ end
 
 hook.Add("PlayerCanHearPlayersVoice", "ParanoiaDisableVoice", TGMCalcHear)
 
+local function GetAlivePlayers()
+	local alivePlayers = {}
+	for k, v in ipairs(player.GetAll()) do
+		if v:Alive() then table.insert(alivePlayers, v) end
+	end
+
+	return alivePlayers
+end
+
 hook.Add("EntityTakeDamage", "TGMTakeDamage", function(target, dmginfo)
 	if target:IsPlayer() and InstakillVar then
 		dmginfo:ScaleDamage(99999)
@@ -71,6 +80,9 @@ hook.Add("EntityTakeDamage", "TGMTakeDamage", function(target, dmginfo)
 	end
 	if target:IsPlayer() and target.WhosWho then
 		dmginfo:ScaleDamage(0)
+	end
+	if target:IsPlayer() and target.IsBoss then
+		dmginfo:ScaleDamage(1 / #GetAlivePlayers())
 	end
 end)
 
@@ -97,6 +109,11 @@ hook.Add("PlayerDeath", "TGMPlayerDeath", function(victim, inflictor, attacker)
 		print("The Kamikaze has been slain!")
 		HandleKamikazeDeath(victim, KamikazeMarker)
 	end
+	if victim.IsBoss then
+		print("The Boss has been slain!")
+		victim.IsBoss = false
+		victim:StopSound("boss_music")
+	end
 end)
 
 hook.Add("SetupPlayerVisibility", "TGMVis", function(pPlayer, viewentity)
@@ -108,15 +125,6 @@ hook.Add("SetupPlayerVisibility", "TGMVis", function(pPlayer, viewentity)
 		end
 	end
 end)
-
-local function GetAlivePlayers()
-	local alivePlayers = {}
-	for k, v in ipairs(player.GetAll()) do
-		if v:Alive() then table.insert(alivePlayers, v) end
-	end
-
-	return alivePlayers
-end
 
 /* ACTIONS */
 local function RandomizeViews()
@@ -1187,6 +1195,36 @@ local function ReviveEveryone()
 	end
 end
 
+local function BossMode()
+	// one person is chosen as The Boss, in TTT they would be the only Traitor in a game of Innocents
+	// the damage done to the boss should scale with the amount of players, 1 player = 100% damage, 5 = 20%
+	local plys = GetAlivePlayers()
+	math.randomseed(os.time())
+	local boss = plys[math.random(#plys)]
+	print(boss:Nick() .. " is the boss!")
+	boss.IsBoss = true
+	if _gamemode == "terrortown" then
+		local _innocent = 0
+		local _traitor = 1
+		boss:SetRole(_traitor)
+		boss:SetHealth(100)
+		for k, v in ipairs(plys) do
+			if v == boss then
+				boss:SetRole(_traitor)
+			else
+				v:SetRole(_innocent)
+			end
+		end
+		SendFullStateUpdate()
+		boss:StripAll()
+		boss:Give("tgm_bossminigun_ttt")
+	else
+		boss:Give("tgm_bossminigun")
+	end
+	boss:EmitSound("boss_music")
+	PrintMessage(HUD_PRINTTALK, boss:Nick() .. " is the Boss! Kill them quickly!")
+end
+
 /* UTILITY ACTIONS */
 do
 	WSFunctions["printtwitchchat"] = PrintTwitchChat
@@ -1235,6 +1273,7 @@ do
 	WSFunctions["kamikaze"] = Kamikaze
 	WSFunctions["mobamode"] = MobaMode
 	WSFunctions["reviveeveryone"] = ReviveEveryone
+	WSFunctions["bossmode"] = BossMode
 end
 //WSFunctions["backseatgaming"] = BackseatGaming
 //WSFunctions["speedtime"] = SpeedTime
