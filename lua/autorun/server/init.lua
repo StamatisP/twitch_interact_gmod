@@ -184,6 +184,14 @@ hook.Add("PlayerSay", "ChangeSettings", function(sender, txt, teamchat)
 			end
 		end
 		return ""
+	elseif args[1] == "!doubleaction" then
+		if sender:IsAdmin() then
+			if args[2] and args[3] then
+				WSFunctions[args[2]]()
+				WSFunctions[args[3]]()
+			end
+		end
+		return ""
 	elseif WSFunctions[string.TrimLeft(args[1], "!")] then
 		if not sender:IsAdmin() then return "" end
 		print("function found in PlayerSay, running...")

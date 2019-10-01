@@ -123,7 +123,7 @@ surface.CreateFont( "FuncTitle", {
 	outline = false,
 })
 
-local last_boss_music
+local MusicChannel
 local boss_music = {
 	[1] = {song = "music/hl1_song10.mp3", duration = 104},
 	[2] = {song = "music/hl2_song12_long.mp3", duration = 74},
@@ -646,6 +646,7 @@ function GetPseudoRandomNumber(max_num)
 	while last_rand == rand do
 		rand = math.random(max_num)
 	end
+	last_rand = rand
 
 	return rand
 end
@@ -668,9 +669,15 @@ local function PlayBossMusic()
 		print("boss music change")
 		math.randomseed(os.time())
 		Boss_CurrentMusic = boss_music[GetPseudoRandomNumber(#boss_music)]
-		last_boss_music = Boss_CurrentMusic
 		PrintTable(Boss_CurrentMusic)
-		LocalPlayer():EmitSound(Boss_CurrentMusic.song, 0, 100, 0.8, CHAN_AUTO)
+		//LocalPlayer():EmitSound(Boss_CurrentMusic.song, 0, 100, 0.8, CHAN_AUTO)
+		sound.PlayFile("sound/"..Boss_CurrentMusic.song, "", function(audio_channel, err, errorName)
+			if err then
+				ErrorNoHalt(err)
+				print(errorName)
+			end
+			MusicChannel = audio_channel
+		end)
 		music_duration = Boss_CurrentMusic.duration
 		timer.Adjust("BossMusic", music_duration)
 	end)
@@ -683,6 +690,9 @@ net.Receive("BossMode", function()
 	if bool then
 		PlayBossMusic()
 	else
-		LocalPlayer():StopSound(Boss_CurrentMusic.song)
+		print("Stopping " .. Boss_CurrentMusic.song)
+		//LocalPlayer():StopSound(Boss_CurrentMusic.song)
+		MusicChannel:Stop()
+		timer.Destroy("BossMusic")
 	end
 end)

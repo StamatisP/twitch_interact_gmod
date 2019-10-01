@@ -109,7 +109,7 @@ hook.Add("PlayerDeath", "TGMPlayerDeath", function(victim, inflictor, attacker)
 		HandleKamikazeDeath(victim, KamikazeMarker)
 	end
 	if victim.IsBoss then
-		print("The Boss has been slain!")
+		PrintMessage(HUD_PRINTTALK, "The Boss has been slain!")
 		victim.IsBoss = false
 		net.Start("BossMode")
 			net.WriteBool(false)
@@ -1200,7 +1200,6 @@ local function BossMode()
 		local _innocent = 0
 		local _traitor = 1
 		boss:SetRole(_traitor)
-		boss:SetHealth(100)
 		for k, v in ipairs(plys) do
 			if v == boss then
 				boss:SetRole(_traitor)
@@ -1215,6 +1214,7 @@ local function BossMode()
 		boss:StripWeapons()
 		boss:Give("tgm_bossminigun")
 	end
+	boss:SetHealth(150)
 	PrintMessage(HUD_PRINTTALK, boss:Nick() .. " is the Boss! Kill them quickly!")
 end
 
