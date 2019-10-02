@@ -17,6 +17,7 @@ local ThirdPerson = false
 local WhosWho = false
 local KamikazeVar = false
 local MobaMode = false
+local PostProcess = false
 local Boss_CurrentMusic
 
 local LoadedSounds = {}
@@ -129,7 +130,16 @@ local boss_music = {
 	[2] = {song = "music/hl2_song12_long.mp3", duration = 74},
 	[3] = {song = "music/hl2_song14.mp3", duration = 159},
 	[4] = {song = "music/hl2_song29.mp3", duration = 135},
-	[5] = {song ="music/hl2_song20_submix4.mp3", duration = 139}
+	[5] = {song = "music/hl2_song20_submix4.mp3", duration = 139}
+}
+
+local CurrentPostProcess = {}
+local pp_effects = {
+	[1] = "models/effects/fisheyelens_normal",
+	[2] = "models/shadertest/shieldtint0",
+	[3] = "models/props_combine/tprings_globe",
+	[4] = "models/props_combine/stasisshield_tint",
+	[5] = "effects/strider_pinch_normal"
 }
 
 /* HOOKS */
@@ -168,6 +178,10 @@ local function TGMRender()
 			cam.IgnoreZ(false)
 			render.SuppressEngineLighting(false)
 		cam.End3D()
+	end
+	if PostProcess then
+		if not CurrentPostProcess then return end
+		DrawMaterialOverlay(CurrentPostProcess.effect, CurrentPostProcess.refract)
 	end
 end
 
@@ -683,4 +697,18 @@ net.Receive("BossMode", function()
 		MusicChannel:Stop()
 		timer.Destroy("BossMusic")
 	end
+end)
+
+net.Receive("RandomPostProcess", function()
+	math.randomseed(os.time())
+	local rand = math.random(#pp_effects)
+	local rand_refract = math.Rand(0.4, 0.9)
+	local rand_effect = pp_effects[rand]
+	print(rand_effect)
+	print(rand_refract)
+	CurrentPostProcess = {effect = rand_effect, refract = rand_refract}
+	PostProcess = true
+	timer.Simple(ActionDuration, function()
+		PostProcess = false
+	end)
 end)

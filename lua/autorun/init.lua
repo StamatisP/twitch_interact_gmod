@@ -1,5 +1,7 @@
 print("shared file")
 local controlsReversed = false
+local TankControls = false
+local RandomSensitivity = false
 
 ActionDuration = 15 // CHANGE THIS IN ACTIONS TOO
 
@@ -49,7 +51,9 @@ PrettyFuncs = {
 	["mobamode"] = "MOBA Mode",
 	["instakill"] = "Instakill",
 	["reviveeveryone"] = "Revive Everyone",
-	["bossmode"] = "Boss Mode"
+	["bossmode"] = "Boss Mode",
+	["tankcontrols"] = "Tank Controls",
+	["randomsensitivity"] = "Random Sensitivity"
 }
 
 function IncrementActionCounter()
@@ -79,6 +83,20 @@ hook.Add("StartCommand", "FuckWithControls", function(ply, cmd)
 		end
 		//cmd:SetMouseWheel(-cmd:GetMouseWheel())
 	end
+	if TankControls then
+		if cmd:KeyDown(IN_MOVELEFT) then
+			local ang = cmd:GetViewAngles()
+			ang.yaw = ang.yaw + 1
+			cmd:SetSideMove(0)
+			cmd:SetViewAngles(ang)
+		end
+		if cmd:KeyDown(IN_MOVERIGHT) then
+			local ang = cmd:GetViewAngles()
+			ang.yaw = ang.yaw - 1
+			cmd:SetSideMove(0)
+			cmd:SetViewAngles(ang)
+		end
+	end
 end)
 
 if CLIENT then
@@ -92,6 +110,19 @@ if CLIENT then
 			cmd:SetViewAngles(angle)
 			return true
 			//angle.pitch = 
+		end
+		if TankControls then
+			angle.pitch = 0
+			cmd:SetViewAngles(angle)
+			return true
+		end
+		if RandomSensitivity then
+			math.randomseed(os.time())
+			local rand = math.random(5, 200)
+			angle.pitch = math.Clamp(angle.pitch + y / rand, -89, 89)
+			angle.yaw = angle.yaw - x / rand
+			cmd:SetViewAngles(angle)
+			return true
 		end
 	end)
 end
@@ -141,3 +172,17 @@ function GetPseudoRandomNumber(max_num)
 
 	return rand
 end
+
+net.Receive("TankControls", function()
+	TankControls = true
+	timer.Simple(ActionDuration, function()
+		TankControls = false
+	end)
+end)
+
+net.Receive("RandomSensitivity", function()
+	RandomSensitivity = true
+	timer.Simple(ActionDuration, function()
+		RandomSensitivity = false
+	end)
+end)

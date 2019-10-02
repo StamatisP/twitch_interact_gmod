@@ -36,6 +36,9 @@ util.AddNetworkString("Instakill")
 util.AddNetworkString("Kamikaze")
 util.AddNetworkString("MobaMode")
 util.AddNetworkString("BossMode")
+util.AddNetworkString("TankControls")
+util.AddNetworkString("RandomSensitivity")
+util.AddNetworkString("RandomPostProcess")
 
 do // add files here precache in shared init.lua
 	for k, v in pairs(file.Find("sound/*", "THIRDPARTY")) do

@@ -1234,6 +1234,24 @@ local function BossMode()
 	end
 end
 
+local function TankControls()
+	local plys = GetAlivePlayers()
+	net.Start("TankControls")
+	net.Send(plys)
+end
+
+local function RandomSensitivity()
+	local plys = GetAlivePlayers()
+	net.Start("RandomSensitivity")
+	net.Send(plys)
+end
+
+local function RandomPostProcess()
+	local plys = GetAlivePlayers()
+	net.Start("RandomPostProcess")
+	net.Send(plys)
+end
+
 /* UTILITY ACTIONS */
 do
 	WSFunctions["printtwitchchat"] = PrintTwitchChat
@@ -1283,6 +1301,9 @@ do
 	WSFunctions["mobamode"] = MobaMode
 	WSFunctions["reviveeveryone"] = ReviveEveryone
 	WSFunctions["bossmode"] = BossMode
+	WSFunctions["tankcontrols"] = TankControls
+	WSFunctions["randomsensitivity"] = RandomSensitivity
+	//WSFunctions["randompostprocess"] = RandomPostProcess // randomly doesnt work
 end
 //WSFunctions["backseatgaming"] = BackseatGaming
 //WSFunctions["speedtime"] = SpeedTime
