@@ -17,7 +17,7 @@ local ThirdPerson = false
 local WhosWho = false
 local KamikazeVar = false
 local MobaMode = false
-local PostProcess = false
+local BloodyScreen = false
 local Boss_CurrentMusic
 
 local LoadedSounds = {}
@@ -188,9 +188,9 @@ local function TGMRender()
 		cam.End3D()
 	end
 
-	if PostProcess then
-		if not CurrentPostProcess then return end
-		DrawMaterialOverlay("models/props_combine/tprings_globe", CurrentPostProcess.refract)
+	if BloodyScreen then
+		//if not CurrentPostProcess then return end
+		DrawMaterialOverlay("models/props_combine/tprings_globe", 1)
 	end
 end
 
@@ -709,14 +709,14 @@ net.Receive("BossMode", function()
 end)
 
 net.Receive("BloodyScreen", function()
-	math.randomseed(os.time())
+	/*math.randomseed(os.time())
 	local rand = math.random(#pp_effects)
 	local rand_refract = math.Rand(0.4, 0.9)
 	local rand_effect = pp_effects[rand]
 	CurrentPostProcess = {effect = rand_effect, refract = rand_refract}
-	PrintTable(CurrentPostProcess)
-	PostProcess = true
+	PrintTable(CurrentPostProcess)*/ // yeet this 
+	BloodyScreen = true
 	timer.Simple(ActionDuration, function()
-		PostProcess = false
+		BloodyScreen = false
 	end)
 end)
