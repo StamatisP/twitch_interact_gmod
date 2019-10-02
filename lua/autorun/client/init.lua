@@ -150,17 +150,20 @@ local function TGMRender()
 		DrawColorModify(deepfryTab)
 		DrawSobel(0.5)
 		DrawSharpen(3, 3)
-	elseif SilentHill then
+	end
+	if SilentHill then
 		DrawColorModify(silenthillTab)
 		DrawMaterialOverlay( "overlays/vignette01", 1 )
-	elseif Paranoia then
+	end
+	if Paranoia then
 		DrawColorModify(paranoiaTab)
 		DrawSharpen(1.3, 1.3)
 		DrawMaterialOverlay( "overlays/vignette01", 1 )
-	elseif WhosWho then
+	if WhosWho then
 		DrawColorModify(whoswhoTab)
 		DrawMaterialOverlay("overlays/vignette01", 1)
-	elseif KamikazeVar then
+	end
+	if KamikazeVar then
 		DrawColorModify(kamikazeTab)
 		DrawMaterialOverlay("overlays/vignette01", 1)
 		cam.Start3D()

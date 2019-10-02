@@ -30,7 +30,8 @@ hook.Add("Move", "Speedup or Slowdown", function(ply, mv)
 		local speed = mv:GetMaxSpeed() * 2.5
 		mv:SetMaxSpeed(speed)
 		mv:SetMaxClientSpeed(speed)
-	elseif slowdown then
+	end
+	if slowdown then
 		local speed = mv:GetMaxSpeed() / 2
 		mv:SetMaxSpeed(speed)
 		mv:SetMaxClientSpeed(speed)
