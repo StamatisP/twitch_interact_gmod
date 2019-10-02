@@ -53,7 +53,8 @@ PrettyFuncs = {
 	["reviveeveryone"] = "Revive Everyone",
 	["bossmode"] = "Boss Mode",
 	["tankcontrols"] = "Tank Controls",
-	["randomsensitivity"] = "Random Sensitivity"
+	["randomsensitivity"] = "Random Sensitivity",
+	["bloodyscreen"] = "Bloody Screen"
 }
 
 function IncrementActionCounter()

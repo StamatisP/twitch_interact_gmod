@@ -86,7 +86,7 @@ hook.Add("EntityTakeDamage", "TGMTakeDamage", function(target, dmginfo)
 end)
 
 local function AddAllPlayersToVis(tab)
-	// tab should be players.getall
+	// tab should be players.getall or GetAlivePlayers
 	for k, v in ipairs(tab) do
 		AddOriginToPVS(v:GetPos())
 	end
@@ -131,7 +131,7 @@ end)
 hook.Add("SetupPlayerVisibility", "TGMVis", function(pPlayer, viewentity)
 	if KamikazeVar then
 		if pPlayer.Kamikaze then
-			AddAllPlayersToVis(player.GetAll())
+			AddAllPlayersToVis(GetAlivePlayers())
 		else
 			AddOriginToPVS(KamikazePlayer:GetPos())
 		end
@@ -1203,6 +1203,9 @@ local function BossMode()
 		net.Start("BossMode")
 			net.WriteBool(true)
 		net.Broadcast()
+	else
+		print("Not starting BossMode netmessage.")
+		print(#GetBossPlayers())
 	end
 	local plys = GetAlivePlayers()
 	local boss = plys[GetPseudoRandomNumber(#plys)]
@@ -1247,9 +1250,9 @@ local function RandomSensitivity()
 	net.Send(plys)
 end
 
-local function RandomPostProcess()
+local function BloodyScreen()
 	local plys = GetAlivePlayers()
-	net.Start("RandomPostProcess")
+	net.Start("BloodyScreen")
 	net.Send(plys)
 end
 
@@ -1304,7 +1307,7 @@ do
 	WSFunctions["bossmode"] = BossMode
 	WSFunctions["tankcontrols"] = TankControls
 	WSFunctions["randomsensitivity"] = RandomSensitivity
-	//WSFunctions["randompostprocess"] = RandomPostProcess // randomly doesnt work
+	WSFunctions["bloodyscreen"] = BloodyScreen // randomly doesnt work
 end
 //WSFunctions["backseatgaming"] = BackseatGaming
 //WSFunctions["speedtime"] = SpeedTime

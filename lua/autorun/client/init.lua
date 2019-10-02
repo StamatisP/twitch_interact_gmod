@@ -151,18 +151,23 @@ local function TGMRender()
 		DrawSobel(0.5)
 		DrawSharpen(3, 3)
 	end
+
 	if SilentHill then
 		DrawColorModify(silenthillTab)
 		DrawMaterialOverlay( "overlays/vignette01", 1 )
 	end
+
 	if Paranoia then
 		DrawColorModify(paranoiaTab)
 		DrawSharpen(1.3, 1.3)
 		DrawMaterialOverlay( "overlays/vignette01", 1 )
+	end
+	
 	if WhosWho then
 		DrawColorModify(whoswhoTab)
 		DrawMaterialOverlay("overlays/vignette01", 1)
 	end
+
 	if KamikazeVar then
 		DrawColorModify(kamikazeTab)
 		DrawMaterialOverlay("overlays/vignette01", 1)
@@ -182,9 +187,10 @@ local function TGMRender()
 			render.SuppressEngineLighting(false)
 		cam.End3D()
 	end
+
 	if PostProcess then
 		if not CurrentPostProcess then return end
-		DrawMaterialOverlay(CurrentPostProcess.effect, CurrentPostProcess.refract)
+		DrawMaterialOverlay("models/props_combine/tprings_globe", CurrentPostProcess.refract)
 	end
 end
 
@@ -702,14 +708,13 @@ net.Receive("BossMode", function()
 	end
 end)
 
-net.Receive("RandomPostProcess", function()
+net.Receive("BloodyScreen", function()
 	math.randomseed(os.time())
 	local rand = math.random(#pp_effects)
 	local rand_refract = math.Rand(0.4, 0.9)
 	local rand_effect = pp_effects[rand]
-	print(rand_effect)
-	print(rand_refract)
 	CurrentPostProcess = {effect = rand_effect, refract = rand_refract}
+	PrintTable(CurrentPostProcess)
 	PostProcess = true
 	timer.Simple(ActionDuration, function()
 		PostProcess = false
