@@ -18,6 +18,7 @@ local WhosWho = false
 local KamikazeVar = false
 local MobaMode = false
 local BloodyScreen = false
+local RenderTarget = false
 local Boss_CurrentMusic
 
 local LoadedSounds = {}
@@ -135,11 +136,15 @@ local boss_music = {
 
 local CurrentPostProcess = {}
 local pp_effects = {
-	[1] = "models/effects/fisheyelens_normal",
-	[2] = "models/shadertest/shieldtint0",
-	[3] = "models/props_combine/tprings_globe",
-	[4] = "models/props_combine/stasisshield_tint",
-	[5] = "effects/strider_pinch_normal"
+	[1] = "models/props_c17/fisheyelens",
+	[2] = "models/shadertest/shader4",
+	[3] = "models/shadertest/shader5",
+	[4] = "effects/strider_pinch_dudv",
+	[5] = "models/shadertest/shader3",
+	[6] = "models/props_combine/tprings_globe",
+	[7] = "models/props_combine/com_shield001a",
+	[8] = "models/props_combine/stasisshield_sheet",
+	[9] = "models/props_lab/tank_glass001"
 }
 
 /* HOOKS */
@@ -311,8 +316,8 @@ end)
 
 hook.Add("PostPlayerDraw", "DrawMobaLines", function(ply)
 	if not IsValid(ply) then return end
-	local eyetrace = ply:GetEyeTrace()
 	if MobaMode then
+		local eyetrace = ply:GetEyeTrace()
 		render.DrawLine(ply:GetShootPos(), eyetrace.HitPos, Color(255, 0, 0))
 	end
 end)
@@ -662,17 +667,6 @@ net.Receive("MobaMode", function()
 	end)
 end)
 
-local function TestSoundDuration()
-	for k, v in pairs(boss_music) do
-		print("Sound: ".. v.song)
-		print("Actual duration: ".. v.duration)
-		print("SoundDuration result: ".. SoundDuration(v.song))
-	end
-	print("Sound: paranoia_loop_1.wav")
-	print("Actual duration: 5")
-	print("SoundDuration result: " .. SoundDuration("paranoia_loop_1.wav"))
-end
-
 local function PlayBossMusic()
 	local music_duration = 1
 	if timer.Exists("BossMusic") then timer.Remove("BossMusic") end
@@ -681,7 +675,6 @@ local function PlayBossMusic()
 		math.randomseed(os.time())
 		Boss_CurrentMusic = boss_music[GetPseudoRandomNumber(#boss_music)]
 		PrintTable(Boss_CurrentMusic)
-		//LocalPlayer():EmitSound(Boss_CurrentMusic.song, 0, 100, 0.8, CHAN_AUTO)
 		sound.PlayFile("sound/"..Boss_CurrentMusic.song, "", function(audio_channel, err, errorName)
 			if err then
 				ErrorNoHalt(err)
@@ -693,7 +686,6 @@ local function PlayBossMusic()
 		timer.Adjust("BossMusic", music_duration)
 	end)
 end
-//TestSoundDuration()
 
 net.Receive("BossMode", function()
 	local bool = net.ReadBool()
@@ -708,15 +700,57 @@ net.Receive("BossMode", function()
 	end
 end)
 
-net.Receive("BloodyScreen", function()
-	/*math.randomseed(os.time())
+net.Receive("RandomOverlay", function()
+	math.randomseed(os.time())
 	local rand = math.random(#pp_effects)
-	local rand_refract = math.Rand(0.4, 0.9)
+	local rand_refract = math.Rand(0.4, 0.8)
 	local rand_effect = pp_effects[rand]
-	CurrentPostProcess = {effect = rand_effect, refract = rand_refract}
-	PrintTable(CurrentPostProcess)*/ // yeet this 
-	BloodyScreen = true
+	RunConsoleCommand("pp_mat_overlay", rand_effect)
+	RunConsoleCommand("pp_mat_overlay_refractamount", rand_refract)
 	timer.Simple(ActionDuration, function()
-		BloodyScreen = false
+		RunConsoleCommand("pp_mat_overlay", "")
+	end)
+end)
+
+local txt_effects = {
+	[1] = "pp/texturize/rainbow.png",
+	[2] = "pp/texturize/pinko.png",
+	[3] = "pp/texturize/squaredo.png"
+}
+
+net.Receive("RandomTexturize", function()
+	math.randomseed(os.time())
+	local rand_effect = txt_effects[math.random(#txt_effects)]
+	RunConsoleCommand("pp_texturize", rand_effect)
+	timer.Simple(ActionDuration, function()
+		RunConsoleCommand("pp_texturize", "")
+	end)
+end)
+
+net.Receive("Nearsightedness", function()
+	RunConsoleCommand("pp_dof", "1")
+	RunConsoleCommand("pp_dof_initlength", "9.00")
+	RunConsoleCommand("pp_dof_spacing", "8.00")
+	timer.Simple(ActionDuration, function()
+		RunConsoleCommand("pp_dof", "0")
+	end)
+end)
+
+net.Receive("3DMode", function()
+	RunConsoleCommand("pp_stereoscopy", "1")
+	timer.Simple(ActionDuration, function()
+		RunConsoleCommand("pp_stereoscopy", "0")
+	end)
+end)
+
+net.Receive("MegaBloom", function()
+	RunConsoleCommand("pp_bloom", "1")
+	RunConsoleCommand("pp_bloom_darken", "0.10")
+	RunConsoleCommand("pp_bloom_multiply", "10")
+	RunConsoleCommand("pp_bloom_sizex", "10")
+	RunConsoleCommand("pp_bloom_sizey", "10")
+	RunConsoleCommand("pp_bloom_color", "3")
+	timer.Simple(ActionDuration, function()
+		RunConsoleCommand("pp_bloom", "0")
 	end)
 end)

@@ -38,8 +38,11 @@ util.AddNetworkString("MobaMode")
 util.AddNetworkString("BossMode")
 util.AddNetworkString("TankControls")
 util.AddNetworkString("RandomSensitivity")
-util.AddNetworkString("RandomPostProcess")
-util.AddNetworkString("BloodyScreen")
+util.AddNetworkString("RandomTexturize")
+util.AddNetworkString("RandomOverlay")
+util.AddNetworkString("Nearsightedness")
+util.AddNetworkString("3DMode")
+util.AddNetworkString("MegaBloom")
 
 do // add files here precache in shared init.lua
 	for k, v in pairs(file.Find("sound/*", "THIRDPARTY")) do

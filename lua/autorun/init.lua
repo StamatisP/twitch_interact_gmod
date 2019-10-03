@@ -54,7 +54,11 @@ PrettyFuncs = {
 	["bossmode"] = "Boss Mode",
 	["tankcontrols"] = "Tank Controls",
 	["randomsensitivity"] = "Random Sensitivity",
-	["bloodyscreen"] = "Bloody Screen"
+	["randomoverlay"] = "Random Overlay",
+	["randomtexturize"] = "Random Texturize",
+	["nearsightedness"] = "Nearsightedness",
+	["3dmode"] = "3D Mode",
+	["megabloom"] = "Graphics in 2013"
 }
 
 function IncrementActionCounter()

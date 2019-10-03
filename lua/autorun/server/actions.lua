@@ -1250,9 +1250,36 @@ local function RandomSensitivity()
 	net.Send(plys)
 end
 
-local function BloodyScreen()
+local function RandomOverlay()
 	local plys = GetAlivePlayers()
-	net.Start("BloodyScreen")
+	net.Start("RandomOverlay")
+	net.Send(plys)
+end
+
+local function RandomTexturize()
+	local plys = GetAlivePlayers()
+	net.Start("RandomTexturize")
+	net.Send(plys)
+end
+
+local function Nearsightedness()
+	// its DOF but spacing is 8 and initial dist is 9
+	local plys = GetAlivePlayers()
+	net.Start("Nearsightedness")
+	net.Send(plys)
+end
+
+local function ThreeDMode()
+	// stereoscopy
+	local plys = GetAlivePlayers()
+	net.Start("3DMode")
+	net.Send(plys)
+end
+
+local function MegaBloom()
+	// graphics in 2013
+	local plys = GetAlivePlayers()
+	net.Start("MegaBloom")
 	net.Send(plys)
 end
 
@@ -1307,7 +1334,11 @@ do
 	WSFunctions["bossmode"] = BossMode
 	WSFunctions["tankcontrols"] = TankControls
 	WSFunctions["randomsensitivity"] = RandomSensitivity
-	WSFunctions["bloodyscreen"] = BloodyScreen // randomly doesnt work
+	WSFunctions["randomoverlay"] = RandomOverlay 
+	WSFunctions["randomtexturize"] = RandomTexturize
+	WSFunctions["nearsightedness"] = Nearsightedness
+	WSFunctions["3dmode"] = ThreeDMode
+	WSFunctions["megabloom"] = MegaBloom
 end
 //WSFunctions["backseatgaming"] = BackseatGaming
 //WSFunctions["speedtime"] = SpeedTime
