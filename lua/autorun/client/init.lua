@@ -609,8 +609,10 @@ net.Receive("Paranoia", function()
 end)
 
 net.Receive("Thirdperson", function()
-	local bool = net.ReadBool()
-	ThirdPerson = bool
+	ThirdPerson = true
+	timer.Simple(ActionDuration, function()
+		ThirdPerson = false
+	end)
 end)
 
 net.Receive("WhosWho", function()

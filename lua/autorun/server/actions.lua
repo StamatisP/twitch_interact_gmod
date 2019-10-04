@@ -963,13 +963,7 @@ end
 local function ThirdPerson()
 	local aliveplys = GetAlivePlayers()
 	net.Start("Thirdperson")
-		net.WriteBool(true)
 	net.Send(aliveplys)
-	timer.Simple(ActionDuration, function()
-		net.Start("Thirdperson")
-			net.WriteBool(false)
-		net.Send(aliveplys)
-	end)
 end
 
 local function RainingBombs()
