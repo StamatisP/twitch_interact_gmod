@@ -216,13 +216,14 @@ local function TGMRender()
 			render.SuppressEngineLighting(false)
 		cam.End3D()
 	end
+end
 
+local function TGMPostRender()
 	if MegaBloom then
 		//RenderDoF(LocalPlayer():GetShootPos(), Angle(0, 0, 0), LocalPlayer():GetShootPos() + Vector(9, 0, 0), 0.5, 2, 2, false, nil, 90)
 		//print("bruh")
 		DrawBloom(-0.1, 1, 5, 5, 4, 3, 1, 1, 1)
 	end
-
 	if RandomTexturize then
 		if g_VR then
 			DrawTexturizeVR(1, Material(TxtEffect))
@@ -230,7 +231,6 @@ local function TGMRender()
 			DrawTexturize(1, Material(TxtEffect))
 		end
 	end
-
 	if RandomOverlay then
 		if g_VR then
 			DrawMaterialOverlayVR(RndOverlay, RndRefract)
@@ -241,6 +241,7 @@ local function TGMRender()
 end
 
 hook.Add("PostDrawEffects", "TGMRender", TGMRender)
+hook.Add("PostRender", "TGMPostRender", TGMPostRender)
 
 hook.Add("OnPlayerChat", "check_tgm_chat", function(ply, text, teamchat, isdead)
 	if text == "!chat" then

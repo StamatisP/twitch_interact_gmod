@@ -52,8 +52,8 @@ do // add files here precache in shared init.lua
 	resource.AddFile("materials/overlays/vignette01.vmt")
 end
 
-CreateConVar("tgm_url", "ws://localhost:8765", FCVAR_ARCHIVE + FCVAR_PROTECTED, "The URL pointing to your websocket. example (ws://localhost:8765)")
-WEBSOCKET = WEBSOCKET or GWSockets.createWebSocket(GetConVar("tgm_url"):GetString(), false)
+local tgm_url = CreateConVar("tgm_url", "ws://localhost:8765", FCVAR_ARCHIVE + FCVAR_PROTECTED, "The URL pointing to your websocket. example (ws://localhost:8765)")
+WEBSOCKET = WEBSOCKET or GWSockets.createWebSocket(tgm_url:GetString(), false)
 
 function WEBSOCKET:onMessage(txt)
 	if txt == "null" then return end
@@ -158,10 +158,10 @@ hook.Add("PlayerSay", "ChangeSettings", function(sender, txt, teamchat)
 			if WEBSOCKET then
 				WEBSOCKET:close()
 				WEBSOCKET = nil
-				WEBSOCKET = GWSockets.createWebSocket(GetConVar("tgm_url"):GetString(), false)
+				WEBSOCKET = GWSockets.createWebSocket(tgm_url:GetString(), false)
 				WEBSOCKET:open()
 			else
-				WEBSOCKET = GWSockets.createWebSocket(GetConVar("tgm_url"):GetString(), false)
+				WEBSOCKET = GWSockets.createWebSocket(tgm_url:GetString(), false)
 				WEBSOCKET:open()
 			end
 		end
@@ -186,8 +186,8 @@ hook.Add("PlayerSay", "ChangeSettings", function(sender, txt, teamchat)
 		end
 	elseif args[1] == "!changewsurl" then
 		if sender:IsAdmin() then
-			GetConVar("tgm_url"):SetString(args[2])
-			print("setting url to ".. GetConVar("tgm_url"):GetString())
+			tgm_url:SetString(args[2])
+			print("setting url to ".. tgm_url:GetString())
 		end
 	elseif args[1] == "!actioncounter" then
 		if sender:IsAdmin() then
