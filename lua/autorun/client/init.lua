@@ -17,8 +17,13 @@ local ThirdPerson = false
 local WhosWho = false
 local KamikazeVar = false
 local MobaMode = false
-local BloodyScreen = false
-local RenderTarget = false
+local IsBoss = false
+local MegaBloom = false
+local RandomTexturize = false
+local TxtEffect
+local RandomOverlay = false
+local RndOverlay
+local RndRefract
 local Boss_CurrentMusic
 
 local LoadedSounds = {}
@@ -186,6 +191,7 @@ local function TGMRender()
 				render.MaterialOverride(wMat)
 				render.SetColorModulation(1, 0, 0)
 				v:DrawModel()
+				render.MaterialOverride(nil) // to fix renderview breaking
 			end
 
 			cam.IgnoreZ(false)
@@ -193,13 +199,48 @@ local function TGMRender()
 		cam.End3D()
 	end
 
-	if BloodyScreen then
-		//if not CurrentPostProcess then return end
-		DrawMaterialOverlay("models/props_combine/tprings_globe", 1)
+	if IsBoss then
+		cam.Start3D()
+			cam.IgnoreZ(true)
+			render.SuppressEngineLighting(true)
+
+			for k, v in pairs(player.GetAll()) do
+				if v == LocalPlayer() or not v:Alive() then continue end
+				render.MaterialOverride(wMat)
+				render.SetColorModulation(1, 0, 0)
+				v:DrawModel()
+				render.MaterialOverride(nil) // to fix renderview breaking
+			end
+
+			cam.IgnoreZ(false)
+			render.SuppressEngineLighting(false)
+		cam.End3D()
+	end
+
+	if MegaBloom then
+		//RenderDoF(LocalPlayer():GetShootPos(), Angle(0, 0, 0), LocalPlayer():GetShootPos() + Vector(9, 0, 0), 0.5, 2, 2, false, nil, 90)
+		//print("bruh")
+		DrawBloom(-0.1, 1, 5, 5, 4, 3, 1, 1, 1)
+	end
+
+	if RandomTexturize then
+		if g_VR then
+			DrawTexturizeVR(1, Material(TxtEffect))
+		else
+			DrawTexturize(1, Material(TxtEffect))
+		end
+	end
+
+	if RandomOverlay then
+		if g_VR then
+			DrawMaterialOverlayVR(RndOverlay, RndRefract)
+		else
+			DrawMaterialOverlay(RndOverlay, RndRefract)
+		end
 	end
 end
 
-hook.Add("RenderScreenspaceEffects", "TGMRender", TGMRender)
+hook.Add("PostDrawEffects", "TGMRender", TGMRender)
 
 hook.Add("OnPlayerChat", "check_tgm_chat", function(ply, text, teamchat, isdead)
 	if text == "!chat" then
@@ -700,15 +741,27 @@ net.Receive("BossMode", function()
 	end
 end)
 
+net.Receive("BossPlayer", function()
+	local bool = net.ReadBool()
+	if bool then
+		IsBoss = true
+	else
+		IsBoss = false
+	end
+end)
+
 net.Receive("RandomOverlay", function()
 	math.randomseed(os.time())
 	local rand = math.random(#pp_effects)
-	local rand_refract = math.Rand(0.4, 0.8)
-	local rand_effect = pp_effects[rand]
-	RunConsoleCommand("pp_mat_overlay", rand_effect)
-	RunConsoleCommand("pp_mat_overlay_refractamount", rand_refract)
+	RandomOverlay = true
+	if g_VR then
+		RndRefract = math.Rand(0.01, 0.1)
+	else
+		RndRefract = math.Rand(0.3, 0.8)
+	end
+	RndOverlay = pp_effects[rand]
 	timer.Simple(ActionDuration, function()
-		RunConsoleCommand("pp_mat_overlay", "")
+		RandomOverlay = false
 	end)
 end)
 
@@ -720,23 +773,24 @@ local txt_effects = {
 
 net.Receive("RandomTexturize", function()
 	math.randomseed(os.time())
-	local rand_effect = txt_effects[math.random(#txt_effects)]
-	RunConsoleCommand("pp_texturize", rand_effect)
+	RandomTexturize = true
+	TxtEffect = txt_effects[math.random(#txt_effects)]
 	timer.Simple(ActionDuration, function()
-		RunConsoleCommand("pp_texturize", "")
+		RandomTexturize = false
 	end)
 end)
 
 net.Receive("Nearsightedness", function()
-	RunConsoleCommand("pp_dof", "1")
 	RunConsoleCommand("pp_dof_initlength", "9.00")
 	RunConsoleCommand("pp_dof_spacing", "8.00")
+	DOF_Start()
 	timer.Simple(ActionDuration, function()
-		RunConsoleCommand("pp_dof", "0")
+		DOF_Kill()
 	end)
 end)
 
 net.Receive("3DMode", function()
+	if g_VR then print("Cannot do 3Dmode effect in VR!") return end
 	RunConsoleCommand("pp_stereoscopy", "1")
 	timer.Simple(ActionDuration, function()
 		RunConsoleCommand("pp_stereoscopy", "0")
@@ -744,13 +798,8 @@ net.Receive("3DMode", function()
 end)
 
 net.Receive("MegaBloom", function()
-	RunConsoleCommand("pp_bloom", "1")
-	RunConsoleCommand("pp_bloom_darken", "0.10")
-	RunConsoleCommand("pp_bloom_multiply", "10")
-	RunConsoleCommand("pp_bloom_sizex", "10")
-	RunConsoleCommand("pp_bloom_sizey", "10")
-	RunConsoleCommand("pp_bloom_color", "3")
+	MegaBloom = true
 	timer.Simple(ActionDuration, function()
-		RunConsoleCommand("pp_bloom", "0")
+		MegaBloom = false
 	end)
 end)

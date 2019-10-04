@@ -17,6 +17,8 @@ local oldPlyPos = oldPlyPos or {}
 local oldPlyView = oldPlyView or {}
 local bouncyJump = false
 
+local DebugMode = true
+
 local KamikazeVar = false
 local KamikazePlayer = nil
 local KamikazeMarker = nil
@@ -119,6 +121,9 @@ hook.Add("PlayerDeath", "TGMPlayerDeath", function(victim, inflictor, attacker)
 	end
 	if victim.IsBoss then
 		victim.IsBoss = false
+		net.Start("BossPlayer")
+			net.WriteBool(false)
+		net.Send(victim)
 		PrintMessage(HUD_PRINTTALK, "The Boss " .. victim:Nick() .. " has been slain!")
 		if #GetBossPlayers() == 0 then
 			net.Start("BossMode")
@@ -135,6 +140,9 @@ hook.Add("SetupPlayerVisibility", "TGMVis", function(pPlayer, viewentity)
 		else
 			AddOriginToPVS(KamikazePlayer:GetPos())
 		end
+	end
+	if pPlayer.IsBoss then
+		AddAllPlayersToVis(GetAlivePlayers())
 	end
 end)
 
@@ -1125,7 +1133,9 @@ local function Kamikaze()
 	else
 		kamikazeplayer = plys[math.random(#plys)]
 	end
+	if DebugMode then kamikazeplayer = plys[1] end
 	if not kamikazeplayer:Alive() then print("kamikaze is dead, rerunning") Kamikaze() end // failsafe
+	kamikazeplayer:StripWeapons()
 	KamikazePlayer = kamikazeplayer
 
 	GetPlayerInfoTGM(kamikazeplayer)
@@ -1209,8 +1219,12 @@ local function BossMode()
 	end
 	local plys = GetAlivePlayers()
 	local boss = plys[GetPseudoRandomNumber(#plys)]
+	if DebugMode then boss = plys[1] end
 	if boss.IsBoss then BossMode() return end
 	boss.IsBoss = true
+	net.Start("BossPlayer")
+		net.WriteBool(true)
+	net.Send(boss)
 	if _gamemode == "terrortown" then
 		local _innocent = 0
 		local _traitor = 1

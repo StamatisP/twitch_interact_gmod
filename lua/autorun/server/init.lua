@@ -36,6 +36,7 @@ util.AddNetworkString("Instakill")
 util.AddNetworkString("Kamikaze")
 util.AddNetworkString("MobaMode")
 util.AddNetworkString("BossMode")
+util.AddNetworkString("BossPlayer")
 util.AddNetworkString("TankControls")
 util.AddNetworkString("RandomSensitivity")
 util.AddNetworkString("RandomTexturize")
@@ -193,7 +194,7 @@ hook.Add("PlayerSay", "ChangeSettings", function(sender, txt, teamchat)
 		return ""
 	elseif args[1] == "!doubleaction" then
 		if sender:IsAdmin() then
-			if args[2] and args[3] then
+			if (args[2] and args[3]) and (WSFunctions[args[2]] and WSFunctions[args[3]]) then
 				WSFunctions[args[2]]()
 				WSFunctions[args[3]]()
 			end
