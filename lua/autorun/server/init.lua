@@ -112,6 +112,9 @@ end
 
 hook.Add("InitPostEntity", "OpenSocket", function()
 	//print("post entity")
+	if file.Exists("twitch_interact.txt", "DATA") then
+		SetGlobalInt("ActionCounter", file.Read("twitch_interact.txt", "DATA"))
+	end
 	timer.Simple(5, function()
 		WEBSOCKET:open()
 		timer.Simple(5, function()
@@ -124,6 +127,8 @@ hook.Add("InitPostEntity", "OpenSocket", function()
 end)
 
 hook.Add("ShutDown", "CloseSocket", function()
+	local counter_exists = sql.Query( "SELECT * FROM twitch_interact" )
+	file.Write("twitch_interact.txt", GetGlobalInt("ActionCounter", 0) % 10)
 	WEBSOCKET:write("shutdown")
 	WEBSOCKET:close()
 end)
@@ -189,6 +194,8 @@ hook.Add("PlayerSay", "ChangeSettings", function(sender, txt, teamchat)
 		if sender:IsAdmin() then
 			if tonumber(args[2]) then
 				SetGlobalInt("ActionCounter", tonumber(args[2]))
+			else
+				print(GetGlobalInt("ActionCounter", 0))
 			end
 		end
 		return ""

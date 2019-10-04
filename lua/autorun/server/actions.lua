@@ -5,8 +5,6 @@ local vote_length = 15
 //local max_votable_funcs = 2
 
 /* ACTION VARIABLES */
-// i want this to do cool effects, like % 10 for a 1/10 chance for somethin different to happen
-SetGlobalInt("ActionCounter", 1)
 local isSlapping = false
 local ParanoiaVar = false
 local DeafnessVar = false
@@ -1129,10 +1127,10 @@ local function Kamikaze()
 	end
 	if DebugMode then kamikazeplayer = plys[1] end
 	if not kamikazeplayer:Alive() then print("kamikaze is dead, rerunning") Kamikaze() end // failsafe
+	kamikazeplayer:SetHealth(100)
+	GetPlayerInfoTGM(kamikazeplayer)
 	kamikazeplayer:StripWeapons()
 	KamikazePlayer = kamikazeplayer
-
-	GetPlayerInfoTGM(kamikazeplayer)
 	kamikazeplayer.Kamikaze = true
 
 	if GetGlobalInt("ActionCounter") % 10 == 0 then
