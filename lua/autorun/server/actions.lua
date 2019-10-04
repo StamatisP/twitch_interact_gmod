@@ -144,12 +144,27 @@ hook.Add("SetupPlayerVisibility", "TGMVis", function(pPlayer, viewentity)
 	end
 end)
 
+local function SendTimer(broadcast, plys, time)
+	broadcast = broadcast or false
+	time = time or ActionDuration
+	plys = plys or player.GetAll()
+
+	if broadcast then
+		net.Start("StartTimer")
+			net.WriteFloat(time)
+		net.Broadcast()
+	else
+		net.Start("StartTimer")
+			net.WriteFloat(time)
+		net.Send(plys)
+	end
+end
+
 /* ACTIONS */
 local function RandomizeViews()
 	print("randomizing views")
-	//net.Start("TimedActionStart") i might do this idk
-	//net.Broadcast()
 	local plys = GetAlivePlayers()
+	SendTimer(false, plys, ActionDuration)
 	local plyAngles = {}
 	for k, v in ipairs(plys) do
 		plyAngles[k] = v:EyeAngles()
@@ -165,6 +180,7 @@ end
 
 local function LowerGravity()
 	print("lowering gravity")
+	SendTimer(true)
 	local oldgrav = physenv.GetGravity() // default grav is Vector(0, 0, -600)
 	print(oldgrav)
 	local oldnumgrav = GetConVar("sv_gravity"):GetInt()
@@ -178,6 +194,7 @@ end
 
 local function DeepFry()
 	print("deep frying")
+	SendTimer(true)
 	// server to client, fuck up saturation and contrast an shit
 	net.Start("FuckWithScreen")
 	net.Broadcast()
@@ -194,6 +211,7 @@ end
 
 local function Inception()
 	print("bwaaam. inception time")
+	SendTimer(true)
 	//local oldnumgrav = GetConVar("sv_gravity"):GetInt()
 	// lower gravity below 0 for a period of time, then bring it back to normal
 	RunConsoleCommand("sv_gravity", "80")
@@ -233,6 +251,7 @@ end
 local function SpawnZombies() // ulib
 	print("spawning zombies")
 	local plys = GetAlivePlayers()
+	SendTimer(false, plys)
 	for k, v in ipairs(plys) do
 		local pos = {}
 		local testent = newZombie( Vector( 0, 0, 0 ), Angle( 0, 0, 0 ), v, true ) -- Test ent for traces
@@ -281,6 +300,7 @@ end
 local function MasterFOV()
 	print("OH ILL SHOW YA MASTER FOV")
 	local plys = GetAlivePlayers()
+	SendTimer(false, plys)
 	local plyFovs = {}
 	for k, v in pairs(plys) do
 		plyFovs[k] = v:GetFOV()
@@ -366,6 +386,8 @@ local function VoteTime(isDoubleVote)
 				net.WriteData(data, #data)
 		net.Broadcast()
 
+		SendTimer(true)
+
 		timer.Create("UpdateMenu", vote_length / 30, 30 - 1, function()
 			local json = util.TableToJSON(votable_funcs)
 			local data = util.Compress(json)
@@ -436,6 +458,7 @@ end
 local function ZaWarudo() // from Vipes, edited for personal use https://steamcommunity.com/id/lordvipes
 	print("ZA WARUDO")
 	local plys = GetAlivePlayers()
+	SendTimer(false, plys)
 	// look at the addon
 	net.Start("the_world_time_stop.PlaySound")
 	net.Broadcast()
@@ -473,6 +496,7 @@ end
 local function InvisibleWarfare()
 	print("making everyone invisible!")
 	local plys = GetAlivePlayers()
+	SendTimer(false, plys)
 	net.Start("PlayCloakSound")
 		net.WriteBool(true)
 	net.Broadcast()
@@ -579,6 +603,7 @@ end
 local function RagdollEveryone()
 	print("ragdolling everyone!")
 	local plys = GetAlivePlayers()
+	SendTimer(false, plys)
 	for k, v in ipairs(plys) do
 		if v:Alive() then
 			GetPlayerInfoTGM(v)
@@ -634,6 +659,7 @@ end
 
 local function SpeedTime()
 	print("speeding up time!")
+	SendTimer(true)
 	RunConsoleCommand("host_timescale", "2")
 	timer.Simple(ActionDuration, function()
 		RunConsoleCommand("host_timescale", "1")
@@ -642,6 +668,7 @@ end
 
 local function SlowTime()
 	print("slowing time!")
+	SendTimer(true)
 	RunConsoleCommand("host_timescale", "0.5")
 	timer.Simple(ActionDuration, function()
 		RunConsoleCommand("host_timescale", "1")
@@ -650,6 +677,7 @@ end
 
 local function SpeedUp()
 	print("speeding up!")
+	SendTimer(false, GetAlivePlayers())
 	speedup = true
 	timer.Simple(ActionDuration, function()
 		speedup = false
@@ -658,6 +686,7 @@ end
 
 local function SlowDown()
 	print("slowing down!")
+	SendTimer(false, GetAlivePlayers())
 	slowdown = true
 	timer.Simple(ActionDuration, function()
 		slowdown = false
@@ -666,6 +695,7 @@ end
 
 local function ReverseControls()
 	print("reversing controls")
+	SendTimer(false, GetAlivePlayers())
 	net.Start("ReverseControls")
 	net.Send(GetAlivePlayers())
 end
@@ -732,6 +762,7 @@ end
 
 local function FloorIsIce()
 	print("the floor is ice!")
+	SendTimer(true)
 	RunConsoleCommand("sv_friction", -0.01)
 	timer.Simple(ActionDuration, function()
 		RunConsoleCommand("sv_friction", 8)
@@ -740,6 +771,7 @@ end
 
 local function SilentHill()
 	print("silent hill...")
+	SendTimer(true)
 	net.Start("SilentHill")
 	net.Broadcast()
 end
@@ -776,6 +808,7 @@ end
 local function UpsideDownCameras()
 	print("the cameras are upside down!")
 	local plys = GetAlivePlayers()
+	SendTimer(false, plys)
 	for k, v in ipairs(plys) do
 		local plyAngles = v:EyeAngles()
 		v:SetEyeAngles(Angle(plyAngles.pitch, plyAngles.yaw, 180))
@@ -805,14 +838,15 @@ end
 
 local function AntFight()
 	print("ant fight!")
+	SendTimer(true)
 	hook.Run("AntFight", 0.3)
 	net.Start("AntFight")
 		net.WriteFloat(0.3)
-	net.Send(GetAlivePlayers())
+	net.Broadcast()
 	timer.Simple(ActionDuration, function()
 		net.Start("AntFight")
 			net.WriteFloat(1)
-		net.Send(GetAlivePlayers())
+		net.Broadcast()
 		hook.Run("AntFight", 1)
 	end)
 end
@@ -820,6 +854,7 @@ end
 local function BigHeadMode() // can be laggy if lots of players
 	print("ya got a big head")
 	local plys = GetAlivePlayers()
+	SendTimer(true)
 	for k, v in ipairs(plys) do
 		local bone = v:LookupBone("ValveBiped.Bip01_Head1")
 		if bone then
@@ -838,6 +873,7 @@ end
 
 local function JellyMode()
 	print("jelly mode")
+	SendTimer(true)
 	local plys = GetAlivePlayers()
 	for k, v in ipairs(plys) do
 		local i = 0
@@ -863,6 +899,7 @@ local function Paranoia()
 	print("darkness...")
 	ParanoiaVar = true
 	local plys = GetAlivePlayers()
+	SendTimer(false, plys)
 	for k, ply in ipairs(plys) do // from ulib https://github.com/TeamUlysses/ulib/blob/master/LICENSE.md -- changes were made 
 		local visibility = 0
 		ply:DrawShadow( false )
@@ -904,6 +941,7 @@ end
 
 local function Blindness()
 	print("blindness")
+	SendTimer(false, GetAlivePlayers())
 	for k, v in ipairs(GetAlivePlayers()) do
 		v:ScreenFade(SCREENFADE.OUT, Color(0, 0, 0), 3, ActionDuration - 1)
 	end
@@ -913,6 +951,7 @@ local function Deafness()
 	print("deafness")
 	DeafnessVar = true
 	local plys = GetAlivePlayers()
+	SendTimer(false, plys)
 	for k, v in ipairs(plys) do
 		v:SetDSP(31, false)
 	end
@@ -927,6 +966,7 @@ end
 local function Tinnitus()
 	print("eeeee tinnitus eeeeee")
 	local plys = GetAlivePlayers()
+	SendTimer(false, plys)
 	timer.Create("Tinnitus", 1, 14, function()
 		for k, v in ipairs(plys) do
 			v:SetDSP(35, false)
@@ -942,6 +982,7 @@ end
 local function BouncyJump()
 	print("bouncy time")
 	local plys = GetAlivePlayers()
+	SendTimer(false, plys)
 	bouncyJump = true
 	for k, v in ipairs(plys) do
 		v:SetJumpPower(600)
@@ -960,22 +1001,33 @@ end
 
 local function ThirdPerson()
 	local aliveplys = GetAlivePlayers()
+	SendTimer(false, aliveplys)
 	net.Start("Thirdperson")
 	net.Send(aliveplys)
 end
 
+local function CreateFrag(ply)
+	local grenade = ents.Create("npc_grenade_frag")
+	if IsValid(grenade) then
+		local plypos = ply:GetPos()
+		grenade:SetPos(plypos + Vector(0, 0, 100))
+		grenade:Spawn()
+		grenade:Fire("SetTimer", 3, 0)
+		//grenade:Fire("SetHealth", 9999, 0)
+		grenade:SetHealth(9999)
+	end
+end
+
 local function RainingBombs()
 	// i want to rain HL2 grenades over the map to keep players moving, maybe even over their heads
+	SendTimer(true)
+	local SpecialFunc = false
+	if GetGlobalInt("ActionCounter") % 10 == 0 then PrintMessage(HUD_PRINTTALK, "Double Bombs!") SpecialFunc = true end
 	timer.Create("RainingBombs", 1, ActionDuration, function()
 		for k, v in ipairs(player.GetAll()) do
-			local grenade = ents.Create("npc_grenade_frag")
-			if IsValid(grenade) then
-				local plypos = v:GetPos()
-				grenade:SetPos(plypos + Vector(0, 0, 100))
-				grenade:Spawn()
-				grenade:Fire("SetTimer", 3, 0)
-				//grenade:Fire("SetHealth", 9999, 0)
-				grenade:SetHealth(9999)
+			CreateFrag(v)
+			if SpecialFunc then
+				CreateFrag(v)
 			end
 		end
 	end)
@@ -1002,6 +1054,7 @@ end
 local function CrabInfestation()
 	print("spawning crabs")
 	local plys = GetAlivePlayers()
+	SendTimer(false, plys)
 	for i=1, #plys do
 		local v = plys[i]
 
@@ -1087,6 +1140,7 @@ end
 
 local function ItsAMystery()
 	local plys = GetAlivePlayers()
+	SendTimer(false, plys)
 	net.Start("ItsAMystery")
 	net.Send(plys)
 	for k, v in ipairs(plys) do
@@ -1101,6 +1155,7 @@ end
 local function Instakill()
 	// cods instakill
 	InstakillVar = true
+	SendTimer(true)
 	net.Start("Instakill")
 	net.Broadcast()
 	timer.Simple(ActionDuration, function()
@@ -1112,6 +1167,7 @@ local function Kamikaze()
 	// one person is chosen as kamikaze, 15 seconds to blow someone up, must blow 3 people up to revive
 	KamikazeVar = true
 	local plys = GetAlivePlayers()
+	SendTimer(false, plys)
 	math.randomseed(os.time())
 	local kamikazeplayer
 	if _gamemode == "terrortown" then
@@ -1182,6 +1238,7 @@ end
 
 local function MobaMode()
 	local plys = GetAlivePlayers()
+	SendTimer(false, plys)
 	net.Start("MobaMode")
 	net.Send(plys)
 end
@@ -1212,7 +1269,7 @@ local function BossMode()
 	local plys = GetAlivePlayers()
 	local boss = plys[GetPseudoRandomNumber(#plys)]
 	if DebugMode then boss = plys[1] end
-	if boss.IsBoss then BossMode() return end
+	if boss.IsBoss and not DebugMode then BossMode() return end
 	boss.IsBoss = true
 	net.Start("BossPlayer")
 		net.WriteBool(true)
@@ -1246,24 +1303,28 @@ end
 
 local function TankControls()
 	local plys = GetAlivePlayers()
+	SendTimer(false, plys)
 	net.Start("TankControls")
 	net.Send(plys)
 end
 
 local function RandomSensitivity()
 	local plys = GetAlivePlayers()
+	SendTimer(false, plys)
 	net.Start("RandomSensitivity")
 	net.Send(plys)
 end
 
 local function RandomOverlay()
 	local plys = GetAlivePlayers()
+	SendTimer(false, plys)
 	net.Start("RandomOverlay")
 	net.Send(plys)
 end
 
 local function RandomTexturize()
 	local plys = GetAlivePlayers()
+	SendTimer(false, plys)
 	net.Start("RandomTexturize")
 	net.Send(plys)
 end
@@ -1271,6 +1332,7 @@ end
 local function Nearsightedness()
 	// its DOF but spacing is 8 and initial dist is 9
 	local plys = GetAlivePlayers()
+	SendTimer(false, plys)
 	net.Start("Nearsightedness")
 	net.Send(plys)
 end
@@ -1278,6 +1340,7 @@ end
 local function ThreeDMode()
 	// stereoscopy
 	local plys = GetAlivePlayers()
+	SendTimer(false, plys)
 	net.Start("3DMode")
 	net.Send(plys)
 end
@@ -1285,6 +1348,7 @@ end
 local function MegaBloom()
 	// graphics in 2013
 	local plys = GetAlivePlayers()
+	SendTimer(false, plys)
 	net.Start("MegaBloom")
 	net.Send(plys)
 end

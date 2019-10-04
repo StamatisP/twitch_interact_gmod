@@ -111,7 +111,6 @@ function WEBSOCKET:onDisconnected()
 end
 
 hook.Add("InitPostEntity", "OpenSocket", function()
-	//print("post entity")
 	if file.Exists("twitch_interact.txt", "DATA") then
 		SetGlobalInt("ActionCounter", file.Read("twitch_interact.txt", "DATA"))
 	end

@@ -387,6 +387,9 @@ vgui.Register("FuncLabel", FuncLabel, "DLabel")
 
 local function VoteDerma(isDoubleVote)
 	if not isDoubleVote then isDoubleVote = false end
+	if f then
+		if f:IsValid() then f:Close() end
+	end
 	f = vgui.Create("DFrame")
 	if isDoubleVote then
 		f:SetSize(750, 350)
@@ -618,6 +621,12 @@ end)
 net.Receive("WhosWho", function()
 	WhosWho = net.ReadBool()
 	local loopsound = PlayLoopingSound("whoswho_loop.wav")
+	hook.Add("TGMTimerTick", "WhosWhoTick", function(actionTime)
+		if WhosWho then
+			whoswhoTab["$pp_colour_colour"] = math.Clamp(actionTime / 30, 0.01, 1)
+			whoswhoTab["$pp_colour_brightness"] = Lerp(actionTime / 30, -0.25, 0.18)
+		end
+	end)
 	if WhosWho then
 		surface.PlaySound("whoswho_sting.mp3")
 		if GetGlobalInt("ActionCounter", 1) % 10 == 0 then
@@ -633,37 +642,41 @@ net.Receive("WhosWho", function()
 		if timeText then
 			timeText:Close()
 		end
+		hook.Remove("TGMTimerTick", "WhosWhoTick")
 		timer.Destroy("TimerLower")
 	end
 end)
 
 net.Receive("StartTimer", function()
 	actionTime = net.ReadFloat()
-	actionTime = actionTime - 1
+	actiontime = actionTime or 15
+	hook.Run("TGMTimerStart", actionTime)
+	hook.Run("TGMTimerTick", actionTime)
 
 	local guiScale = ScrW() / 1920
-	timeText = vgui.Create("DFrame")
-	timeText:SetSize(250, 150)
-	timeText:CenterHorizontal()
-	timeText:SetPos(timeText:GetPos() + 50 / guiScale, 300 / guiScale)
-	timeText:ShowCloseButton(false)
-	timeText:SetDraggable(false)
-	timeText:SetTitle("")
-	timeText.Paint = function(self, w, h)
-		draw.SimpleTextOutlined(actionTime, "DermaLarge", 2, 2, Color(255, 170, 60), TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP, 2, Color(0, 0, 0))
+	if not timeText then
+		timeText = vgui.Create("DFrame")
+		timeText:SetSize(250, 150)
+		timeText:CenterHorizontal()
+		timeText:SetPos(ScrW() / 2, 300 / guiScale)
+		timeText:ShowCloseButton(false)
+		timeText:SetDraggable(false)
+		timeText:SetTitle("")
+		timeText.Paint = function(self, w, h)
+			draw.SimpleTextOutlined(actionTime, "DermaLarge", 2, 2, Color(255, 170, 60), TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP, 2, Color(0, 0, 0))
+		end
 	end
 
+	if timer.Exists("TimerLower") then timer.Destroy("TimerLower") end
 	timer.Create("TimerLower", 1, actionTime, function()
 		actionTime = actionTime - 1
-		if WhosWho then
-			whoswhoTab["$pp_colour_colour"] = math.Clamp(actionTime / 30, 0.01, 1)
-			whoswhoTab["$pp_colour_brightness"] = Lerp(actionTime / 30, -0.25, 0.18)
-		end
+		hook.Run("TGMTimerTick", actionTime)
 		if actionTime <= 0 or not actionTime then
 			if timeText then
 				timeText:Close()
 				timeText = nil
 			end
+			hook.Run("TGMTimerEnd")
 			timer.Destroy("TimerLower")
 		end
 	end)
