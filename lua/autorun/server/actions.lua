@@ -50,6 +50,7 @@ hook.Add("VotingStarted", "TimeSkipRec", function()
 	for k, v in ipairs(player.GetAll()) do
 		table.insert(oldPlyPos, v:GetPos())
 		table.insert(oldPlyView, v:EyeAngles())
+		GetPlayerInfoTGM(v)
 	end
 end)
 
@@ -539,10 +540,9 @@ local function InvisibleWarfare()
 	end)
 end
 
-function GetPlayerInfoTGM(player)
-	local result = {}
-
-	local t = {} // also from ulib
+function GetPlayerInfoTGM(player) // from ulib
+	local t = {}
+	if not player:Alive() then return end
 	player.SpawnInfo = t
 	t.health = player:Health()
 	t.armor = player:Armor()
@@ -797,9 +797,10 @@ end
 
 local function TimeSkip()
 	print("time has been skipped!")
-	for k, v in ipairs(GetAlivePlayers()) do
+	for k, v in ipairs(player.GetAll()) do
 		if not oldPlyPos[k] then continue end
 		if not oldPlyView[k] then continue end
+		if not v:Alive() then SpawnPlayer(v) end
 		v:SetPos(oldPlyPos[k])
 		v:SetEyeAngles(oldPlyView[k])
 	end
@@ -1263,8 +1264,7 @@ local function BossMode()
 			net.WriteBool(true)
 		net.Broadcast()
 	else
-		print("Not starting BossMode netmessage.")
-		print(#GetBossPlayers())
+		print("Not starting BossMode netmessage,  players: ", #GetBossPlayers())
 	end
 	local plys = GetAlivePlayers()
 	local boss = plys[GetPseudoRandomNumber(#plys)]
