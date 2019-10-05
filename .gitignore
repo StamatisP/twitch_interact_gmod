@@ -44,3 +44,6 @@ twitch_interact_gmod.gma
 create gma.bat
 gmpublish_create.bat
 update tgm.bat
+sound/
+models/
+materials/
