@@ -11,8 +11,7 @@ local DeafnessVar = false
 local InstakillVar = false
 local speedup = false
 local slowdown = false
-local oldPlyPos = oldPlyPos or {}
-local oldPlyView = oldPlyView or {}
+local TimeSkipTab = TimeSkipTab or {}
 local bouncyJump = false
 
 local DebugMode = true
@@ -45,11 +44,9 @@ hook.Add("GetFallDamage", "SlapOverwrite", function(ply, speed)
 end)
 
 hook.Add("VotingStarted", "TimeSkipRec", function()
-	table.Empty(oldPlyPos)
-	table.Empty(oldPlyView)
+	table.Empty(TimeSkipTab)
 	for k, v in ipairs(player.GetAll()) do
-		table.insert(oldPlyPos, v:GetPos())
-		table.insert(oldPlyView, v:EyeAngles())
+		table.insert(TimeSkipTab, {eyeangles = v:EyeAngles(), pos = v:GetPos(), wasAlive = v:Alive()})
 		GetPlayerInfoTGM(v)
 	end
 end)
@@ -798,11 +795,10 @@ end
 local function TimeSkip()
 	print("time has been skipped!")
 	for k, v in ipairs(player.GetAll()) do
-		if not oldPlyPos[k] then continue end
-		if not oldPlyView[k] then continue end
-		if not v:Alive() then SpawnPlayer(v) end
-		v:SetPos(oldPlyPos[k])
-		v:SetEyeAngles(oldPlyView[k])
+		if not TimeSkipTab[k].eyeangles or not TimeSkipTab[k].pos then continue end
+		if not v:Alive() and TimeSkipTab[k].wasAlive then SpawnPlayer(v) end
+		v:SetPos(TimeSkipTab[k].pos)
+		v:SetEyeAngles(TimeSkipTab[k].eyeangles)
 	end
 end
 
