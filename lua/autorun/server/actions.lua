@@ -1143,7 +1143,7 @@ local function ItsAMystery()
 	net.Start("ItsAMystery")
 	net.Send(plys)
 	for k, v in ipairs(plys) do
-		v:EmitSound("itsamystery.mp3", 0, 100, 0.5, CHAN_AUTO)
+		v:EmitSound("itsamystery.mp3", 90, 100, 0.5, CHAN_AUTO)
 	end
 end
 
@@ -1366,6 +1366,27 @@ local function MegaBloom()
 	net.Send(plys)
 end
 
+local function GoodnightGirl()
+	// makes gravity really high, and really low, probably killing everyone instantly. :)
+	math.randomseed(os.time())
+	for k, v in ipairs(GetAlivePlayers()) do
+		//v:SetHealth(10)
+		timer.Simple(math.Rand(0.05, 0.35), function()
+			v:EmitSound("goodnightgirl.mp3", 100, 100, 0.5, CHAN_AUTO)
+			timer.Simple(2.3, function()
+				local direction = Vector( 0, 0, math.Rand(1.2, 2.0) )
+				local power = 500
+				ApplyAccel( v, power, direction )
+				timer.Simple(0.8, function()
+					local direction = Vector( math.Rand(-0.5, 0.5), math.Rand(-0.5, 0.5), -2 )
+					local power = 900
+					ApplyAccel( v, power, direction )
+				end)
+			end)
+		end)
+	end
+end
+
 /* UTILITY ACTIONS */
 do
 	WSFunctions["printtwitchchat"] = PrintTwitchChat
@@ -1422,6 +1443,7 @@ do
 	WSFunctions["nearsightedness"] = Nearsightedness
 	WSFunctions["3dmode"] = ThreeDMode
 	WSFunctions["megabloom"] = MegaBloom
+	WSFunctions["goodnightgirl"] = GoodnightGirl
 end
 //WSFunctions["backseatgaming"] = BackseatGaming
 //WSFunctions["speedtime"] = SpeedTime

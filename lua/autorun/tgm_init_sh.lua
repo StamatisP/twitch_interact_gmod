@@ -58,7 +58,8 @@ PrettyFuncs = {
 	["randomtexturize"] = "Random Texturize",
 	["nearsightedness"] = "Nearsightedness",
 	["3dmode"] = "3D Mode",
-	["megabloom"] = "Graphics in 2013"
+	["megabloom"] = "Graphics in 2013",
+	["goodnightgirl"] = "Goodnight Girl"
 }
 
 function IncrementActionCounter()
