@@ -167,7 +167,14 @@ local pp_effects = {
 	[6] = "models/props_combine/tprings_globe",
 	[7] = "models/props_combine/com_shield001a",
 	[8] = "models/props_combine/stasisshield_sheet",
-	[9] = "models/props_lab/tank_glass001"
+	[9] = "models/props_lab/tank_glass001",
+	[10] = "overlays/whirl"
+}
+
+local txt_effects = {
+	[1] = "pp/texturize/rainbow.png",
+	[2] = "pp/texturize/pinko.png",
+	[3] = "pp/texturize/squaredo.png"
 }
 
 /* HOOKS */
@@ -691,7 +698,7 @@ net.Receive("StartTimer", function()
 	local guiScale = ScrW() / 1920
 	if not timeText then
 		timeText = vgui.Create("DPanel")
-		timeText:SetSize(256, 256)
+		timeText:SetSize(32, 32)
 		timeText:SetPos(ScrW() / 2, 300 / guiScale)
 		timeText:CenterHorizontal(0.5)
 		timeText.Paint = function(self, w, h)
@@ -699,7 +706,7 @@ net.Receive("StartTimer", function()
 				surface.SetDrawColor( Color( 0, 0, 0, 100 ) )
 				surface.DrawRect(0,0,w,h)
 				//print(actionTime)
-				//draw.SimpleText(actionTime, "ChatFont", 0, 0, Color(255, 170, 60), TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
+				draw.SimpleText(actionTime, "ChatFont", 0, 0, Color(255, 170, 60), TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
 			else
 				draw.SimpleTextOutlined(actionTime, "DermaLarge", 2, 2, Color(255, 170, 60), TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP, 2, Color(0, 0, 0))
 			end
@@ -712,12 +719,13 @@ net.Receive("StartTimer", function()
 				surface.SetDrawColor( Color( 255, 0, 0, 255 ) )
 				surface.DrawOutlinedRect(0,0,w,h)
 			end*/
-			local timer = vgui.Create("DPanel", timeText)
+			/*local timer = vgui.Create("DPanel", timeText)
+			timer:SetSize(256, 256)
 			timer.Paint = function(self, w, h)
 				draw.SimpleText(actionTime, "VRText", 0, 0, Color(255, 170, 60), TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
-			end
+			end*/
 			timeText:SetPos(0, 0)
-			VRUtilMenuOpen("timer", 256, 256, timeText, 1, Vector(6,6,6), Angle(0,-90,50), 0.01, false, nil)
+			VRUtilMenuOpen("timer", 32, 32, timeText, 1, Vector(6,6,6), Angle(0,-90,50), 0.6, false, nil)
 			VRUtilMenuRenderPanel("timer")
 		end
 	end
@@ -841,12 +849,6 @@ net.Receive("RandomOverlay", function()
 		RandomOverlay = false
 	end)
 end)
-
-local txt_effects = {
-	[1] = "pp/texturize/rainbow.png",
-	[2] = "pp/texturize/pinko.png",
-	[3] = "pp/texturize/squaredo.png"
-}
 
 net.Receive("RandomTexturize", function()
 	math.randomseed(os.time())
