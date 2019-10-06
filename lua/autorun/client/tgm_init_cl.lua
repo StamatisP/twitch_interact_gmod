@@ -33,7 +33,7 @@ ActionDuration = ActionDuration or 15
 local actionTime = actionTime or 0
 local timeText
 
-local f
+local f, f2
 local label1, label2, label3, label4
 local progbar1, progbar2, progbar3, progbar4
 
@@ -248,14 +248,14 @@ local function TGMRender()
 		DrawBloom(-0.1, 1, 5, 5, 4, 3, 1, 1, 1)
 	end
 	if RandomTexturize then
-		if g_VR then
+		if g_VR and g_VR.active then
 			DrawTexturizeVR(1, Material(TxtEffect))
 		else
 			DrawTexturize(1, Material(TxtEffect))
 		end
 	end
 	if RandomOverlay then
-		if g_VR then
+		if g_VR and g_VR.active then
 			DrawMaterialOverlayVR(RndOverlay, RndRefract)
 		else
 			DrawMaterialOverlay(RndOverlay, RndRefract)
@@ -412,63 +412,98 @@ end
 
 local VoteMenu = {}
 function VoteMenu:Init()
-	f = vgui.Create("DFrame")
+	self.f = vgui.Create("DFrame", self)
 	if isDoubleVote then
-		f:SetSize(750, 350)
+		self.f:SetSize(750, 350)
 	else
-		f:SetSize(500, 350)
+		self.f:SetSize(500, 350)
 	end
-	local frameWidth, frameHeight = f:GetSize()
-	f:SetTitle("Vote Menu")
-	f:SetPos(ScrW() - frameWidth, 0)
-	//f:CenterVertical(0.5)
-	f:ShowCloseButton(false)
-	f.Paint = function(s, w, h)
+	local frameWidth, frameHeight = self.f:GetSize()
+	self.f:SetTitle("Vote Menu")
+	//self.f:SetPos(0, 0)
+	self.f:ShowCloseButton(false)
+	self.f.Paint = function(s, w, h)
 		draw.RoundedBox(8, 0, 0, w, h, Color(60, 60, 60, 100))
 	end
+	self.label1 = vgui.Create("FuncLabel", self)
+	self.label1:SetPos(15, 30)
 
-	label1 = vgui.Create("FuncLabel", f)
-	label1:SetPos(15, 30)
+	self.progbar1 = vgui.Create("DProgress", self)
+	self.progbar1:SetPos(25, 60)
+	self.progbar1:SetSize(frameWidth - 50, 40)
 
-	progbar1 = vgui.Create("DProgress", f)
-	progbar1:SetPos(25, 60)
-	progbar1:SetSize(frameWidth - 50, 40)
+	self.label2 = vgui.Create("FuncLabel", self)
+	self.label2:SetPos(15, 110)
 
-	label2 = vgui.Create("FuncLabel", f)
-	label2:SetPos(15, 110)
+	self.progbar2 = vgui.Create("DProgress", self)
+	self.progbar2:SetPos(25, 140)
+	self.progbar2:SetSize(frameWidth - 50, 40)
 
-	progbar2 = vgui.Create("DProgress", f)
-	progbar2:SetPos(25, 140)
-	progbar2:SetSize(frameWidth - 50, 40)
+	self.label3 = vgui.Create("FuncLabel", self)
+	self.label3:SetPos(15, 190)
 
-	label3 = vgui.Create("FuncLabel", f)
-	label3:SetPos(15, 190)
+	self.progbar3 = vgui.Create("DProgress", self)
+	self.progbar3:SetPos(25, 220)
+	self.progbar3:SetSize(frameWidth - 50, 40)
 
-	progbar3 = vgui.Create("DProgress", f)
-	progbar3:SetPos(25, 220)
-	progbar3:SetSize(frameWidth - 50, 40)
+	self.label4 = vgui.Create("FuncLabel", self)
+	self.label4:SetPos(15, 270)
 
-	label4 = vgui.Create("FuncLabel", f)
-	label4:SetPos(15, 270)
+	self.progbar4 = vgui.Create("DProgress", self)
+	self.progbar4:SetPos(25, 300)
+	self.progbar4:SetSize(frameWidth - 50, 40)
 
-	progbar4 = vgui.Create("DProgress", f)
-	progbar4:SetPos(25, 300)
-	progbar4:SetSize(frameWidth - 50, 40)
+	self:InvalidateLayout(true)
+	self:SizeToChildren(true, true)
+end
+function VoteMenu:UpdateVotes(tab)
+	self.maxVotes = 0
+	for k, v in ipairs(tab) do
+		self.maxVotes = self.maxVotes + v.value
+	end
+	if not self.label1 then return end
+	if isDoubleVote then
+		self.label1:SetText2( (PrettyFuncs[tab[1].name] or tab[1].name) .. " + " .. (PrettyFuncs[tab[1].name2] or tab[1].name2) .. " (!" .. tab[1].name .. ")")
+		self.label2:SetText2( (PrettyFuncs[tab[2].name] or tab[2].name) .. " + " .. (PrettyFuncs[tab[2].name2] or tab[2].name2) .. " (!" .. tab[2].name .. ")")
+		self.label3:SetText2( (PrettyFuncs[tab[3].name] or tab[3].name) .. " + " .. (PrettyFuncs[tab[3].name2] or tab[3].name2) .. " (!" .. tab[3].name .. ")")
+		self.label4:SetText2( (PrettyFuncs[tab[4].name] or tab[4].name) .. " + " .. (PrettyFuncs[tab[4].name2] or tab[4].name2) .. " (!" .. tab[4].name .. ")")
+	else
+		self.label1:SetText2( (PrettyFuncs[tab[1].name] or tab[1].name) .. " (!" .. tab[1].name .. ")")
+		self.label2:SetText2( (PrettyFuncs[tab[2].name] or tab[2].name) .. " (!" .. tab[2].name .. ")")
+		self.label3:SetText2( (PrettyFuncs[tab[3].name] or tab[3].name) .. " (!" .. tab[3].name .. ")")
+		self.label4:SetText2( (PrettyFuncs[tab[4].name] or tab[4].name) .. " (!" .. tab[4].name .. ")")
+	end
+
+	self.progbar1:SetFraction(tab[1].value / self.maxVotes)
+	self.progbar2:SetFraction(tab[2].value / self.maxVotes)
+	self.progbar3:SetFraction(tab[3].value / self.maxVotes)
+	self.progbar4:SetFraction(tab[4].value / self.maxVotes)
+end
+function VoteMenu:Paint(wide, tall)
+	//surface.SetDrawColor(Color(255, 0, 0))
+	//surface.DrawRect(0, 0, wide, tall)
 end
 
 vgui.Register("FuncLabel", FuncLabel, "DLabel")
-vgui.Register("VoteMenuDerma", VoteMenu)
+vgui.Register("VoteMenuDerma", VoteMenu, "Panel")
 
 local function VoteDerma(isDoubleVote)
 	if not isDoubleVote then isDoubleVote = false end
 	if f then
-		if f:IsValid() then f:Close() end
+		if f:IsValid() then f:Clear() end
 	end
-	f2 = vgui.Create("VoteMenuDerma")
+	f = vgui.Create("VoteMenuDerma")
+
 	if g_VR and g_VR.active then
 		f:SetPos(0, 0)
 		VRUtilMenuOpen("VoteMenu", 1024, 1024, f, 1, Vector(0,0,0), Angle(0,-90,50), 0.03, false, nil)
 		VRUtilMenuRenderPanel("VoteMenu")
+		f2 = vgui.Create("VoteMenuDerma")
+		local frameWidth, frameHeight = f2.f:GetSize()
+		f2:SetPos(ScrW() - frameWidth, 0)
+	else
+		local frameWidth, frameHeight = f.f:GetSize()
+		f:SetPos(ScrW() - frameWidth, 0)
 	end
 end
 
@@ -493,36 +528,20 @@ net.Receive("UpdateDerma", function()
 	local json = util.Decompress(data)
 	if not json then ErrorNoHalt("why is json nil???") end
 	local votes = util.JSONToTable(json)
-	local maxVotes = 0
-	for k, v in ipairs(votes) do
-		maxVotes = maxVotes + v.value
-	end
-	if not label1 then return end
-	if isDoubleVote then
-		label1:SetText2( (PrettyFuncs[votes[1].name] or votes[1].name) .. " + " .. (PrettyFuncs[votes[1].name2] or votes[1].name2) .. " (!" .. votes[1].name .. ")")
-		label2:SetText2( (PrettyFuncs[votes[2].name] or votes[2].name) .. " + " .. (PrettyFuncs[votes[2].name2] or votes[2].name2) .. " (!" .. votes[2].name .. ")")
-		label3:SetText2( (PrettyFuncs[votes[3].name] or votes[3].name) .. " + " .. (PrettyFuncs[votes[3].name2] or votes[3].name2) .. " (!" .. votes[3].name .. ")")
-		label4:SetText2( (PrettyFuncs[votes[4].name] or votes[4].name) .. " + " .. (PrettyFuncs[votes[4].name2] or votes[4].name2) .. " (!" .. votes[4].name .. ")")
-	else
-		label1:SetText2( (PrettyFuncs[votes[1].name] or votes[1].name) .. " (!" .. votes[1].name .. ")")
-		label2:SetText2( (PrettyFuncs[votes[2].name] or votes[2].name) .. " (!" .. votes[2].name .. ")")
-		label3:SetText2( (PrettyFuncs[votes[3].name] or votes[3].name) .. " (!" .. votes[3].name .. ")")
-		label4:SetText2( (PrettyFuncs[votes[4].name] or votes[4].name) .. " (!" .. votes[4].name .. ")")
-	end
-
-	progbar1:SetFraction(votes[1].value / maxVotes)
-	progbar2:SetFraction(votes[2].value / maxVotes)
-	progbar3:SetFraction(votes[3].value / maxVotes)
-	progbar4:SetFraction(votes[4].value / maxVotes)
+	f:UpdateVotes(votes)
 	if g_VR and g_VR.active then
+		f2:UpdateVotes(votes)
 		VRUtilMenuRenderPanel("VoteMenu")
 	end
 	//PrintTable(votes)
 end)
 
 net.Receive("EndVoting", function()
-	f:Close()
+	f.f:Clear()
+	f:Remove()
 	if g_VR and g_VR.active then
+		f2.f:Clear()
+		f:Remove()
 		VRUtilMenuClose("VoteMenu")
 	end
 end)
@@ -545,11 +564,13 @@ net.Receive("PrintTwitchChat", function()
 	chat.AddText(Color(140, 105, 204), "[", TwitchColors[math.random(#TwitchColors)], capped_user .. ": ", Color(255, 255, 255), message, Color(140, 105, 204), "]")
 end)
 
-net.Receive("the_world_time_stop.PlaySound", function()
-    surface.PlaySound("the_world_time_stop.mp3")
-end)
-net.Receive("the_world_time_start.PlaySound", function()
-    surface.PlaySound("the_world_time_start.mp3")
+net.Receive("ZaWarudoSound", function()
+	local bool = net.ReadBool()
+	if bool then
+		surface.PlaySound("the_world_time_stop.mp3")
+	else
+		surface.PlaySound("the_world_time_start.mp3")
+	end
 end)	
 
 local function PlayLoopingSound(soundname)
@@ -724,6 +745,9 @@ net.Receive("StartTimer", function()
 			timer.Paint = function(self, w, h)
 				draw.SimpleText(actionTime, "VRText", 0, 0, Color(255, 170, 60), TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
 			end*/
+			if VRUtilIsMenuOpen("timer") then
+				VRUtilMenuClose("timer")
+			end
 			timeText:SetPos(0, 0)
 			VRUtilMenuOpen("timer", 32, 32, timeText, 1, Vector(6,6,6), Angle(0,-90,50), 0.6, false, nil)
 			VRUtilMenuRenderPanel("timer")

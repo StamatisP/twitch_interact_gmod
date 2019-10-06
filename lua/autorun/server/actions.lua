@@ -458,7 +458,8 @@ local function ZaWarudo() // from Vipes, edited for personal use https://steamco
 	local plys = GetAlivePlayers()
 	SendTimer(false, plys)
 	// look at the addon
-	net.Start("the_world_time_stop.PlaySound")
+	net.Start("ZaWarudoSound")
+		net.WriteBool(true)
 	net.Broadcast()
 	timer.Create("TheWorld", 2, 1, function()
 		RunConsoleCommand( "phys_timescale", "0" )
@@ -474,7 +475,8 @@ local function ZaWarudo() // from Vipes, edited for personal use https://steamco
 			end
 		end
 		timer.Create("stoppedTime", ActionDuration - 1, 1, function()
-			net.Start("the_world_time_start.PlaySound")
+			net.Start("ZaWarudoSound")
+				net.WriteBool(false)
 			net.Broadcast()
 			timer.Create("StartTime", 1, 1, function()
 				RunConsoleCommand( "phys_timescale", "1" )
