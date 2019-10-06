@@ -14,7 +14,7 @@ local slowdown = false
 local TimeSkipTab = TimeSkipTab or {}
 local bouncyJump = false
 
-local DebugMode = true
+local DebugMode = false
 
 local KamikazeVar = false
 local KamikazePlayer = nil
@@ -73,7 +73,7 @@ hook.Add("EntityTakeDamage", "TGMTakeDamage", function(target, dmginfo)
 		dmginfo:ScaleDamage(99999)
 	end
 	if target:IsPlayer() and target.Kamikaze then
-		dmginfo:ScaleDamage(0.1)
+		dmginfo:ScaleDamage(0.2)
 	end
 	if target:IsPlayer() and target.WhosWho then
 		dmginfo:ScaleDamage(0)
@@ -1284,6 +1284,21 @@ local function BossMode()
 		SendFullStateUpdate()
 		boss:StripAll()
 		boss:Give("tgm_bossminigun_ttt")
+
+		hook.Add("TTTEndRound", "BossMode_TTTEnd"..boss:Nick(), function(result)
+			if result == WIN_TRAITOR then
+				print("boss success")
+				boss.IsBoss = false
+				PrintMessage(HUD_PRINTTALK, boss:Nick() .. " was successful!")
+				net.Start("BossMode")
+					net.WriteBool(false)
+				net.Broadcast()
+				net.Start("BossPlayer")
+					net.WriteBool(false)
+				net.Send(boss)
+			end
+			hook.Remove("BossMode_TTTEnd"..boss:Nick())
+		end)
 	else
 		boss:StripWeapons()
 		boss:Give("tgm_bossminigun")

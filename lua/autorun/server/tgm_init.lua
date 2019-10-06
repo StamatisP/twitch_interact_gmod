@@ -46,9 +46,9 @@ util.AddNetworkString("3DMode")
 util.AddNetworkString("MegaBloom")
 
 do // add files here precache in shared init.lua
-	for k, v in pairs(file.Find("sound/*", "THIRDPARTY")) do
+	/*for k, v in pairs(file.Find("sound/*", "THIRDPARTY")) do
 		resource.AddFile("sound/" .. v)
-	end
+	end*/
 	resource.AddFile("materials/overlays/vignette01.vmt")
 end
 
@@ -207,20 +207,22 @@ hook.Add("PlayerSay", "ChangeSettings", function(sender, txt, teamchat)
 		end
 		return ""
 	elseif WSFunctions[string.TrimLeft(args[1], "!")] then
-		if not sender:IsAdmin() then return "" end
 		print("function found in PlayerSay, running...")
 		local clean_command = string.TrimLeft(args[1], "!")
-		IncrementActionCounter()
 
 		if not args[2] then
 			if voting_time then
 				WSFunctions["voteinfo"](sender:Nick(), clean_command)
 			else
+				if not sender:IsAdmin() then return "" end
 				WSFunctions[clean_command]()
+				IncrementActionCounter()
 			end
 		else
+			if not sender:IsAdmin() then return "" end
 			if args[2] == "true" or args[2] == "false" then args[2] = tobool(args[2]) else return "" end
 			WSFunctions[clean_command](args[2])
+			IncrementActionCounter()
 		end
 
 		return ""

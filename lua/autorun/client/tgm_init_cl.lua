@@ -130,6 +130,24 @@ surface.CreateFont( "FuncTitle", {
 	outline = false,
 })
 
+surface.CreateFont("VRText", {
+	font = "Verdana", -- Use the font-name which is shown to you by your operating system Font Viewer, not the file name
+	extended = false,
+	size = 15,
+	weight = 200,
+	blursize = 0,
+	scanlines = 0,
+	antialias = true,
+	underline = false,
+	italic = false,
+	strikeout = false,
+	symbol = false,
+	rotary = false,
+	shadow = true,
+	additive = false,
+	outline = false,
+})
+
 local MusicChannel
 local boss_music = {
 	[1] = {song = "music/hl1_song10.mp3", duration = 104},
@@ -216,9 +234,7 @@ local function TGMRender()
 			render.SuppressEngineLighting(false)
 		cam.End3D()
 	end
-end
 
-local function TGMPostRender()
 	if MegaBloom then
 		//RenderDoF(LocalPlayer():GetShootPos(), Angle(0, 0, 0), LocalPlayer():GetShootPos() + Vector(9, 0, 0), 0.5, 2, 2, false, nil, 90)
 		//print("bruh")
@@ -238,6 +254,9 @@ local function TGMPostRender()
 			DrawMaterialOverlay(RndOverlay, RndRefract)
 		end
 	end
+end
+
+local function TGMPostRender()
 end
 
 hook.Add("PostDrawEffects", "TGMRender", TGMRender)
@@ -384,13 +403,8 @@ function FuncLabel:Paint(w, h)
 	draw.SimpleText(self:GetText2(), "FuncTitle", 0, 0, Color(30, 255, 30), TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
 end
 
-vgui.Register("FuncLabel", FuncLabel, "DLabel")
-
-local function VoteDerma(isDoubleVote)
-	if not isDoubleVote then isDoubleVote = false end
-	if f then
-		if f:IsValid() then f:Close() end
-	end
+local VoteMenu = {}
+function VoteMenu:Init()
 	f = vgui.Create("DFrame")
 	if isDoubleVote then
 		f:SetSize(750, 350)
@@ -435,6 +449,22 @@ local function VoteDerma(isDoubleVote)
 	progbar4:SetSize(frameWidth - 50, 40)
 end
 
+vgui.Register("FuncLabel", FuncLabel, "DLabel")
+vgui.Register("VoteMenuDerma", VoteMenu)
+
+local function VoteDerma(isDoubleVote)
+	if not isDoubleVote then isDoubleVote = false end
+	if f then
+		if f:IsValid() then f:Close() end
+	end
+	f2 = vgui.Create("VoteMenuDerma")
+	if g_VR and g_VR.active then
+		f:SetPos(0, 0)
+		VRUtilMenuOpen("VoteMenu", 1024, 1024, f, 1, Vector(0,0,0), Angle(0,-90,50), 0.03, false, nil)
+		VRUtilMenuRenderPanel("VoteMenu")
+	end
+end
+
 net.Receive("VoteDerma", function()
 	isDoubleVote = net.ReadBool()
 	local len = net.ReadUInt(16)
@@ -460,6 +490,7 @@ net.Receive("UpdateDerma", function()
 	for k, v in ipairs(votes) do
 		maxVotes = maxVotes + v.value
 	end
+	if not label1 then return end
 	if isDoubleVote then
 		label1:SetText2( (PrettyFuncs[votes[1].name] or votes[1].name) .. " + " .. (PrettyFuncs[votes[1].name2] or votes[1].name2) .. " (!" .. votes[1].name .. ")")
 		label2:SetText2( (PrettyFuncs[votes[2].name] or votes[2].name) .. " + " .. (PrettyFuncs[votes[2].name2] or votes[2].name2) .. " (!" .. votes[2].name .. ")")
@@ -476,11 +507,17 @@ net.Receive("UpdateDerma", function()
 	progbar2:SetFraction(votes[2].value / maxVotes)
 	progbar3:SetFraction(votes[3].value / maxVotes)
 	progbar4:SetFraction(votes[4].value / maxVotes)
+	if g_VR and g_VR.active then
+		VRUtilMenuRenderPanel("VoteMenu")
+	end
 	//PrintTable(votes)
 end)
 
 net.Receive("EndVoting", function()
 	f:Close()
+	if g_VR and g_VR.active then
+		VRUtilMenuClose("VoteMenu")
+	end
 end)
 
 /* NET RECEIVES */
@@ -640,9 +677,6 @@ net.Receive("WhosWho", function()
 	else
 		print("ending")
 		loopsound:FadeOut(1)
-		if timeText then
-			timeText:Close()
-		end
 		hook.Remove("TGMTimerTick", "WhosWhoTick")
 		timer.Destroy("TimerLower")
 	end
@@ -656,25 +690,52 @@ net.Receive("StartTimer", function()
 
 	local guiScale = ScrW() / 1920
 	if not timeText then
-		timeText = vgui.Create("DFrame")
-		timeText:SetSize(250, 150)
-		timeText:CenterHorizontal()
+		timeText = vgui.Create("DPanel")
+		timeText:SetSize(256, 256)
 		timeText:SetPos(ScrW() / 2, 300 / guiScale)
-		timeText:ShowCloseButton(false)
-		timeText:SetDraggable(false)
-		timeText:SetTitle("")
+		timeText:CenterHorizontal(0.5)
 		timeText.Paint = function(self, w, h)
-			draw.SimpleTextOutlined(actionTime, "DermaLarge", 2, 2, Color(255, 170, 60), TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP, 2, Color(0, 0, 0))
+			if g_VR and g_VR.active then
+				surface.SetDrawColor( Color( 0, 0, 0, 100 ) )
+				surface.DrawRect(0,0,w,h)
+				//print(actionTime)
+				//draw.SimpleText(actionTime, "ChatFont", 0, 0, Color(255, 170, 60), TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
+			else
+				draw.SimpleTextOutlined(actionTime, "DermaLarge", 2, 2, Color(255, 170, 60), TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP, 2, Color(0, 0, 0))
+			end
+		end
+		if g_VR and g_VR.active then
+			/*local testpanel = vgui.Create("DPanel")
+			testpanel:SetPos(0, 0)
+			testpanel:SetSize(64, 64)
+			function testpanel:Paint(w, h)
+				surface.SetDrawColor( Color( 255, 0, 0, 255 ) )
+				surface.DrawOutlinedRect(0,0,w,h)
+			end*/
+			local timer = vgui.Create("DPanel", timeText)
+			timer.Paint = function(self, w, h)
+				draw.SimpleText(actionTime, "VRText", 0, 0, Color(255, 170, 60), TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
+			end
+			timeText:SetPos(0, 0)
+			VRUtilMenuOpen("timer", 256, 256, timeText, 1, Vector(6,6,6), Angle(0,-90,50), 0.01, false, nil)
+			VRUtilMenuRenderPanel("timer")
 		end
 	end
 
 	if timer.Exists("TimerLower") then timer.Destroy("TimerLower") end
 	timer.Create("TimerLower", 1, actionTime, function()
 		actionTime = actionTime - 1
+		if g_VR and g_VR.active then
+			VRUtilMenuRenderPanel("timer")
+		end
 		hook.Run("TGMTimerTick", actionTime)
+
 		if actionTime <= 0 or not actionTime then
 			if timeText then
-				timeText:Close()
+				if g_VR and g_VR.active then
+					VRUtilMenuClose("timer")
+				end
+				timeText:Remove()
 				timeText = nil
 			end
 			hook.Run("TGMTimerEnd")
