@@ -1403,6 +1403,38 @@ local function PunchScreen()
 	end
 end
 
+local function MathTime()
+	local plys = GetAlivePlayers()
+	// basically it selects a random question or maybe math question (or both) and people have to type the answer in chat or else they die
+	local firstvar = math.random(-25, 25)
+	local lastvar = math.random(-25, 25)
+	local question_string = firstvar .. " + ".. lastvar .. " = ?"
+	local answer = firstvar + lastvar
+	print(answer)
+
+	PrintMessage(HUD_PRINTTALK, question_string)
+	PrintMessage(HUD_PRINTCENTER, question_string)
+	timer.Create("PrintQuestion", 1, ActionDuration - 1, function()
+		PrintMessage(HUD_PRINTCENTER, question_string)
+	end)
+
+	hook.Add("PlayerSay", "CheckPlayerAnswer", function(sender, txt, teamchat)
+		print(txt)
+		if txt == tostring(answer) then
+			sender:PrintMessage(HUD_PRINTTALK, "You answered correctly!")
+			sender.MathWin = true
+			return ""
+		end
+	end)
+	timer.Simple(ActionDuration, function()
+		for k, v in ipairs(plys) do
+			if v.MathWin then v.MathWin = false continue end
+			v:PrintMessage(HUD_PRINTTALK, "You failed!")
+			v:Kill()
+		end
+	end)
+end
+
 /* UTILITY ACTIONS */
 do
 	WSFunctions["printtwitchchat"] = PrintTwitchChat
@@ -1461,6 +1493,7 @@ do
 	WSFunctions["megabloom"] = MegaBloom
 	WSFunctions["goodnightgirl"] = GoodnightGirl
 	WSFunctions["punchscreen"] = PunchScreen
+	WSFunctions["mathtime"] = MathTime
 end
 //WSFunctions["backseatgaming"] = BackseatGaming
 //WSFunctions["speedtime"] = SpeedTime

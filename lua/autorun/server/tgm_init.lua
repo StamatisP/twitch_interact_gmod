@@ -43,6 +43,7 @@ util.AddNetworkString("RandomOverlay")
 util.AddNetworkString("Nearsightedness")
 util.AddNetworkString("3DMode")
 util.AddNetworkString("MegaBloom")
+util.AddNetworkString("MathTime")
 
 do // add files here precache in shared init.lua
 	/*for k, v in pairs(file.Find("sound/*", "THIRDPARTY")) do
