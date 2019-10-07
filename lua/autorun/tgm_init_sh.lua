@@ -59,7 +59,8 @@ PrettyFuncs = {
 	["nearsightedness"] = "Nearsightedness",
 	["3dmode"] = "3D Mode",
 	["megabloom"] = "Graphics in 2013",
-	["goodnightgirl"] = "Goodnight Girl"
+	["goodnightgirl"] = "Goodnight Girl",
+	["punchscreen"] = "Screen Punch"
 }
 
 function IncrementActionCounter()

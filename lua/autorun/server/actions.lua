@@ -1389,6 +1389,20 @@ local function GoodnightGirl()
 	end
 end
 
+local function PunchScreen()
+	for k, v in ipairs(GetAlivePlayers()) do
+		timer.Create("Punch"..v:Nick(), 0.5, ActionDuration * 2, function()
+			local rand = AngleRand(-10, 10)
+			local eyeang = v:EyeAngles()
+			eyeang.pitch = eyeang.pitch + rand.pitch
+			eyeang.yaw = eyeang.yaw + rand.yaw
+			print(eyeang)
+			eyeang:Normalize()
+			v:ViewPunch(eyeang)
+		end)
+	end
+end
+
 /* UTILITY ACTIONS */
 do
 	WSFunctions["printtwitchchat"] = PrintTwitchChat
@@ -1446,6 +1460,7 @@ do
 	WSFunctions["3dmode"] = ThreeDMode
 	WSFunctions["megabloom"] = MegaBloom
 	WSFunctions["goodnightgirl"] = GoodnightGirl
+	WSFunctions["punchscreen"] = PunchScreen
 end
 //WSFunctions["backseatgaming"] = BackseatGaming
 //WSFunctions["speedtime"] = SpeedTime
