@@ -242,6 +242,7 @@ local function TGMRender()
 		cam.End3D()
 	end
 
+	if g_VR and g_VR.active then return end
 	if MegaBloom then
 		//RenderDoF(LocalPlayer():GetShootPos(), Angle(0, 0, 0), LocalPlayer():GetShootPos() + Vector(9, 0, 0), 0.5, 2, 2, false, nil, 90)
 		//print("bruh")
@@ -263,11 +264,30 @@ local function TGMRender()
 	end
 end
 
-local function TGMPostRender()
+local function VRTGMRender()
+	if MegaBloom then
+		//RenderDoF(LocalPlayer():GetShootPos(), Angle(0, 0, 0), LocalPlayer():GetShootPos() + Vector(9, 0, 0), 0.5, 2, 2, false, nil, 90)
+		//print("bruh")
+		DrawBloom(-0.1, 1, 5, 5, 4, 3, 1, 1, 1)
+	end
+	if RandomTexturize then
+		if g_VR and g_VR.active then
+			DrawTexturizeVR(1, Material(TxtEffect))
+		else
+			DrawTexturize(1, Material(TxtEffect))
+		end
+	end
+	if RandomOverlay then
+		if g_VR and g_VR.active then
+			DrawMaterialOverlayVR(RndOverlay, RndRefract)
+		else
+			DrawMaterialOverlay(RndOverlay, RndRefract)
+		end
+	end
 end
 
 hook.Add("PostDrawEffects", "TGMRender", TGMRender)
-hook.Add("PostRender", "TGMPostRender", TGMPostRender)
+if g_VR then hook.Add("VRUtilEventPreRender", "VRTGMRender", VRTGMRender) end
 
 hook.Add("OnPlayerChat", "check_tgm_chat", function(ply, text, teamchat, isdead)
 	if text == "!chat" then
@@ -647,32 +667,43 @@ net.Receive("Paranoia", function()
 	local rndvo = math.random(1, 5)
 	local rndstart = math.random(1, 2)
 	local rndloop = math.random(1, 4)
-	local loopsnd = PlayLoopingSound("paranoia_loop_"..rndloop..".wav")
+	local loopstring = "paranoia_loop_"..rndloop..".wav"
+	local loopsnd = PlayLoopingSound(loopstring)
 	surface.PlaySound("paranoia_vo_"..rndvo..".mp3")
 	surface.PlaySound("paranoia_start_"..rndstart..".mp3")
 	loopsnd:PlayEx(0.8, 100)
+
+	hook.Add("EntityEmitSound", "ParanoiaSoundDSP", function(tab)
+		if tab.OriginalSoundName == loopstring then
+			tab.DSP = 0
+			return true
+		else
+			tab.DSP = 31
+			return true
+		end
+	end)
 	timer.Create("fog_end_lerp_paranoia", 0.05, 0, function()
 		if Fog_End <= 280 then
-			LocalPlayer():SetDSP(31, false)
-			loopsnd:SetDSP(0)
 			timer.Destroy("fog_end_lerp_paranoia")
 			return
 		end
 		Fog_End = math.Approach(Fog_End, 280, -70)
 		Fog_Density = math.Approach(Fog_Density, 1, 0.025)
 	end)
+
 	timer.Simple(ActionDuration, function()
 		surface.PlaySound("paranoia_end_1.mp3")
 		timer.Create("fog_end_lerp_2_paranoia", 0.05, 0, function()
 			if Fog_Density <= 0 then
 				loopsnd:FadeOut(1)
 				timer.Destroy("fog_end_lerp_2_paranoia")
-				LocalPlayer():SetDSP(0, false)
+				hook.Remove("EntityEmitSound", "ParanoiaSoundDSP")
 				Paranoia = false
 				return
 			end
 			Fog_End = math.Approach(Fog_End, 5600, 70)
 			Fog_Density = math.Approach(Fog_Density, 0, -0.025)
+			hook.Remove("EntityEmitSound", "ParanoiaLoopDSP")
 		end)
 	end)
 end)

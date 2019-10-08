@@ -21,8 +21,8 @@ PrettyFuncs = {
 	["zawarudo"] = "The World",
 	["invisiblewarfare"] = "Invisible Warfare",
 	["ragdolleveryone"] = "Ragdoll Everyone",
-	["speedtime"] = "Speed up Time", // NOT INCLUDED
-	["slowtime"] = "Slow down Time", // NOT INCLUDED
+	["speedtime"] = "Speed up Time",
+	["slowtime"] = "Slow down Time",
 	["speedup"] = "Speed up Players",
 	["slowdown"] = "Slow down Players",
 	["reversecontrols"] = "Reverse Controls",
@@ -60,7 +60,9 @@ PrettyFuncs = {
 	["3dmode"] = "3D Mode",
 	["megabloom"] = "Graphics in 2013",
 	["goodnightgirl"] = "Goodnight Girl",
-	["punchscreen"] = "Screen Punch"
+	["punchscreen"] = "Screen Punch",
+	["mathtime"] = "Math Time",
+	["prophunt"] = "Prop Hunt"
 }
 
 function IncrementActionCounter()

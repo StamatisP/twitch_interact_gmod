@@ -13,6 +13,7 @@ local speedup = false
 local slowdown = false
 local TimeSkipTab = TimeSkipTab or {}
 local bouncyJump = false
+local goodnightGirl = false
 
 local DebugMode = false
 
@@ -40,6 +41,17 @@ end)
 hook.Add("GetFallDamage", "SlapOverwrite", function(ply, speed)
 	if isSlapping or bouncyJump then
 		return 0
+	end
+end)
+
+hook.Add("EntityTakeDamage", "FallDamagePrevent", function(ent, dmginfo)
+	if IsValid(ent) and ent:IsPlayer() and dmginfo:IsFallDamage() then
+		if isSlapping or bouncyJump or goodnightGirl then
+			dmginfo:ScaleDamage(0.2)
+			if (dmginfo:GetDamage() > 20) then
+				dmginfo:SetDamage(20)
+			end
+		end
 	end
 end)
 
@@ -658,19 +670,33 @@ end
 
 local function SpeedTime()
 	print("speeding up time!")
-	SendTimer(true)
-	RunConsoleCommand("host_timescale", "2")
-	timer.Simple(ActionDuration, function()
-		RunConsoleCommand("host_timescale", "1")
+	SendTimer(true, nil, 30)
+	game.SetTimeScale(2)
+	hook.Add("EntityEmitSound", "PitchUpSounds", function(tab)
+		local p = tab.Pitch
+		p = p * 2
+		tab.Pitch = math.Clamp( p, 0, 255 )
+		return true
+	end)
+	timer.Simple(ActionDuration * 2, function()
+		game.SetTimeScale(1)
+		hook.Remove("EntityEmitSound", "PitchUpSounds")
 	end)
 end
 
 local function SlowTime()
 	print("slowing time!")
-	SendTimer(true)
-	RunConsoleCommand("host_timescale", "0.5")
-	timer.Simple(ActionDuration, function()
-		RunConsoleCommand("host_timescale", "1")
+	SendTimer(true, nil, 7)
+	game.SetTimeScale(0.5)
+	hook.Add("EntityEmitSound", "PitchDownSounds", function(tab)
+		local p = tab.Pitch
+		p = p * 0.5
+		tab.Pitch = math.Clamp( p, 0, 255 )
+		return true
+	end)
+	timer.Simple(ActionDuration / 2, function()
+		game.SetTimeScale(1)
+		hook.Remove("EntityEmitSound", "PitchDownSounds")
 	end)
 end
 
@@ -954,11 +980,15 @@ local function Deafness()
 	for k, v in ipairs(plys) do
 		v:SetDSP(31, false)
 	end
+	hook.Add("EntityEmitSound", "Deafness", function()
+		return false
+	end)
 	timer.Simple(ActionDuration, function()
 		DeafnessVar = false
 		for k, v in ipairs(plys) do
 			v:SetDSP(1, false)
 		end
+		hook.Remove("EntityEmitSound", "Deafness")
 	end)
 end
 
@@ -1299,7 +1329,7 @@ local function BossMode()
 					net.WriteBool(false)
 				net.Send(boss)
 			end
-			hook.Remove("BossMode_TTTEnd"..boss:Nick())
+			hook.Remove("TTTEndRound", "BossMode_TTTEnd"..boss:Nick())
 		end)
 	else
 		boss:StripWeapons()
@@ -1369,6 +1399,7 @@ end
 local function GoodnightGirl()
 	// makes gravity really high, and really low, probably killing everyone instantly. :)
 	math.randomseed(os.time())
+	goodnightGirl = true
 	for k, v in ipairs(GetAlivePlayers()) do
 		v:SetHealth(10)
 		timer.Simple(math.Rand(0.05, 0.35), function()
@@ -1377,19 +1408,25 @@ local function GoodnightGirl()
 				RunConsoleCommand("sv_gravity", "0")
 				local direction = Vector( 0, 0, math.Rand(1, 1.5) )
 				local power = math.random(250, 450)
+				v:ViewPunch(Angle(40, 0, 0))
 				ApplyAccel( v, power, direction )
 				timer.Simple(0.7, function()
 					RunConsoleCommand("sv_gravity", "600")
 					local direction = Vector( math.Rand(-0.5, 0.5), math.Rand(-0.5, 0.5), -2 )
 					local power = math.random(800, 1000)
+					v:ViewPunch(Angle(-40, 0, 0))
 					ApplyAccel( v, power, direction )
 				end)
 			end)
 		end)
 	end
+	timer.Simple(5, function()
+		goodnightGirl = false
+	end)
 end
 
 local function PunchScreen()
+	SendTimer(true)
 	for k, v in ipairs(GetAlivePlayers()) do
 		timer.Create("Punch"..v:Nick(), 0.5, ActionDuration * 2, function()
 			local rand = AngleRand(-10, 10)
@@ -1405,6 +1442,7 @@ end
 
 local function MathTime()
 	local plys = GetAlivePlayers()
+	SendTimer(false, plys)
 	// basically it selects a random question or maybe math question (or both) and people have to type the answer in chat or else they die
 	local firstvar = math.random(-25, 25)
 	local lastvar = math.random(-25, 25)
@@ -1428,9 +1466,37 @@ local function MathTime()
 	end)
 	timer.Simple(ActionDuration, function()
 		for k, v in ipairs(plys) do
+			if not v:Alive() then continue end
 			if v.MathWin then v.MathWin = false continue end
 			v:PrintMessage(HUD_PRINTTALK, "You failed!")
-			v:Kill()
+			v:TakeDamage(20, v, v)
+		end
+	end)
+end
+
+local prop_models = {
+	[1] = "models/props_borealis/bluebarrel001.mdl",
+	[2] = "models/props_c17/FurnitureWashingmachine001a.mdl",
+	[3] = "models/props_c17/oildrum001_explosive.mdl",
+	[4] = "models/props_c17/oildrum001.mdl",
+	[5] = "models/props_junk/watermelon01.mdl",
+	[6] = "models/props_c17/doll01.mdl",
+	[7] = "models/props_combine/breenbust.mdl"
+}
+
+local function PropHunt()
+	// every player gets their model set to a random prop
+	local plys = GetAlivePlayers()
+	local ply_models = {}
+	SendTimer(true)
+	math.randomseed(os.time())
+	for k, v in ipairs(plys) do
+		table.insert(ply_models, v:GetModel())
+		v:SetModel(prop_models[math.random(#prop_models)])
+	end
+	timer.Simple(ActionDuration, function()
+		for k, v in ipairs(plys) do
+			v:SetModel(ply_models[k])
 		end
 	end)
 end
@@ -1494,7 +1560,8 @@ do
 	WSFunctions["goodnightgirl"] = GoodnightGirl
 	WSFunctions["punchscreen"] = PunchScreen
 	WSFunctions["mathtime"] = MathTime
+	WSFunctions["speedtime"] = SpeedTime
+	WSFunctions["slowtime"] = SlowTime
+	WSFunctions["prophunt"] = PropHunt
 end
 //WSFunctions["backseatgaming"] = BackseatGaming
-//WSFunctions["speedtime"] = SpeedTime
-//WSFunctions["slowtime"] = SlowTime DOES NOT WORK WITHOUT SV_CHEATS
