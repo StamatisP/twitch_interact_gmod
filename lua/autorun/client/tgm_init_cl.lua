@@ -549,6 +549,7 @@ net.Receive("UpdateDerma", function()
 	local json = util.Decompress(data)
 	if not json then ErrorNoHalt("why is json nil???") end
 	local votes = util.JSONToTable(json)
+	if not f then return end
 	f:UpdateVotes(votes)
 	if g_VR and g_VR.active then
 		f2:UpdateVotes(votes)
@@ -558,6 +559,7 @@ net.Receive("UpdateDerma", function()
 end)
 
 net.Receive("EndVoting", function()
+	if not f then return end
 	f.f:Clear()
 	f:Remove()
 	if g_VR and g_VR.active then
