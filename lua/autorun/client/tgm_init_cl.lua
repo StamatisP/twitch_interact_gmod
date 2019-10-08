@@ -245,7 +245,7 @@ local function TGMRender()
 	if g_VR and g_VR.active then return end
 	if MegaBloom then
 		//RenderDoF(LocalPlayer():GetShootPos(), Angle(0, 0, 0), LocalPlayer():GetShootPos() + Vector(9, 0, 0), 0.5, 2, 2, false, nil, 90)
-		//print("bruh")
+		print("bruh")
 		DrawBloom(-0.1, 1, 5, 5, 4, 3, 1, 1, 1)
 	end
 	if RandomTexturize then
@@ -284,10 +284,11 @@ local function VRTGMRender()
 			DrawMaterialOverlay(RndOverlay, RndRefract)
 		end
 	end
+	draw.SimpleText(FrameNumber(), "DermaLarge", ScrW() / 2, ScrH() / 2, Color(255, 0, 0))
 end
 
 hook.Add("PostDrawEffects", "TGMRender", TGMRender)
-if g_VR then hook.Add("VRUtilEventPreRender", "VRTGMRender", VRTGMRender) end
+if g_VR then hook.Add("PostDrawEffects", "VRTGMRender", VRTGMRender) end
 
 hook.Add("OnPlayerChat", "check_tgm_chat", function(ply, text, teamchat, isdead)
 	if text == "!chat" then
@@ -758,7 +759,9 @@ net.Receive("StartTimer", function()
 				surface.SetDrawColor( Color( 0, 0, 0, 100 ) )
 				surface.DrawRect(0,0,w,h)
 				//print(actionTime)
+				DisableClipping(true)
 				draw.SimpleText(actionTime, "ChatFont", 0, 0, Color(255, 170, 60), TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
+				DisableClipping(false)
 			else
 				draw.SimpleTextOutlined(actionTime, "DermaLarge", 2, 2, Color(255, 170, 60), TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP, 2, Color(0, 0, 0))
 			end
@@ -894,7 +897,7 @@ net.Receive("RandomOverlay", function()
 	math.randomseed(os.time())
 	local rand = math.random(#pp_effects)
 	RandomOverlay = true
-	if g_VR then
+	if g_VR and g_VR.active then
 		RndRefract = math.Rand(0.01, 0.1)
 	else
 		RndRefract = math.Rand(0.3, 0.8)
