@@ -317,10 +317,16 @@ local function MasterFOV()
 		v:SetFOV(177, 1)
 		v:ChatPrint("MASTER FOV ENGAGED")
 	end
+	timer.Create("MasterFOV", 1, ActionDuration - 1, function()
+		for k, v in pairs(plys) do
+			v:SetFOV(177, 1)
+		end
+	end)
 	timer.Simple(ActionDuration, function()
 		for k, v in pairs(plys) do
 			v:SetFOV(plyFovs[k], 1)
 		end
+		timer.Destroy("MasterFOV")
 	end)
 end
 
@@ -495,10 +501,8 @@ local function ZaWarudo() // from Vipes, edited for personal use https://steamco
 				RunConsoleCommand( "ai_disabled", "0" )
 				RunConsoleCommand( "ragdoll_sleepaftertime", "5" )
 				for k, v in pairs(plys) do
-					if v:Alive() and k != randplayer then
-						v:Freeze( false )
-						v:SetMoveType(MOVETYPE_WALK)
-					end
+					v:Freeze( false )
+					v:SetMoveType(MOVETYPE_WALK)
 				end
 			end)
 		end)
@@ -825,8 +829,7 @@ local function TimeSkip()
 	for k, v in ipairs(player.GetAll()) do
 		if not TimeSkipTab[k].eyeangles or not TimeSkipTab[k].pos then continue end
 		if not v:Alive() and TimeSkipTab[k].wasAlive then SpawnPlayer(v) end
-		v:SetPos(TimeSkipTab[k].pos)
-		v:SetEyeAngles(TimeSkipTab[k].eyeangles)
+		timer.Simple(0.1, function() v:SetPos(TimeSkipTab[k].pos) v:SetEyeAngles(TimeSkipTab[k].eyeangles) end)
 	end
 end
 
@@ -1315,6 +1318,7 @@ local function BossMode()
 		end
 		SendFullStateUpdate()
 		boss:StripAll()
+		boss:StripWeapons()
 		boss:Give("tgm_bossminigun_ttt")
 
 		hook.Add("TTTEndRound", "BossMode_TTTEnd"..boss:Nick(), function(result)
