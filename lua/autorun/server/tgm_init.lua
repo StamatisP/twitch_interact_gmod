@@ -212,7 +212,10 @@ hook.Add("PlayerSay", "ChangeSettings", function(sender, txt, teamchat)
 
 		if not args[2] then
 			if voting_time then
-				WSFunctions["voteinfo"](sender:Nick(), clean_command)
+				if WSFunctions[clean_command] then
+					PrintMessage(HUD_PRINTTALK, sender:Nick() .. " has voted for " .. PrettyFuncs[clean_command])
+					WSFunctions["voteinfo"](sender:Nick(), clean_command)
+				end
 			else
 				if not sender:IsAdmin() then return "" end
 				WSFunctions[clean_command]()
