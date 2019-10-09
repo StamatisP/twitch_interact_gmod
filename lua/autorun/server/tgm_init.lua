@@ -110,19 +110,23 @@ function WEBSOCKET:onDisconnected()
 	timer.Destroy("AutoVote")
 end
 
-hook.Add("InitPostEntity", "OpenSocket", function()
-	if file.Exists("twitch_interact.txt", "DATA") then
-		SetGlobalInt("ActionCounter", file.Read("twitch_interact.txt", "DATA"))
-	end
+hook.Add("PlayerInitialSpawn", "DelayOpen", function(ply, trans)
+	if WEBSOCKET:isConnected() then return end
 	timer.Simple(5, function()
 		WEBSOCKET:open()
-		timer.Simple(5, function()
+		timer.Simple(2, function()
 			if WEBSOCKET:isConnected() then return end
 			for k, v in ipairs(player.GetAll()) do
 				v:ChatPrint("Websocket connection unsuccessful, read console!")
 			end
 		end)
 	end)
+end)
+
+hook.Add("InitPostEntity", "OpenSocket", function()
+	if file.Exists("twitch_interact.txt", "DATA") then
+		SetGlobalInt("ActionCounter", file.Read("twitch_interact.txt", "DATA"))
+	end
 end)
 
 hook.Add("ShutDown", "CloseSocket", function()
@@ -134,6 +138,7 @@ end)
 
 hook.Add("PlayerSay", "ChangeSettings", function(sender, txt, teamchat)
 	local args = string.Split(txt, " ")
+	args[1] = string.lower(args[1])
 	if args[1] == "!changedelay" then
 		MessageDelay = args[2]
 		print("BEFORE - -- -- - - -- - --" .. MessageDelay)

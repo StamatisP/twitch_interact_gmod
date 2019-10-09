@@ -14,6 +14,7 @@ local slowdown = false
 local TimeSkipTab = TimeSkipTab or {}
 local bouncyJump = false
 local goodnightGirl = false
+local PhoonMode = false
 
 local DebugMode = false
 
@@ -26,7 +27,7 @@ local _gamemode = GetConVar("gamemode"):GetString()
 
 /* HOOKS */
 hook.Add("Move", "Speedup or Slowdown", function(ply, mv)
-	if speedup or ply.Kamikaze or ply.WhosWho or ply.IsBoss then
+	if speedup or ply.Kamikaze or ply.WhosWho or ply.IsBoss or PhoonMode then
 		local speed = mv:GetMaxSpeed() * 2.5
 		mv:SetMaxSpeed(speed)
 		mv:SetMaxClientSpeed(speed)
@@ -39,14 +40,14 @@ hook.Add("Move", "Speedup or Slowdown", function(ply, mv)
 end)
 
 hook.Add("GetFallDamage", "SlapOverwrite", function(ply, speed)
-	if isSlapping or bouncyJump then
+	if isSlapping or bouncyJump or PhoonMode then
 		return 0
 	end
 end)
 
 hook.Add("EntityTakeDamage", "FallDamagePrevent", function(ent, dmginfo)
 	if IsValid(ent) and ent:IsPlayer() and dmginfo:IsFallDamage() then
-		if isSlapping or bouncyJump or goodnightGirl then
+		if isSlapping or bouncyJump or goodnightGirl or PhoonMode then
 			dmginfo:ScaleDamage(0.2)
 			if (dmginfo:GetDamage() > 20) then
 				dmginfo:SetDamage(20)
@@ -467,8 +468,9 @@ local function VoteInfo(user, message)
 	print("info received")
 	if not ContainsFunc(votable_funcs, message) then return end
 	local key = GetKey(votable_funcs, message)
+	PrintMessage(HUD_PRINTTALK, string.gsub(user, "^%l", string.upper) .. " has voted for " .. PrettyFuncs[message])
 	votable_funcs[key].value = votable_funcs[key].value + 1
-	PrintTable(votable_funcs)
+	//PrintTable(votable_funcs)
 end
 
 local function ZaWarudo() // from Vipes, edited for personal use https://steamcommunity.com/id/lordvipes
@@ -1457,7 +1459,6 @@ local function PunchScreen()
 			local eyeang = v:EyeAngles()
 			eyeang.pitch = eyeang.pitch + rand.pitch
 			eyeang.yaw = eyeang.yaw + rand.yaw
-			print(eyeang)
 			eyeang:Normalize()
 			v:ViewPunch(eyeang)
 		end)
@@ -1527,11 +1528,16 @@ end
 
 local function Phoon()
 	SendTimer(true)
+	PhoonMode = true
+	SetGlobalBool("PhoonMode", true)
 	RunConsoleCommand("sv_airaccelerate", "1000")
 	RunConsoleCommand("sv_friction", "4")
 	RunConsoleCommand("sv_sticktoground", "0")
+	local jump_powers = {}
 	for k, v in ipairs(GetAlivePlayers()) do
 		v:ConCommand("+jump")
+		table.insert(jump_powers, v:GetJumpPower())
+		v:SetJumpPower(284)
 	end
 	hook.Add("OnPlayerHitGround", "PhoonBhop", function(ply, inwater, onfloat, speed)
 		ply:ConCommand("+jump")
@@ -1549,12 +1555,16 @@ local function Phoon()
 		end
 	end)
 	timer.Simple(ActionDuration, function()
+		SetGlobalBool("PhoonMode", false)
+		PhoonMode = false
 		hook.Remove("OnPlayerHitGround", "PhoonBhop")
 		RunConsoleCommand("sv_airaccelerate", "10")
 		RunConsoleCommand("sv_friction", "8")
 		RunConsoleCommand("sv_sticktoground", "1")
-		for k, v in ipairs(GetAlivePlayers()) do
+		for k, v in ipairs(player.GetAll()) do
 			v:ConCommand("-jump")
+			if not jump_powers[k] then v:SetJumpPower(jump_powers[1]) end
+			v:SetJumpPower(jump_powers[k])
 		end
 	end)
 end

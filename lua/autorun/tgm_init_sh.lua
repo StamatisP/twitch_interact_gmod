@@ -11,6 +11,25 @@ do
 	end
 end
 
+local _models = {
+	[1] = "models/props_borealis/bluebarrel001.mdl",
+	[2] = "models/props_c17/FurnitureWashingmachine001a.mdl",
+	[3] = "models/props_c17/oildrum001_explosive.mdl",
+	[4] = "models/props_c17/oildrum001.mdl",
+	[5] = "models/props_junk/watermelon01.mdl",
+	[6] = "models/props_c17/doll01.mdl",
+	[7] = "models/props_combine/breenbust.mdl",
+	[8] = "models/zombie/classic.mdl",
+	[9] = "models/headcrab.mdl",
+	[10] = "models/headcrabblack.mdl"
+}
+
+do
+	for k, v in ipairs(_models) do
+		util.PrecacheModel(v)
+	end
+end
+
 PrettyFuncs = {
 	["randomizeviews"] = "Randomize Views",
 	["lowergravity"] = "Lower Gravity",
@@ -196,3 +215,71 @@ net.Receive("RandomSensitivity", function()
 		RandomSensitivity = false
 	end)
 end)
+
+local GroundFrames = {} // from MrRanger's BHOP Mode
+local function PlayerMove(ply,data)
+	if not IsValid(ply) or not GetGlobalBool("PhoonMode", false) then return end
+
+	local OnGround = ply:IsFlagSet(FL_ONGROUND)
+	if OnGround and not GroundFrames[ply] then
+		GroundFrames[ply] = 0
+	elseif OnGround and GroundFrames[ply] then
+		GroundFrames[ply] = GroundFrames[ply] + 1
+		if GroundFrames[ply] > 4 then
+			ply:SetDuckSpeed(0.4)
+			ply:SetUnDuckSpeed(0.2)
+		end
+	end
+
+	if OnGround or not ply:Alive() then return end
+	
+	GroundFrames[ply] = 0
+	ply:SetDuckSpeed(0)
+	ply:SetUnDuckSpeed(0)
+
+	local aim = data:GetMoveAngles()
+	local forward, right = aim:Forward(), aim:Right()
+	local fmove = data:GetForwardSpeed()
+	local smove = data:GetSideSpeed()
+	local strafing = false
+
+	if data:KeyDown(IN_MOVERIGHT) then
+		smove = (smove * 10) + 500
+	elseif data:KeyDown(IN_MOVELEFT) then
+		smove = (smove * 10) - 500
+	end
+
+	forward.z, right.z = 0,0
+	forward:Normalize()
+	right:Normalize()
+
+	local wishvel = forward * fmove + right * smove
+	wishvel.z = 0
+
+	local wishspeed = wishvel:Length()
+	if wishspeed > data:GetMaxSpeed() then
+		wishvel = wishvel * (data:GetMaxSpeed() / wishspeed)
+		wishspeed = data:GetMaxSpeed()
+	end
+
+	local wishspd = wishspeed
+	wishspd = math.Clamp(wishspd, 0, 128)
+
+	local wishdir = wishvel:GetNormal()
+	local current = data:GetVelocity():Dot(wishdir)
+
+	local addspeed = wishspd - current
+	if addspeed <= 0 then return end
+
+	local accelspeed = 120 * FrameTime() * wishspeed
+	if accelspeed > addspeed then
+		accelspeed = addspeed
+	end
+
+	local vel = data:GetVelocity()
+	vel = vel + (wishdir * accelspeed)
+	data:SetVelocity(vel)
+	
+	return false
+end
+hook.Add("Move","StrafeMovement",PlayerMove)
