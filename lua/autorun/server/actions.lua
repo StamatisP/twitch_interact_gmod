@@ -1307,7 +1307,7 @@ local function BossMode()
 		local _traitor = 1
 		boss:SetRole(_traitor)
 		for k, v in ipairs(plys) do
-			if v == boss then
+			if v == boss or v.IsBoss then
 				boss:SetRole(_traitor)
 			else
 				v:SetRole(_innocent)
@@ -1421,7 +1421,7 @@ local function GoodnightGirl()
 	math.randomseed(os.time())
 	goodnightGirl = true
 	for k, v in ipairs(GetAlivePlayers()) do
-		v:SetHealth(10)
+		//v:SetHealth(10)
 		timer.Simple(math.Rand(0.05, 0.35), function()
 			v:EmitSound("goodnightgirl.mp3", 100, 100, 0.5, CHAN_AUTO)
 			timer.Simple(2.3, function()

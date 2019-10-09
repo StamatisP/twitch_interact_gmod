@@ -1,4 +1,3 @@
-if GetConVar("gamemode"):GetString() != "terrortown" then print("cumg") return end
 SWEP.DrawCrosshair = false
 SWEP.Weight = 45
 SWEP.ViewModel = "models/minigun_model/weapons/c_minigun.mdl"
