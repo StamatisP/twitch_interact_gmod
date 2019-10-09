@@ -1525,6 +1525,40 @@ local function PropHunt()
 	end)
 end
 
+local function Phoon()
+	SendTimer(true)
+	RunConsoleCommand("sv_airaccelerate", "1000")
+	RunConsoleCommand("sv_friction", "4")
+	RunConsoleCommand("sv_sticktoground", "0")
+	for k, v in ipairs(GetAlivePlayers()) do
+		v:ConCommand("+jump")
+	end
+	hook.Add("OnPlayerHitGround", "PhoonBhop", function(ply, inwater, onfloat, speed)
+		ply:ConCommand("+jump")
+	end)
+	/*hook.Add("HUDPaint", "PaintSpeed", function()
+		print("fug")
+		draw.SimpleText("Your velocity is: " .. math.floor(tostring(v:GetVelocity():Length())), "DermaLarge", 50, 50)
+	end)*/
+	timer.Create("PhoonJumpCheck", 0.1, ActionDuration * 10, function()
+		for k, v in ipairs(GetAlivePlayers()) do
+			if not v:IsOnGround() then
+				v:ConCommand("-jump")
+				v:PrintMessage(HUD_PRINTCENTER, "Your velocity is: " .. math.floor(tostring(v:GetVelocity():Length())))
+			end
+		end
+	end)
+	timer.Simple(ActionDuration, function()
+		hook.Remove("OnPlayerHitGround", "PhoonBhop")
+		RunConsoleCommand("sv_airaccelerate", "10")
+		RunConsoleCommand("sv_friction", "8")
+		RunConsoleCommand("sv_sticktoground", "1")
+		for k, v in ipairs(GetAlivePlayers()) do
+			v:ConCommand("-jump")
+		end
+	end)
+end
+
 /* UTILITY ACTIONS */
 do
 	WSFunctions["printtwitchchat"] = PrintTwitchChat
@@ -1587,5 +1621,6 @@ do
 	WSFunctions["speedtime"] = SpeedTime
 	WSFunctions["slowtime"] = SlowTime
 	WSFunctions["prophunt"] = PropHunt
+	WSFunctions["phoon"] = Phoon
 end
 //WSFunctions["backseatgaming"] = BackseatGaming

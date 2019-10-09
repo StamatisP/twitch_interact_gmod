@@ -62,7 +62,8 @@ PrettyFuncs = {
 	["goodnightgirl"] = "Goodnight Girl",
 	["punchscreen"] = "Screen Punch",
 	["mathtime"] = "Math Time",
-	["prophunt"] = "Prop Hunt"
+	["prophunt"] = "Prop Hunt",
+	["phoon"] = "too much for zblock"
 }
 
 function IncrementActionCounter()
