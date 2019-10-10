@@ -110,9 +110,13 @@ function WEBSOCKET:onDisconnected()
 	timer.Destroy("AutoVote")
 end
 
-hook.Add("PlayerInitialSpawn", "DelayOpen", function(ply, trans)
+hook.Add("InitPostEntity", "OpenSocket", function()
+	if file.Exists("twitch_interact.txt", "DATA") then
+		SetGlobalInt("ActionCounter", file.Read("twitch_interact.txt", "DATA"))
+	end
 	if WEBSOCKET:isConnected() then return end
-	timer.Simple(5, function()
+	timer.Simple(10, function()
+		if WEBSOCKET:isConnected() then return end
 		WEBSOCKET:open()
 		timer.Simple(2, function()
 			if WEBSOCKET:isConnected() then return end
@@ -121,12 +125,6 @@ hook.Add("PlayerInitialSpawn", "DelayOpen", function(ply, trans)
 			end
 		end)
 	end)
-end)
-
-hook.Add("InitPostEntity", "OpenSocket", function()
-	if file.Exists("twitch_interact.txt", "DATA") then
-		SetGlobalInt("ActionCounter", file.Read("twitch_interact.txt", "DATA"))
-	end
 end)
 
 hook.Add("ShutDown", "CloseSocket", function()

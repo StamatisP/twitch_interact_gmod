@@ -1363,6 +1363,7 @@ local function BossMode()
 	end
 	boss:SetHealth(150)
 	PrintMessage(HUD_PRINTTALK, boss:Nick() .. " is the Boss! Kill them quickly!")
+	print(GetGlobalInt("ActionCounter", 1))
 	if GetGlobalInt("ActionCounter", 1) % 10 == 0 then
 		PrintMessage(HUD_PRINTTALK, "DOUBLE BOSS!")
 		IncrementActionCounter()
@@ -1533,11 +1534,13 @@ local function Phoon()
 	RunConsoleCommand("sv_airaccelerate", "1000")
 	RunConsoleCommand("sv_friction", "4")
 	RunConsoleCommand("sv_sticktoground", "0")
+	RunConsoleCommand("sv_maxvelocity", "9000")
 	local jump_powers = {}
 	for k, v in ipairs(GetAlivePlayers()) do
 		v:ConCommand("+jump")
 		table.insert(jump_powers, v:GetJumpPower())
 		v:SetJumpPower(284)
+		v:SetAvoidPlayers(false)
 	end
 	hook.Add("OnPlayerHitGround", "PhoonBhop", function(ply, inwater, onfloat, speed)
 		ply:ConCommand("+jump")
@@ -1561,9 +1564,11 @@ local function Phoon()
 		RunConsoleCommand("sv_airaccelerate", "10")
 		RunConsoleCommand("sv_friction", "8")
 		RunConsoleCommand("sv_sticktoground", "1")
+		RunConsoleCommand("sv_maxvelocity", "3500")
 		for k, v in ipairs(player.GetAll()) do
 			v:ConCommand("-jump")
-			if not jump_powers[k] then v:SetJumpPower(jump_powers[1]) end
+			v:SetAvoidPlayers(true)
+			if not jump_powers[k] then v:SetJumpPower(jump_powers[1]) continue end
 			v:SetJumpPower(jump_powers[k])
 		end
 	end)

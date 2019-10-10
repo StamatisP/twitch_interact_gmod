@@ -183,7 +183,7 @@ local function TGMRender()
 	if ScreenFuck then
 		//print("please")
 		DrawColorModify(deepfryTab)
-		DrawSobel(0.5)
+		DrawSobel(0.2)
 		DrawSharpen(3, 3)
 	end
 
