@@ -128,7 +128,6 @@ hook.Add("InitPostEntity", "OpenSocket", function()
 end)
 
 hook.Add("ShutDown", "CloseSocket", function()
-	local counter_exists = sql.Query( "SELECT * FROM twitch_interact" )
 	file.Write("twitch_interact.txt", GetGlobalInt("ActionCounter", 0) % 10)
 	WEBSOCKET:write("shutdown")
 	WEBSOCKET:close()
