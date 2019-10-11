@@ -732,13 +732,13 @@ net.Receive("WhosWho", function()
 		if GetGlobalInt("ActionCounter", 1) % 10 == 0 then
 			LocalPlayer():EmitSound("whoswho_jingle.mp3", 0, 100, 0.4, CHAN_AUTO)
 		else
-			timer.Simple(3, function()
+			timer.Simple(2, function()
 				loopsound:PlayEx(0.5, 100)
 			end)
 		end
 	else
 		print("ending")
-		loopsound:FadeOut(1)
+		loopsound:Stop()
 		hook.Remove("TGMTimerTick", "WhosWhoTick")
 		timer.Destroy("TimerLower")
 	end
