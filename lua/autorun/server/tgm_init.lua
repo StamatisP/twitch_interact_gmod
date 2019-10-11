@@ -1,4 +1,4 @@
-if game.SinglePlayer() then error("Twitch Interaction cant be run in singleplayer!") return end
+if game.SinglePlayer() then ErrorNoHalt("Twitch Interaction may not support singleplayer!")  end
 
 require("gwsockets")
 //include("actions.lua")
