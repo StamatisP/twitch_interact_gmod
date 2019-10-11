@@ -24,7 +24,6 @@ local DebugMode = false
 local KamikazeVar = false
 local KamikazePlayer = nil
 local KamikazeMarker = nil
-ActionDuration = ActionDuration or 15
 
 local _gamemode = GetConVar("gamemode"):GetString()
 
@@ -1587,52 +1586,38 @@ local function Phoon()
 	end)
 end
 
-/* UTILITY ACTIONS */
 if table.IsEmpty(WSFunctions) then
+	print("setting actions...")
+	/* UTILITY ACTIONS */
 	WSFunctions["printtwitchchat"] = PrintTwitchChat
 	WSFunctions["votetime"] = VoteTime
 	WSFunctions["voteinfo"] = VoteInfo
-/* GAME ACTIONS */
+	/* GAME ACTIONS */
 	WSFunctions["randomizeviews"] = RandomizeViews
 	WSFunctions["lowergravity"] = LowerGravity
 	WSFunctions["deepfry"] = DeepFry
 	WSFunctions["inception"] = Inception
-	WSFunctions["spawnzombies"] = SpawnZombies
 	WSFunctions["masterfov"] = MasterFOV
-	WSFunctions["zawarudo"] = ZaWarudo
-	WSFunctions["invisiblewarfare"] = InvisibleWarfare
-	if _gamemode != "terrortown" then
-		WSFunctions["ragdolleveryone"] = RagdollEveryone // doesnt work in ttt
-	end
 	WSFunctions["speedup"] = SpeedUp
 	WSFunctions["slowdown"] = SlowDown
 	WSFunctions["reversecontrols"] = ReverseControls
 	WSFunctions["megaslap"] = MegaSlap
 	WSFunctions["floorisice"] = FloorIsIce
 	WSFunctions["silenthill"] = SilentHill
-	WSFunctions["swappositions"] = SwapPositions
 	WSFunctions["timeskip"] = TimeSkip
 	WSFunctions["upsidedowncams"] = UpsideDownCameras
 	WSFunctions["bomberman"] = Bomberman
 	WSFunctions["antfight"] = AntFight
-	WSFunctions["bigheadmode"] = BigHeadMode
-	WSFunctions["jellymode"] = JellyMode
 	WSFunctions["paranoia"] = Paranoia
 	WSFunctions["blindness"] = Blindness
 	WSFunctions["deafness"] = Deafness
 	WSFunctions["tinnitus"] = Tinnitus
 	WSFunctions["bouncyjump"] = BouncyJump
 	WSFunctions["thirdperson"] = ThirdPerson
-	WSFunctions["rainingbombs"] = RainingBombs
 	WSFunctions["crabinfestation"] = CrabInfestation
-	WSFunctions["whoswho"] = WhosWho
 	WSFunctions["itsamystery"] = ItsAMystery
 	WSFunctions["earthquake"] = Earthquake
-	WSFunctions["instakill"] = Instakill
-	WSFunctions["kamikaze"] = Kamikaze
 	WSFunctions["mobamode"] = MobaMode
-	WSFunctions["reviveeveryone"] = ReviveEveryone
-	WSFunctions["bossmode"] = BossMode
 	WSFunctions["tankcontrols"] = TankControls
 	WSFunctions["randomsensitivity"] = RandomSensitivity
 	WSFunctions["randomoverlay"] = RandomOverlay 
@@ -1642,10 +1627,26 @@ if table.IsEmpty(WSFunctions) then
 	WSFunctions["megabloom"] = MegaBloom
 	WSFunctions["goodnightgirl"] = GoodnightGirl
 	WSFunctions["punchscreen"] = PunchScreen
-	WSFunctions["mathtime"] = MathTime
 	WSFunctions["speedtime"] = SpeedTime
 	WSFunctions["slowtime"] = SlowTime
-	WSFunctions["prophunt"] = PropHunt
 	WSFunctions["phoon"] = Phoon
+	/* MULTIPLAYER-BASED ACTIONS */
+	WSFunctions["prophunt"] = PropHunt
+	WSFunctions["spawnzombies"] = SpawnZombies
+	WSFunctions["zawarudo"] = ZaWarudo
+	WSFunctions["invisiblewarfare"] = InvisibleWarfare
+	if _gamemode != "terrortown" then
+		WSFunctions["ragdolleveryone"] = RagdollEveryone // doesnt work in ttt
+	end
+	WSFunctions["swappositions"] = SwapPositions
+	WSFunctions["bigheadmode"] = BigHeadMode
+	WSFunctions["jellymode"] = JellyMode
+	WSFunctions["rainingbombs"] = RainingBombs
+	WSFunctions["whoswho"] = WhosWho
+	WSFunctions["instakill"] = Instakill
+	WSFunctions["kamikaze"] = Kamikaze
+	WSFunctions["reviveeveryone"] = ReviveEveryone
+	WSFunctions["bossmode"] = BossMode	
+	WSFunctions["mathtime"] = MathTime
 end
 //WSFunctions["backseatgaming"] = BackseatGaming

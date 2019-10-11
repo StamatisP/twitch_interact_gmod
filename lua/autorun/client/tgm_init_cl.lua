@@ -284,6 +284,7 @@ local function VRTGMRender()
 			DrawMaterialOverlay(RndOverlay, RndRefract)
 		end
 	end
+	// debug
 	draw.SimpleText(FrameNumber(), "DermaLarge", ScrW() / 2, ScrH() / 2, Color(255, 0, 0))
 end
 

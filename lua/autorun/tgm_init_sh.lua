@@ -3,7 +3,7 @@ local controlsReversed = false
 local TankControls = false
 local RandomSensitivity = false
 
-ActionDuration = 15 // CHANGE THIS IN ACTIONS TOO
+ActionDuration = 15
 
 do
 	for k, v in pairs(file.Find("sound/*", "THIRDPARTY")) do
