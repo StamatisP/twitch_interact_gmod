@@ -264,6 +264,7 @@ local function TGMRender()
 end
 
 local function VRTGMRender()
+	if not g_VR.active then return end
 	if MegaBloom then
 		//RenderDoF(LocalPlayer():GetShootPos(), Angle(0, 0, 0), LocalPlayer():GetShootPos() + Vector(9, 0, 0), 0.5, 2, 2, false, nil, 90)
 		//print("bruh")
