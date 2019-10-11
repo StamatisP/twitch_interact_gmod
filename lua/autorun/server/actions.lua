@@ -173,6 +173,24 @@ local function SendTimer(broadcast, plys, time)
 	end
 end
 
+function GetEnabledActions()
+	local result = {}
+	for k, v in pairs(WSFunctions) do
+		if not v.enabled then continue end
+		table.insert(result, v)
+	end
+	return result
+end
+
+function GetDisabledActions()
+	local result = {}
+	for k, v in pairs(WSFunctions) do
+		if v.enabled then continue end
+		table.insert(result, v)
+	end
+	return result
+end
+
 /* ACTIONS */
 local function RandomizeViews()
 	print("randomizing views")
@@ -350,7 +368,7 @@ local function GetVotableFuncs(tab, isDoubleVote)
 	local used_funcs = {}
 
 	while #tab != 4 do
-		local func, key = table.Random(WSFunctions)
+		local func, key = table.Random(GetEnabledActions())
 
 		if key == "printtwitchchat" or key == "voteinfo" or key == "votetime" then
 			continue
@@ -387,7 +405,7 @@ local function VoteTime(isDoubleVote)
 
 		math.randomseed(os.time())
 		GetVotableFuncs(votable_funcs, isDoubleVote)
-		if WEBSOCKET and WEBSOCKET:isConnected() then
+		if WEBSOCKET and WEBSOCKET:isConnected() and GetConVar("tgm_printvotes"):GetBool() then
 			WEBSOCKET:write("VoteTime")
 			local ws_actions = ""
 			for k, v in pairs(votable_funcs) do
@@ -437,13 +455,13 @@ local function VoteTime(isDoubleVote)
 				PrintMessage(HUD_PRINTTALK, PrettyFuncs[winning_func] .. " and " .. PrettyFuncs[winning_func2])
 				if not WSFunctions[winning_func] then ErrorNoHalt("Function " .. winning_func .. " doesn't exist!") return end
 				if not WSFunctions[winning_func2] then ErrorNoHalt("Function " .. winning_func2 .. " doesn't exist!") return end
-				WSFunctions[winning_func]()
-				WSFunctions[winning_func2]()
+				WSFunctions[winning_func].func()
+				WSFunctions[winning_func2].func()
 			else
 				print(winning_func)
 				PrintMessage(HUD_PRINTTALK, PrettyFuncs[winning_func])
 				if not WSFunctions[winning_func] then ErrorNoHalt("Function " .. winning_func .. " doesn't exist!") return end
-				WSFunctions[winning_func]()
+				WSFunctions[winning_func].func()
 			end
 			IncrementActionCounter()
 			
@@ -1592,64 +1610,76 @@ end
 if table.IsEmpty(WSFunctions) then
 	print("setting actions...")
 	/* UTILITY ACTIONS */
-	WSFunctions["printtwitchchat"] = PrintTwitchChat
-	WSFunctions["votetime"] = VoteTime
-	WSFunctions["voteinfo"] = VoteInfo
+	WSFunctions["printtwitchchat"] = {enabled = true, func = PrintTwitchChat}
+	WSFunctions["votetime"] = {enabled = true, func = VoteTime}
+	WSFunctions["voteinfo"] = {enabled = true, func = VoteInfo}
 	/* GAME ACTIONS */
-	WSFunctions["randomizeviews"] = RandomizeViews
-	WSFunctions["lowergravity"] = LowerGravity
-	WSFunctions["deepfry"] = DeepFry
-	WSFunctions["inception"] = Inception
-	WSFunctions["masterfov"] = MasterFOV
-	WSFunctions["speedup"] = SpeedUp
-	WSFunctions["slowdown"] = SlowDown
-	WSFunctions["reversecontrols"] = ReverseControls
-	WSFunctions["megaslap"] = MegaSlap
-	WSFunctions["floorisice"] = FloorIsIce
-	WSFunctions["silenthill"] = SilentHill
-	WSFunctions["timeskip"] = TimeSkip
-	WSFunctions["upsidedowncams"] = UpsideDownCameras
-	WSFunctions["bomberman"] = Bomberman
-	WSFunctions["antfight"] = AntFight
-	WSFunctions["paranoia"] = Paranoia
-	WSFunctions["blindness"] = Blindness
-	WSFunctions["deafness"] = Deafness
-	WSFunctions["tinnitus"] = Tinnitus
-	WSFunctions["bouncyjump"] = BouncyJump
-	WSFunctions["thirdperson"] = ThirdPerson
-	WSFunctions["crabinfestation"] = CrabInfestation
-	WSFunctions["itsamystery"] = ItsAMystery
-	WSFunctions["earthquake"] = Earthquake
-	WSFunctions["mobamode"] = MobaMode
-	WSFunctions["tankcontrols"] = TankControls
-	WSFunctions["randomsensitivity"] = RandomSensitivity
-	WSFunctions["randomoverlay"] = RandomOverlay 
-	WSFunctions["randomtexturize"] = RandomTexturize
-	WSFunctions["nearsightedness"] = Nearsightedness
-	WSFunctions["3dmode"] = ThreeDMode
-	WSFunctions["megabloom"] = MegaBloom
-	WSFunctions["goodnightgirl"] = GoodnightGirl
-	WSFunctions["punchscreen"] = PunchScreen
-	WSFunctions["speedtime"] = SpeedTime
-	WSFunctions["slowtime"] = SlowTime
-	WSFunctions["phoon"] = Phoon
+	WSFunctions["randomizeviews"] = {enabled = true, func = RandomizeViews}
+	WSFunctions["lowergravity"] = {enabled = true, func = LowerGravity}
+	WSFunctions["deepfry"] = {enabled = true, func = DeepFry}
+	WSFunctions["inception"] = {enabled = true, func = Inception}
+	WSFunctions["masterfov"] = {enabled = true, func = MasterFOV}
+	WSFunctions["speedup"] = {enabled = true, func = SpeedUp}
+	WSFunctions["slowdown"] = {enabled = true, func = SlowDown}
+	WSFunctions["reversecontrols"] = {enabled = true, func = ReverseControls}
+	WSFunctions["megaslap"] = {enabled = true, func = MegaSlap}
+	WSFunctions["floorisice"] = {enabled = true, func = FloorIsIce}
+	WSFunctions["silenthill"] = {enabled = true, func = SilentHill}
+	WSFunctions["timeskip"] = {enabled = true, func = TimeSkip}
+	WSFunctions["upsidedowncams"] = {enabled = true, func = UpsideDownCameras}
+	WSFunctions["bomberman"] = {enabled = true, func = Bomberman}
+	WSFunctions["antfight"] = {enabled = true, func = AntFight}
+	WSFunctions["paranoia"] = {enabled = true, func = Paranoia}
+	WSFunctions["blindness"] = {enabled = true, func = Blindness}
+	WSFunctions["deafness"] = {enabled = true, func = Deafness}
+	WSFunctions["tinnitus"] = {enabled = true, func = Tinnitus}
+	WSFunctions["bouncyjump"] = {enabled = true, func = BouncyJump}
+	WSFunctions["thirdperson"] = {enabled = true, func = ThirdPerson}
+	WSFunctions["crabinfestation"] = {enabled = true, func = CrabInfestation}
+	WSFunctions["itsamystery"] = {enabled = true, func = ItsAMystery}
+	WSFunctions["earthquake"] = {enabled = true, func = Earthquake}
+	WSFunctions["mobamode"] = {enabled = true, func = MobaMode}
+	WSFunctions["tankcontrols"] = {enabled = true, func = TankControls}
+	WSFunctions["randomsensitivity"] = {enabled = true, func = RandomSensitivity}
+	WSFunctions["randomoverlay"] = {enabled = true, func = RandomOverlay}
+	WSFunctions["randomtexturize"] = {enabled = true, func = RandomTexturize}
+	WSFunctions["nearsightedness"] = {enabled = true, func = Nearsightedness}
+	WSFunctions["3dmode"] = {enabled = true, func = ThreeDMode}
+	WSFunctions["megabloom"] = {enabled = true, func = MegaBloom}
+	WSFunctions["goodnightgirl"] = {enabled = true, func = GoodnightGirl}
+	WSFunctions["punchscreen"] = {enabled = true, func = PunchScreen}
+	WSFunctions["speedtime"] = {enabled = true, func = SpeedTime}
+	WSFunctions["slowtime"] = {enabled = true, func = SlowTime}
+	WSFunctions["phoon"] = {enabled = true, func = Phoon}
 	/* MULTIPLAYER-BASED ACTIONS */
-	WSFunctions["prophunt"] = PropHunt
-	WSFunctions["spawnzombies"] = SpawnZombies
-	WSFunctions["zawarudo"] = ZaWarudo
-	WSFunctions["invisiblewarfare"] = InvisibleWarfare
+	WSFunctions["prophunt"] = {enabled = true, func = PropHunt}
+	WSFunctions["spawnzombies"] = {enabled = true, func = SpawnZombies}
+	WSFunctions["zawarudo"] = {enabled = true, func = ZaWarudo}
+	WSFunctions["invisiblewarfare"] = {enabled = true, func = InvisibleWarfare}
 	if _gamemode != "terrortown" then
-		WSFunctions["ragdolleveryone"] = RagdollEveryone // doesnt work in ttt
+		WSFunctions["ragdolleveryone"] = {enabled = true, func = RagdollEveryone} // doesnt work in ttt
 	end
-	WSFunctions["swappositions"] = SwapPositions
-	WSFunctions["bigheadmode"] = BigHeadMode
-	WSFunctions["jellymode"] = JellyMode
-	WSFunctions["rainingbombs"] = RainingBombs
-	WSFunctions["whoswho"] = WhosWho
-	WSFunctions["instakill"] = Instakill
-	WSFunctions["kamikaze"] = Kamikaze
-	WSFunctions["reviveeveryone"] = ReviveEveryone
-	WSFunctions["bossmode"] = BossMode	
-	WSFunctions["mathtime"] = MathTime
+	WSFunctions["swappositions"] = {enabled = true, func = SwapPositions}
+	WSFunctions["bigheadmode"] = {enabled = true, func = BigHeadMode}
+	WSFunctions["jellymode"] = {enabled = true, func = JellyMode}
+	WSFunctions["rainingbombs"] = {enabled = true, func = RainingBombs}
+	WSFunctions["whoswho"] = {enabled = true, func = WhosWho}
+	WSFunctions["instakill"] = {enabled = true, func = Instakill}
+	WSFunctions["kamikaze"] = {enabled = true, func = Kamikaze}
+	WSFunctions["reviveeveryone"] = {enabled = true, func = ReviveEveryone}
+	WSFunctions["bossmode"] = {enabled = true, func = BossMode}
+	WSFunctions["mathtime"] = {enabled = true, func = MathTime}
 end
+
+if file.Exists("tgm_actions.txt", "DATA") then
+	local data = file.Read("tgm_actions.txt", "DATA")
+	data = string.Split(data, "\n")
+	for k, v in ipairs(data) do
+		local args = string.Split(v, ";")
+		if #args != 2 then continue end
+		WSFunctions[args[1]].enabled = tobool(args[2]) // time to sleep, will do this tomorrow
+		// my best bet might be to make the WSFunctions[key] = {enabled = true, func = PrintTwitchChat} something like that. would be best
+	end
+end
+
 //WSFunctions["backseatgaming"] = BackseatGaming

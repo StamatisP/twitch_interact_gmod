@@ -53,11 +53,12 @@ do // add files here precache in shared init.lua
 end
 
 local tgm_url = CreateConVar("tgm_url", "ws://localhost:8765", FCVAR_ARCHIVE + FCVAR_PROTECTED, "The URL pointing to your websocket. example (ws://localhost:8765)")
+local tgm_printvotes = CreateConVar("tgm_printvotes", "0", "If the votable actions are printed in Twitch chat.")
 WEBSOCKET = WEBSOCKET or GWSockets.createWebSocket(tgm_url:GetString(), false)
 
 function WEBSOCKET:onMessage(txt)
 	if txt == "null" then return end
-	print("Received: ", txt)
+	if string.StartWith(txt, "PrintTwitchChat") then print("Received: PrintTwitchChat") else print("Received: ", txt) end
 	if txt == "Serv connect!" then
 		//print("connection verified")
 	elseif txt == "Test command" then
@@ -68,14 +69,14 @@ function WEBSOCKET:onMessage(txt)
 		local args = string.Split(txt, "\n")
 		//print(args[2]) User
 		//print(args[3]) Message
-		WSFunctions[string.lower(args[1])](args[2], args[3]) // such a fuckin mess
+		WSFunctions[string.lower(args[1])].func(args[2], args[3]) // such a fuckin mess
 	elseif string.StartWith(txt, "VoteInfo") then
 		local args = string.Split(txt, "\n")
 		local clean_arg = string.TrimLeft(args[3], "!")
-		WSFunctions[string.lower(args[1])](args[2], clean_arg)
+		WSFunctions[string.lower(args[1])].func(args[2], clean_arg)
 	elseif WSFunctions[string.lower(txt)] and DebugMode and not voting_time then
 		print("function found! running")
-		WSFunctions[string.lower(txt)]()
+		WSFunctions[string.lower(txt)].func()
 	end
 end
 
@@ -85,9 +86,7 @@ end
 
 function WEBSOCKET:onConnected()
 	print("CONNECTED!")
-	for k, v in ipairs(player.GetAll()) do
-		v:ChatPrint("Websocket connection established!")
-	end
+	PrintMessage(HUD_PRINTTALK, "Websocket connection established!")
 	WEBSOCKET:write("Connected Message!")
 	timer.Create("CheckIfConnected", MessageDelay, 0, function()
 		//print("testing for connection")
@@ -97,9 +96,10 @@ function WEBSOCKET:onConnected()
 		timer.Create("AutoVote", AutoVoteTimerDuration, 0, function()
 			VoteCounter = VoteCounter + 1
 			if VoteCounter % 10 == 0 then
-				WSFunctions["votetime"](true)
+				WSFunctions["votetime"].func(true)
+			else
+				WSFunctions["votetime"].func(false)
 			end
-			WSFunctions["votetime"](false)
 		end)
 	end
 end
@@ -130,6 +130,11 @@ end)
 
 hook.Add("ShutDown", "CloseSocket", function()
 	file.Write("twitch_interact.txt", GetGlobalInt("ActionCounter", 0) % 10)
+	local actions = ""
+	for key, _ in pairs(WSFunctions) do
+		actions = actions .. key .. ";" .. tostring(WSFunctions[key].enabled) .. "\n" // this is A LOT of string making not a good idea
+	end
+	file.Write("tgm_actions.txt", actions)
 	WEBSOCKET:write("shutdown")
 	WEBSOCKET:close()
 end)
@@ -204,8 +209,8 @@ hook.Add("PlayerSay", "ChangeSettings", function(sender, txt, teamchat)
 	elseif args[1] == "!doubleaction" then
 		if sender:IsAdmin() then
 			if (args[2] and args[3]) and (WSFunctions[args[2]] and WSFunctions[args[3]]) then
-				WSFunctions[args[2]]()
-				WSFunctions[args[3]]()
+				WSFunctions[args[2]].func()
+				WSFunctions[args[3]].func()
 			end
 		end
 		return ""
@@ -219,9 +224,10 @@ hook.Add("PlayerSay", "ChangeSettings", function(sender, txt, teamchat)
 			timer.Create("AutoVote", AutoVoteTimerDuration, 0, function()
 				VoteCounter = VoteCounter + 1
 				if VoteCounter % 10 == 0 then
-					WSFunctions["votetime"](true)
+					WSFunctions["votetime"].func(true)
+				else
+					WSFunctions["votetime"].func(false)
 				end
-				WSFunctions["votetime"](false)
 			end)
 		end
 		return "Voting enabled."
@@ -230,8 +236,19 @@ hook.Add("PlayerSay", "ChangeSettings", function(sender, txt, teamchat)
 			if (args[2]) then
 				if WSFunctions[args[2]] then
 					print(args[2] .. " has been disabled.")
-					WSFunctions_disabled[args[2]] = WSFunctions[args[2]]
-					WSFunctions[args[2]] = nil
+					WSFunctions[args[2]].enabled = false
+				else
+					print(args[2] .. " is not a valid action!")
+				end
+			end
+		end
+		return ""
+	elseif args[1] == "!enableaction" then
+		if sender:IsAdmin() then
+			if (args[2]) then
+				if WSFunctions[args[2]] then
+					print(args[2] .. " has been enabled.")
+					WSFunctions[args[2]].enabled = true
 				else
 					print(args[2] .. " is not a valid action!")
 				end
@@ -240,24 +257,30 @@ hook.Add("PlayerSay", "ChangeSettings", function(sender, txt, teamchat)
 		return ""
 	elseif args[1] == "!printactions" then
 		if sender:IsAdmin() then
+			print(" ---------------------------- ")
 			for k, v in pairs(WSFunctions) do
+				if not v.enabled then continue end
 				if PrettyFuncs[k] then
 					print(k .. " : " .. PrettyFuncs[k])
 				else
 					print(k .. " : HAS NO PRETTYFUNC!")
 				end
 			end
+			print(" ---------------------------- ")
 		end
 		return "Check console."
 	elseif args[1] == "!printdisabledactions" then
 		if sender:IsAdmin() then
-			for k, v in pairs(WSFunctions_disabled) do
+			print(" ---------------------------- ")
+			for k, v in pairs(WSFunctions) do
+				if v.enabled then continue end
 				if PrettyFuncs[k] then
 					print(k .. " : " .. PrettyFuncs[k])
 				else
 					print(k .. " : HAS NO PRETTYFUNC!")
 				end
 			end
+			print(" ---------------------------- ")
 		end
 		return "Check console."
 	elseif WSFunctions[string.TrimLeft(args[1], "!")] then
@@ -268,17 +291,17 @@ hook.Add("PlayerSay", "ChangeSettings", function(sender, txt, teamchat)
 			if voting_time then
 				if WSFunctions[clean_command] then
 					PrintMessage(HUD_PRINTTALK, sender:Nick() .. " has voted for " .. PrettyFuncs[clean_command])
-					WSFunctions["voteinfo"](sender:Nick(), clean_command)
+					WSFunctions["voteinfo"].func(sender:Nick(), clean_command)
 				end
 			else
 				if not sender:IsAdmin() then return "" end
-				WSFunctions[clean_command]()
+				WSFunctions[clean_command].func()
 				IncrementActionCounter()
 			end
 		else
 			if not sender:IsAdmin() then return "" end
 			if args[2] == "true" or args[2] == "false" then args[2] = tobool(args[2]) else return "" end
-			WSFunctions[clean_command](args[2])
+			WSFunctions[clean_command].func(args[2])
 			IncrementActionCounter()
 		end
 
