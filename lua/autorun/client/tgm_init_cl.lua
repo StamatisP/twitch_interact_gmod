@@ -284,7 +284,7 @@ local function VRTGMRender()
 		end
 	end
 	// debug
-	draw.SimpleText(FrameNumber(), "DermaLarge", ScrW() / 2, ScrH() / 2, Color(255, 0, 0))
+	//draw.SimpleText(FrameNumber(), "DermaLarge", ScrW() / 2, ScrH() / 2, Color(255, 0, 0))
 end
 
 hook.Add("PostDrawEffects", "TGMRender", TGMRender)
