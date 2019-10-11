@@ -29,7 +29,6 @@ local Boss_CurrentMusic
 local LoadedSounds = {}
 
 local votes = {}
-ActionDuration = ActionDuration or 15
 local actionTime = actionTime or 0
 local timeText
 
