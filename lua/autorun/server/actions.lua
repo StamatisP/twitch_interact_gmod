@@ -1,7 +1,10 @@
+print("Actions file load!")
 WSFunctions = WSFunctions or {}
+WSFunctions_disabled = WSFunctions_disabled or {}
 local votable_funcs = {}
 voting_time = false
 local vote_length = 15
+
 //local max_votable_funcs = 2
 
 /* ACTION VARIABLES */
@@ -262,7 +265,6 @@ end
 local function SpawnZombies() // ulib
 	print("spawning zombies")
 	local plys = GetAlivePlayers()
-	SendTimer(false, plys)
 	for k, v in ipairs(plys) do
 		local pos = {}
 		local testent = newZombie( Vector( 0, 0, 0 ), Angle( 0, 0, 0 ), v, true ) -- Test ent for traces
@@ -380,14 +382,23 @@ end
 local function VoteTime(isDoubleVote)
 	if not isDoubleVote then isDoubleVote = false end
 	if not voting_time then
-		WEBSOCKET:write("VoteTime")
 		print("voting time!")
 		hook.Run("VotingStarted")
 		voting_time = true
 
 		math.randomseed(os.time())
 		GetVotableFuncs(votable_funcs, isDoubleVote)
-		PrintTable(votable_funcs)
+		if WEBSOCKET and WEBSOCKET:isConnected() then
+			WEBSOCKET:write("VoteTime")
+			local ws_actions = ""
+			for k, v in pairs(votable_funcs) do
+				ws_actions = ws_actions .. PrettyFuncs[v.name] .. " (!" .. v.name .. ");" // hate this
+			end
+			print("sending actions")
+			WEBSOCKET:write("VoteActions;" .. ws_actions)
+		else
+			print("websocket not there or connected, so not sending voteactions")
+		end
 
 		local json = util.TableToJSON(votable_funcs)
 		local data = util.Compress(json)
@@ -425,11 +436,14 @@ local function VoteTime(isDoubleVote)
 				local winning_func2 = votable_funcs[winning_func_key].name2
 				print(winning_func .. " " .. winning_func2)
 				PrintMessage(HUD_PRINTTALK, PrettyFuncs[winning_func] .. " and " .. PrettyFuncs[winning_func2])
+				if not WSFunctions[winning_func] then ErrorNoHalt("Function " .. winning_func .. " doesn't exist!") return end
+				if not WSFunctions[winning_func2] then ErrorNoHalt("Function " .. winning_func2 .. " doesn't exist!") return end
 				WSFunctions[winning_func]()
 				WSFunctions[winning_func2]()
 			else
 				print(winning_func)
 				PrintMessage(HUD_PRINTTALK, PrettyFuncs[winning_func])
+				if not WSFunctions[winning_func] then ErrorNoHalt("Function " .. winning_func .. " doesn't exist!") return end
 				WSFunctions[winning_func]()
 			end
 			IncrementActionCounter()
@@ -1088,7 +1102,6 @@ end
 local function CrabInfestation()
 	print("spawning crabs")
 	local plys = GetAlivePlayers()
-	SendTimer(false, plys)
 	for i=1, #plys do
 		local v = plys[i]
 
@@ -1575,14 +1588,11 @@ local function Phoon()
 end
 
 /* UTILITY ACTIONS */
-do
+if table.IsEmpty(WSFunctions) then
 	WSFunctions["printtwitchchat"] = PrintTwitchChat
 	WSFunctions["votetime"] = VoteTime
 	WSFunctions["voteinfo"] = VoteInfo
-end
-
 /* GAME ACTIONS */
-do
 	WSFunctions["randomizeviews"] = RandomizeViews
 	WSFunctions["lowergravity"] = LowerGravity
 	WSFunctions["deepfry"] = DeepFry

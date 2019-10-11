@@ -2,7 +2,7 @@ if game.SinglePlayer() then error("Twitch Interaction cant be run in singleplaye
 
 require("gwsockets")
 //include("actions.lua")
-print("runnin!")
+print("TGM is runnin!")
 
 // This controls how fast you receive messages, like the twitch chat and etc
 // seems like 0.4 or so is the minimum
@@ -106,6 +106,7 @@ end
 
 function WEBSOCKET:onDisconnected()
 	print("disconnected")
+	PrintMessage(HUD_PRINTTALK, "Websocket disconnected.")
 	timer.Destroy("CheckIfConnected")
 	timer.Destroy("AutoVote")
 end
@@ -208,6 +209,57 @@ hook.Add("PlayerSay", "ChangeSettings", function(sender, txt, teamchat)
 			end
 		end
 		return ""
+	elseif args[1] == "!disablevoting" then
+		if sender:IsAdmin() then
+			timer.Destroy("AutoVote")
+		end
+		return "Voting disabled."
+	elseif args[1] == "!enablevoting" then
+		if sender:IsAdmin() then
+			timer.Create("AutoVote", AutoVoteTimerDuration, 0, function()
+				VoteCounter = VoteCounter + 1
+				if VoteCounter % 10 == 0 then
+					WSFunctions["votetime"](true)
+				end
+				WSFunctions["votetime"](false)
+			end)
+		end
+		return "Voting enabled."
+	elseif args[1] == "!disableaction" then
+		if sender:IsAdmin() then
+			if (args[2]) then
+				if WSFunctions[args[2]] then
+					print(args[2] .. " has been disabled.")
+					WSFunctions_disabled[args[2]] = WSFunctions[args[2]]
+					WSFunctions[args[2]] = nil
+				else
+					print(args[2] .. " is not a valid action!")
+				end
+			end
+		end
+		return ""
+	elseif args[1] == "!printactions" then
+		if sender:IsAdmin() then
+			for k, v in pairs(WSFunctions) do
+				if PrettyFuncs[k] then
+					print(k .. " : " .. PrettyFuncs[k])
+				else
+					print(k .. " : HAS NO PRETTYFUNC!")
+				end
+			end
+		end
+		return "Check console."
+	elseif args[1] == "!printdisabledactions" then
+		if sender:IsAdmin() then
+			for k, v in pairs(WSFunctions_disabled) do
+				if PrettyFuncs[k] then
+					print(k .. " : " .. PrettyFuncs[k])
+				else
+					print(k .. " : HAS NO PRETTYFUNC!")
+				end
+			end
+		end
+		return "Check console."
 	elseif WSFunctions[string.TrimLeft(args[1], "!")] then
 		print("function found in PlayerSay, running...")
 		local clean_command = string.TrimLeft(args[1], "!")
