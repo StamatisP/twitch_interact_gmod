@@ -291,7 +291,7 @@ local function SpawnZombies() // ulib
 				local ent = newZombie( newpos, newang, v )
 			end
 		else
-			print("cant find suitable place for zombie, you're safe")
+			v:ChatPrint("No suitable position for zombie.")
 		end
 	end
 end
@@ -1105,6 +1105,7 @@ local function CrabInfestation()
 		local v = plys[i]
 
 		local pos = {}
+		local currentcrabs = 0
 		local testent = newCrab( Vector( 0, 0, 0 ), Angle( 0, 0, 0 ), v, true ) -- Test ent for traces
 
 		local yawForward = v:EyeAngles().yaw
@@ -1132,12 +1133,14 @@ local function CrabInfestation()
 
 		if #pos > 0 then
 			for _, newpos in ipairs( pos ) do
+				if currentcrabs >= 3 then continue end
 				local newang = (v:GetPos() - newpos):Angle()
 
 				local ent = newCrab( newpos, newang, v )
+				currentcrabs = currentcrabs + 1
 			end
 		else
-			print("cant find suitable place for zombie, you're safe")
+			v:ChatPrint("Cannot find suitable location to spawn crab.")
 		end
 	end
 end
