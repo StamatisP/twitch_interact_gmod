@@ -112,8 +112,8 @@ function WEBSOCKET:onDisconnected()
 end
 
 hook.Add("InitPostEntity", "OpenSocket", function()
-	if file.Exists("twitch_interact.txt", "DATA") then
-		SetGlobalInt("ActionCounter", file.Read("twitch_interact.txt", "DATA"))
+	if file.Exists("tgm_actioncounter.txt", "DATA") then
+		SetGlobalInt("ActionCounter", file.Read("tgm_actioncounter.txt", "DATA"))
 	end
 	if WEBSOCKET:isConnected() then return end
 	timer.Simple(10, function()
@@ -129,7 +129,7 @@ hook.Add("InitPostEntity", "OpenSocket", function()
 end)
 
 hook.Add("ShutDown", "CloseSocket", function()
-	file.Write("twitch_interact.txt", GetGlobalInt("ActionCounter", 0) % 10)
+	file.Write("tgm_actioncounter.txt", GetGlobalInt("ActionCounter", 0) % 10)
 	local actions = ""
 	for key, _ in pairs(WSFunctions) do
 		actions = actions .. key .. ";" .. tostring(WSFunctions[key].enabled) .. "\n" // this is A LOT of string making not a good idea
