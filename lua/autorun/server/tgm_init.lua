@@ -14,6 +14,11 @@ local VoteCounter = 0
 local socket_connected = false
 local socket_reconnect_tries = 0
 
+ChatBossMode = false
+ChatBossEnt = nil
+
+TGM_CurrentViewers = 0
+
 util.AddNetworkString("PrintTwitchChat")
 util.AddNetworkString("VoteDerma")
 util.AddNetworkString("UpdateDerma")
@@ -67,6 +72,12 @@ function WEBSOCKET:onMessage(txt)
 		//print("Test command received")
 	elseif txt == "conntest" then
 		//print("conn test!")
+	elseif string.StartWith(txt, "AttackBoss") then
+		if IsValid(ChatBossEnt) then
+			local args = string.Split(txt, ";")
+			ChatBossEnt:SetHealth(ChatBossEnt:Health() - args[2])
+			PrintMessage(HUD_PRINTTALK, args[3] .. " has dealt " .. args[2] .. " damage to the boss!")
+		end
 	elseif string.StartWith(txt, "PrintTwitchChat") then
 		local args = string.Split(txt, "\n")
 		//print(args[2]) User
@@ -76,6 +87,9 @@ function WEBSOCKET:onMessage(txt)
 		local args = string.Split(txt, "\n")
 		local clean_arg = string.TrimLeft(args[3], "!")
 		WSFunctions[string.lower(args[1])].func(args[2], clean_arg)
+	elseif string.StartWith(txt, "Viewers") then
+		local args = string.Split(txt, ";")
+		TGM_CurrentViewers = args[2]
 	elseif WSFunctions[string.lower(txt)] and DebugMode and not voting_time then
 		print("function found! running")
 		WSFunctions[string.lower(txt)].func()
@@ -131,7 +145,7 @@ hook.Add("InitPostEntity", "OpenSocket", function()
 		SetGlobalInt("ActionCounter", file.Read("tgm_actioncounter.txt", "DATA"))
 	end
 	if WEBSOCKET:isConnected() or socket_connected then return end
-	timer.Simple(10, function()
+	timer.Simple(5, function()
 		if WEBSOCKET:isConnected() or socket_connected then return end
 		WEBSOCKET:open()
 		timer.Simple(2, function()

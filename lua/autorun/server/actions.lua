@@ -1611,10 +1611,20 @@ local function ChatBoss()
 	// so it spawns a chat boss entity, and only chat can defeat it. it is invincible, shooting only moves it back.
 	local boss = ents.Create("tgm_chatboss")
 	if boss then
+		WEBSOCKET:write("ChatBossStatus;true")
 		print("spawned chatboss")
 		boss:Spawn()
 		boss:Activate()
 		boss:SetCollisionGroup(COLLISION_GROUP_WORLD)
+		boss:SetHealth(10)
+		ChatBossMode = true
+		ChatBossEnt = boss
+		timer.Create("Test", 1, 0, function()
+			if IsValid(boss) then
+				PrintMessage(HUD_PRINTCENTER, boss:Health())
+			end
+		end)
+		boss:CallOnRemove("WriteChatbossStatus", function(ent) WEBSOCKET:write("ChatBossStatus;false") end)
 	end
 end
 

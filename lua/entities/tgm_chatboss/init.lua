@@ -9,11 +9,11 @@ function ENT:Initialize()
 	self:SetMoveType(MOVETYPE_NONE)
 	self:SetSolid(SOLID_BBOX)
 	self:SetUseType(SIMPLE_USE)
-	self:SetHealth(999999)
 	local phys = self:GetPhysicsObject()
 	phys:Wake()
 	phys:EnableMotion(false)
 	self.soundid = self:StartLoopingSound("chatboss_loop")
+	self:SetHealth(9999)
 end
 
 local function GetAlivePlayers()
@@ -38,11 +38,15 @@ end
 
 function ENT:Think()
 	self:FindPlayer()
-	if self:GetTargetPlayer() then
-		self:SetPos(self:ApproachVector(self:GetTargetPlayer()))
-		self:PointAtEntity(self:GetTargetPlayer())
-		self:NextThink(CurTime() + 0.05)
-		return true
+	if self:Health() <= 0 then
+		self:Remove()
+	else
+		if self:GetTargetPlayer() then
+			self:SetPos(self:ApproachVector(self:GetTargetPlayer()))
+			self:PointAtEntity(self:GetTargetPlayer())
+			self:NextThink(CurTime() + 0.05)
+			return true
+		end
 	end
 end
 
@@ -61,23 +65,28 @@ function ENT:FindPlayer()
 	end
 	if not ply then 
 		self:Remove()
-		self:StopLoopingSound(self.soundid)
 	end
 end
 
 function ENT:OnTakeDamage(damage)
-	local dmg = damage:GetDamage()
-	dmg = math.Clamp(dmg, 1, 100)
-	dmg = dmg * 4
-	local fwd = self:GetAngles():Forward()
-	local selfpos = self:GetPos()
-	local newpos = selfpos
-	newpos = Vector( selfpos.x - (dmg * fwd.x), selfpos.y - (dmg * fwd.y), selfpos.z - (dmg * fwd.z))
-	//print(fwd)
-	//print("Current pos: " .. tostring(selfpos))
-	//print("Predicted pos: " .. tostring(newpos))
-	self:SetPos(newpos)
-	//print("New pos: " .. tostring(self:GetPos()))
-	//self:SetPos((fwd * dmg) - self:GetPos())
-	self:SetHealth(self:Health() + dmg)
+	if damage:IsDamageType(DMG_BULLET) or damage:IsDamageType(DMG_BLAST) then
+		local dmg = damage:GetDamage()
+		dmg = math.Clamp(dmg, 1, 100)
+		dmg = dmg * 4
+		local fwd = self:GetAngles():Forward()
+		local selfpos = self:GetPos()
+		local newpos = selfpos
+		newpos = Vector( selfpos.x - (dmg * fwd.x), selfpos.y - (dmg * fwd.y), selfpos.z - (dmg * fwd.z))
+		//print(fwd)
+		//print("Current pos: " .. tostring(selfpos))
+		//print("Predicted pos: " .. tostring(newpos))
+		self:SetPos(newpos)
+		//print("New pos: " .. tostring(self:GetPos()))
+		//self:SetPos((fwd * dmg) - self:GetPos())
+		self:SetHealth(self:Health())
+	end
+end
+
+function ENT:OnRemove()
+	self:StopLoopingSound(self.soundid)
 end
