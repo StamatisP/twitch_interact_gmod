@@ -11,6 +11,8 @@ local DebugMode = true
 local AutoVoteTimer = true
 local AutoVoteTimerDuration = 60
 local VoteCounter = 0
+local socket_connected = false
+local socket_reconnect_tries = 0
 
 util.AddNetworkString("PrintTwitchChat")
 util.AddNetworkString("VoteDerma")
@@ -86,6 +88,8 @@ end
 
 function WEBSOCKET:onConnected()
 	print("CONNECTED!")
+	socket_connected = true
+	socket_reconnect_tries = 0
 	PrintMessage(HUD_PRINTTALK, "Websocket connection established!")
 	WEBSOCKET:write("Connected Message!")
 	timer.Create("CheckIfConnected", MessageDelay, 0, function()
@@ -106,21 +110,32 @@ end
 
 function WEBSOCKET:onDisconnected()
 	print("disconnected")
+	socket_connected = false
+	WEBSOCKET:closeNow()
 	PrintMessage(HUD_PRINTTALK, "Websocket disconnected.")
 	timer.Destroy("CheckIfConnected")
 	timer.Destroy("AutoVote")
+	timer.Simple(3, function()
+		socket_reconnect_tries = socket_reconnect_tries + 1
+		print("trying to reconnect... try:" .. socket_reconnect_tries)
+		if WEBSOCKET:isConnected() or socket_connected then 
+			print("reconnected!")
+		elseif socket_reconnect_tries < 3 then
+			WEBSOCKET:open()
+		end
+	end)
 end
 
 hook.Add("InitPostEntity", "OpenSocket", function()
 	if file.Exists("tgm_actioncounter.txt", "DATA") then
 		SetGlobalInt("ActionCounter", file.Read("tgm_actioncounter.txt", "DATA"))
 	end
-	if WEBSOCKET:isConnected() then return end
+	if WEBSOCKET:isConnected() or socket_connected then return end
 	timer.Simple(10, function()
-		if WEBSOCKET:isConnected() then return end
+		if WEBSOCKET:isConnected() or socket_connected then return end
 		WEBSOCKET:open()
 		timer.Simple(2, function()
-			if WEBSOCKET:isConnected() then return end
+			if WEBSOCKET:isConnected() or socket_connected then return end
 			for k, v in ipairs(player.GetAll()) do
 				v:ChatPrint("Websocket connection unsuccessful, read console!")
 			end
@@ -129,14 +144,13 @@ hook.Add("InitPostEntity", "OpenSocket", function()
 end)
 
 hook.Add("ShutDown", "CloseSocket", function()
+	WEBSOCKET:closeNow()
 	file.Write("tgm_actioncounter.txt", GetGlobalInt("ActionCounter", 0) % 10)
 	local actions = ""
 	for key, _ in pairs(WSFunctions) do
 		actions = actions .. key .. ";" .. tostring(WSFunctions[key].enabled) .. "\n" // this is A LOT of string making not a good idea
 	end
 	file.Write("tgm_actions.txt", actions)
-	WEBSOCKET:write("shutdown")
-	WEBSOCKET:close()
 end)
 
 hook.Add("PlayerSay", "ChangeSettings", function(sender, txt, teamchat)
@@ -146,13 +160,13 @@ hook.Add("PlayerSay", "ChangeSettings", function(sender, txt, teamchat)
 		MessageDelay = args[2]
 		print("BEFORE - -- -- - - -- - --" .. MessageDelay)
 		timer.Adjust("CheckIfConnected", MessageDelay, 0, function()
-			WEBSOCKET:write("ConnTest")
+			//WEBSOCKET:write("ConnTest")
 		end)
 		timer.Start("CheckIfConnected")
 		print("AFTER - -- - - -- - - -" .. MessageDelay)
 	elseif args[1] == "!reconnectsocket" then
 		if sender:IsAdmin() then
-			if WEBSOCKET:isConnected() then
+			if WEBSOCKET:isConnected() or socket_connected then
 				WEBSOCKET:close()
 				timer.Simple(1, function()
 					WEBSOCKET:open()

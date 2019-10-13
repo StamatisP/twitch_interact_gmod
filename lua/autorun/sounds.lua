@@ -15,3 +15,12 @@ sound.Add( {
 	pitch = 100,
 	sound = "kamikaze_loop_special.wav"
 })
+
+sound.Add( {
+	name = "chatboss_loop",
+	channel = CHAN_STATIC,
+	volume = 0.8,
+	level = 90,
+	pitch = 100,
+	sound = "chatboss_loop.wav"
+} )

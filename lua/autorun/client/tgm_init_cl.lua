@@ -930,7 +930,7 @@ net.Receive("Nearsightedness", function()
 end)
 
 net.Receive("3DMode", function()
-	if g_VR then print("Cannot do 3Dmode effect in VR!") return end
+	if g_VR and g_VR.active then print("Cannot do 3Dmode effect in VR!") return end
 	RunConsoleCommand("pp_stereoscopy", "1")
 	timer.Simple(ActionDuration, function()
 		RunConsoleCommand("pp_stereoscopy", "0")
