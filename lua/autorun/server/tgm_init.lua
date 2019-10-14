@@ -16,6 +16,7 @@ local socket_reconnect_tries = 0
 
 ChatBossMode = false
 ChatBossEnt = nil
+ChatBossDamagers = {}
 
 TGM_CurrentViewers = 0
 
@@ -51,6 +52,7 @@ util.AddNetworkString("Nearsightedness")
 util.AddNetworkString("3DMode")
 util.AddNetworkString("MegaBloom")
 util.AddNetworkString("MathTime")
+util.AddNetworkString("ChatBoss")
 
 do // add files here precache in shared init.lua
 	/*for k, v in pairs(file.Find("sound/*", "THIRDPARTY")) do
@@ -77,6 +79,17 @@ function WEBSOCKET:onMessage(txt)
 			local args = string.Split(txt, ";")
 			ChatBossEnt:SetHealth(ChatBossEnt:Health() - args[2])
 			PrintMessage(HUD_PRINTTALK, args[3] .. " has dealt " .. args[2] .. " damage to the boss!")
+			if not ChatBossDamagers then ChatBossDamagers = {} end
+			if ChatBossDamagers[args[3]] then 
+				ChatBossDamagers[args[3]] = ChatBossDamagers[args[3]] + args[2]
+			else
+				ChatBossDamagers[args[3]] = args[2]
+			end
+			if ChatBossEnt:Health() <= 0 then
+				PrintMessage(HUD_PRINTTALK, "The Chat Boss has been slain!")
+				PrintMessage(HUD_PRINTTALK, string.format("Most Damage: %i, by %s", ChatBossDamagers[table.GetWinningKey(ChatBossDamagers)] , table.GetWinningKey(ChatBossDamagers)))
+				table.Empty(ChatBossDamagers)
+			end
 		end
 	elseif string.StartWith(txt, "PrintTwitchChat") then
 		local args = string.Split(txt, "\n")
@@ -311,6 +324,23 @@ hook.Add("PlayerSay", "ChangeSettings", function(sender, txt, teamchat)
 			print(" ---------------------------- ")
 		end
 		return "Check console."
+	elseif args[1] == "!attack" then
+		if ChatBossMode then
+			ChatBossEnt:SetHealth(ChatBossEnt:Health() - 1)
+			PrintMessage(HUD_PRINTTALK, sender:Nick() .. " has dealt " .. 1 .. " damage to the boss!")
+			if not ChatBossDamagers then ChatBossDamagers = {} end
+			if ChatBossDamagers[args[3]] then 
+				ChatBossDamagers[sender:Nick()] = ChatBossDamagers[sender:Nick()] + 1
+			else
+				ChatBossDamagers[sender:Nick()] = 1
+			end
+			if ChatBossEnt:Health() <= 0 then
+				PrintMessage(HUD_PRINTTALK, "The Chat Boss has been slain!")
+				PrintMessage(HUD_PRINTTALK, string.format("Most Damage: %i, by %s", ChatBossDamagers[table.GetWinningKey(ChatBossDamagers)] , table.GetWinningKey(ChatBossDamagers)))
+				table.Empty(ChatBossDamagers)
+			end
+		end
+		return ""
 	elseif WSFunctions[string.TrimLeft(args[1], "!")] then
 		print("function found in PlayerSay, running...")
 		local clean_command = string.TrimLeft(args[1], "!")

@@ -155,6 +155,9 @@ hook.Add("SetupPlayerVisibility", "TGMVis", function(pPlayer, viewentity)
 	if pPlayer.IsBoss then
 		AddAllPlayersToVis(GetAlivePlayers())
 	end
+	if ChatBossMode and IsValid(ChatBossEnt) then
+		AddOriginToPVS(ChatBossEnt:GetPos())
+	end
 end)
 
 local function SendTimer(broadcast, plys, time)
@@ -807,7 +810,7 @@ local function MegaSlap() // also from Ulib
 			end
 		end
 
-		local direction = Vector( math.random( 20 )-5, math.random( 20 )-5, math.random( 20 ) ) -- Make it random, slightly biased to go up.
+		local direction = Vector( math.random( 20 )-5, math.random( 20 )-5, math.random(10, 20))
 		ApplyAccel( v, power, direction )
 
 		local angle_punch_pitch = math.Rand( -20, 20 )
@@ -1609,22 +1612,28 @@ end
 
 local function ChatBoss()
 	// so it spawns a chat boss entity, and only chat can defeat it. it is invincible, shooting only moves it back.
+	if ChatBossMode then ErrorNoHalt("You can't do two chat bosses!") return end
+	if not WEBSOCKET:isConnected() then ErrorNoHalt("Chat boss is not meant for non-streams!") return end
 	local boss = ents.Create("tgm_chatboss")
 	if boss then
 		WEBSOCKET:write("ChatBossStatus;true")
 		print("spawned chatboss")
+		PrintMessage(HUD_PRINTCENTER, string.format("The Chat Boss lvl.%i has appeared! Type \"!attack\" in chat to defeat it!", GetGlobalInt("ChatBossStreak", 1)))
 		boss:Spawn()
 		boss:Activate()
 		boss:SetCollisionGroup(COLLISION_GROUP_WORLD)
-		boss:SetHealth(10)
+		local maxbosshealth = math.Max( (TGM_CurrentViewers / 10), 5 ) * math.Max(GetGlobalInt("ChatBossStreak", 1), 1)
+		boss:SetMaxHealth(maxbosshealth)
+		boss:SetHealth(maxbosshealth)
+		timer.Simple(0.1, function()
+			net.Start("ChatBoss")
+				net.WriteBool(true)
+				net.WriteEntity(boss)
+			net.Broadcast()
+		end)
 		ChatBossMode = true
 		ChatBossEnt = boss
-		timer.Create("Test", 1, 0, function()
-			if IsValid(boss) then
-				PrintMessage(HUD_PRINTCENTER, boss:Health())
-			end
-		end)
-		boss:CallOnRemove("WriteChatbossStatus", function(ent) WEBSOCKET:write("ChatBossStatus;false") end)
+		boss:CallOnRemove("WriteChatbossStatus", function(ent) ChatBossMode = false WEBSOCKET:write("ChatBossStatus;false") end)
 	end
 end
 

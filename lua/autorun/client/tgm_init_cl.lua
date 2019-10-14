@@ -675,7 +675,7 @@ net.Receive("Paranoia", function()
 	local loopsnd = PlayLoopingSound(loopstring)
 	surface.PlaySound("paranoia_vo_"..rndvo..".mp3")
 	surface.PlaySound("paranoia_start_"..rndstart..".mp3")
-	loopsnd:PlayEx(0.8, 100)
+	loopsnd:PlayEx(0.6, 100)
 
 	hook.Add("EntityEmitSound", "ParanoiaSoundDSP", function(tab)
 		if tab.OriginalSoundName == loopstring then
@@ -694,6 +694,7 @@ net.Receive("Paranoia", function()
 		Fog_End = math.Approach(Fog_End, 280, -70)
 		Fog_Density = math.Approach(Fog_Density, 1, 0.025)
 	end)
+	hook.Add("PreDrawSkyBox", "ParanoiaStopSkybox", function() return true end)
 
 	timer.Simple(ActionDuration, function()
 		surface.PlaySound("paranoia_end_1.mp3")
@@ -708,6 +709,7 @@ net.Receive("Paranoia", function()
 			Fog_End = math.Approach(Fog_End, 5600, 70)
 			Fog_Density = math.Approach(Fog_Density, 0, -0.025)
 			hook.Remove("EntityEmitSound", "ParanoiaLoopDSP")
+			hook.Remove("PreDrawSkyBox", "ParanoiaStopSkybox")
 		end)
 	end)
 end)
@@ -942,4 +944,57 @@ net.Receive("MegaBloom", function()
 	timer.Simple(ActionDuration, function()
 		MegaBloom = false
 	end)
+end)
+
+local frame, progbar
+net.Receive("ChatBoss", function()
+	local bool = net.ReadBool()
+	local bossent = net.ReadEntity()
+	if bool then
+		if not IsValid(bossent) then ErrorNoHalt("boss ent is null??") return end
+		frame = vgui.Create("DFrame")
+		frame:SetSize(750, 50)
+		frame:SetPos((ScrW() / 2) - 750 / 2, ScrH() / 8)
+		frame.Paint = function(s, w, h)
+			surface.SetDrawColor(255, 255, 255, 100)
+			surface.DrawOutlinedRect(0, 0, w, h)
+		end
+		progbar = vgui.Create("DProgress", frame)
+		progbar:SetSize(frame:GetSize())
+		progbar:SetFraction(1.0)
+		timer.Create("ChatBossProgbar", 0, 0, function()
+			if not IsValid(progbar) or not IsValid(bossent) then timer.Destroy("ChatBossProgbar") return end
+			progbar:SetFraction(bossent:Health() / bossent:GetMaxHealth())
+		end)
+		local label = vgui.Create("DLabel", progbar)
+		label:SetFont("DermaLarge")
+		label:SetColor(Color(255, 0, 0))
+		label:SetText("")
+		timer.Create("ProgbarLabel", 0.1, 0, function()
+			if not IsValid(label) or not IsValid(bossent) then print("destroyin label") timer.Destroy("ProgbarLabel") return end
+			label:SetText(bossent:Health())
+			label:SizeToContents()
+			label:CenterHorizontal(0.5)
+			label:CenterVertical(0.5)
+		end)
+		hook.Add("RenderScreenspaceEffects", "NoColorWhenClose", function()
+			if not IsValid(bossent) then return end
+			if bossent:GetPos():DistToSqr(LocalPlayer():GetPos()) >= 62501 then return end
+			local closeness = math.Remap(bossent:GetPos():DistToSqr(LocalPlayer():GetPos()), 0, 62500, 0, 1) 
+			DrawColorModify(  {
+				[ "$pp_colour_addr" ] = 0,
+				[ "$pp_colour_addg" ] = 0,
+				[ "$pp_colour_addb" ] = 0,
+				[ "$pp_colour_brightness" ] = 0,
+				[ "$pp_colour_contrast" ] = 1,
+				[ "$pp_colour_colour" ] = closeness,
+				[ "$pp_colour_mulr" ] = 0,
+				[ "$pp_colour_mulg" ] = 0,
+				[ "$pp_colour_mulb" ] = 0
+			} )
+		end)
+	else
+		if IsValid(frame) then frame:Close() end
+		hook.Remove("RenderScreenspaceEffects", "NoColorWhenClose")
+	end
 end)
