@@ -22,5 +22,8 @@ sound.Add( {
 	volume = 0.8,
 	level = 90,
 	pitch = 100,
-	sound = "chatboss_loop.wav"
+	sound = {
+		"chatboss_loop.wav",
+		"chatboss_loop2.wav"
+	}
 } )
