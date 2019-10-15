@@ -744,6 +744,8 @@ net.Receive("WhosWho", function()
 		loopsound:Stop()
 		hook.Remove("TGMTimerTick", "WhosWhoTick")
 		timer.Destroy("TimerLower")
+		timeText:Remove()
+		timeText = nil
 	end
 end)
 

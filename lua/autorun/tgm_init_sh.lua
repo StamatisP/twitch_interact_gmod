@@ -285,3 +285,8 @@ local function PlayerMove(ply,data)
 	return false
 end
 hook.Add("Move","StrafeMovement",PlayerMove)
+
+net.Receive("ChangeActionDuration", function()
+	local new = net.ReadUInt(8)
+	ActionDuration = new
+end)

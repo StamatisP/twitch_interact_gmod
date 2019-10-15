@@ -3,7 +3,6 @@ WSFunctions = WSFunctions or {}
 WSFunctions_disabled = WSFunctions_disabled or {}
 local votable_funcs = {}
 voting_time = false
-local vote_length = 15
 
 //local max_votable_funcs = 2
 
@@ -436,7 +435,7 @@ local function VoteTime(isDoubleVote)
 
 		SendTimer(true)
 
-		timer.Create("UpdateMenu", vote_length / 30, 30 - 1, function()
+		timer.Create("UpdateMenu", ActionDuration / 30, 30 - 1, function()
 			local json = util.TableToJSON(votable_funcs)
 			local data = util.Compress(json)
 			net.Start("UpdateDerma")
@@ -445,7 +444,7 @@ local function VoteTime(isDoubleVote)
 			net.Broadcast()
 		end)
 		// open a derma menu on clientside and send json of the votes
-		timer.Simple(vote_length, function()
+		timer.Simple(ActionDuration, function()
 			print("voting time over!")
 			hook.Run("VotingEnded")
 			PrintTable(votable_funcs)
@@ -1651,7 +1650,7 @@ local function SPBossMode()
 		net.Start("BossMode")
 			net.WriteBool(false)
 		net.Broadcast()
-		boss:ConCommand("-walk")
+		timer.Simple(0.1, function() boss:ConCommand("-walk") end)
 	end)
 end
 

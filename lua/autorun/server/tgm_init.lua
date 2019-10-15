@@ -55,6 +55,7 @@ util.AddNetworkString("3DMode")
 util.AddNetworkString("MegaBloom")
 util.AddNetworkString("MathTime")
 util.AddNetworkString("ChatBoss")
+util.AddNetworkString("ChangeActionDuration")
 
 do // add files here precache in shared init.lua
 	/*for k, v in pairs(file.Find("sound/*", "THIRDPARTY")) do
@@ -347,6 +348,22 @@ hook.Add("PlayerSay", "ChangeSettings", function(sender, txt, teamchat)
 		TGM_Streamer = sender
 		PrintMessage(HUD_PRINTTALK, TGM_Streamer:Nick() .. " has been set as the Streamer.")
 		WSFunctions["spbossmode"].enabled = true
+		return ""
+	elseif args[1] == "!actionduration" then
+		if tonumber(args[2]) then
+			ActionDuration = tonumber(args[2])
+			net.Start("ChangeActionDuration")
+				net.WriteUInt(ActionDuration, 8)
+			net.Broadcast()
+			print("Action duration changed to: " .. ActionDuration)
+		end
+		return ""
+	elseif args[1] == "!autovoteinterval" then
+		if tonumber(args[2]) then
+			AutoVoteTimerDuration = tonumber(args[2])
+			timer.Adjust("AutoVote", AutoVoteTimerDuration)
+			print("Auto vote interval changed to: " .. AutoVoteTimerDuration)
+		end
 		return ""
 	elseif WSFunctions[string.TrimLeft(args[1], "!")] then
 		print("function found in PlayerSay, running...")
