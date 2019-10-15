@@ -82,7 +82,9 @@ PrettyFuncs = {
 	["punchscreen"] = "Screen Punch",
 	["mathtime"] = "Math Time",
 	["prophunt"] = "Prop Hunt",
-	["phoon"] = "too much for zblock"
+	["phoon"] = "too much for zblock",
+	["chatboss"] = "Chat Boss",
+	["spbossmode"] = "Single-Player Boss Mode"
 }
 
 function IncrementActionCounter()

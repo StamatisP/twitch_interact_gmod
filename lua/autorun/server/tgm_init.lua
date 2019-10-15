@@ -3,7 +3,7 @@ if game.SinglePlayer() then ErrorNoHalt("Twitch Interaction may not support sing
 require("gwsockets")
 //include("actions.lua")
 local VERSION = "v1.5"
-print("TGM version " .. VERSION .. "is runnin!")
+print("TGM version " .. VERSION .. " is runnin!")
 
 // This controls how fast you receive messages, like the twitch chat and etc
 // seems like 0.4 or so is the minimum
@@ -20,6 +20,7 @@ ChatBossEnt = nil
 ChatBossDamagers = {}
 
 TGM_CurrentViewers = 0
+TGM_Streamer = nil
 
 util.AddNetworkString("PrintTwitchChat")
 util.AddNetworkString("VoteDerma")
@@ -341,6 +342,11 @@ hook.Add("PlayerSay", "ChangeSettings", function(sender, txt, teamchat)
 				table.Empty(ChatBossDamagers)
 			end
 		end
+		return ""
+	elseif args[1] == "!streamer" then
+		TGM_Streamer = sender
+		PrintMessage(HUD_PRINTTALK, TGM_Streamer:Nick() .. " has been set as the Streamer.")
+		WSFunctions["spbossmode"].enabled = true
 		return ""
 	elseif WSFunctions[string.TrimLeft(args[1], "!")] then
 		print("function found in PlayerSay, running...")

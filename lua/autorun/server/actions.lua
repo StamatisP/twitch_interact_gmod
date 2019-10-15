@@ -1637,6 +1637,24 @@ local function ChatBoss()
 	end
 end
 
+local function SPBossMode()
+	// so the streamer becomes the boss for 30 seconds
+	if not TGM_Streamer then ErrorNoHalt("No one is set as the streamer, this action won't work!") return end
+	net.Start("BossMode")
+		net.WriteBool(true)
+	net.Broadcast()
+	SendTimer(true, nil, ActionDuration * 2)
+	local boss = TGM_Streamer
+	boss:Give("tgm_bossminigun")
+	timer.Simple(ActionDuration * 2, function()
+		boss:StripWeapon("tgm_bossminigun")
+		net.Start("BossMode")
+			net.WriteBool(false)
+		net.Broadcast()
+		boss:ConCommand("-walk")
+	end)
+end
+
 print("setting actions...")
 /* UTILITY ACTIONS */
 WSFunctions["printtwitchchat"] = {enabled = true, func = PrintTwitchChat}
@@ -1680,6 +1698,7 @@ WSFunctions["punchscreen"] = {enabled = true, func = PunchScreen}
 WSFunctions["speedtime"] = {enabled = true, func = SpeedTime}
 WSFunctions["slowtime"] = {enabled = true, func = SlowTime}
 WSFunctions["phoon"] = {enabled = true, func = Phoon}
+WSFunctions["spbossmode"] = {enabled = false, func = SPBossMode}
 /* MULTIPLAYER-BASED ACTIONS */
 WSFunctions["prophunt"] = {enabled = true, func = PropHunt}
 WSFunctions["spawnzombies"] = {enabled = true, func = SpawnZombies}
