@@ -2,7 +2,7 @@ if game.SinglePlayer() then ErrorNoHalt("Twitch Interaction may not support sing
 
 require("gwsockets")
 //include("actions.lua")
-local VERSION = "v1.5"
+local VERSION = "v1.5.1"
 print("TGM version " .. VERSION .. " is runnin!")
 
 // This controls how fast you receive messages, like the twitch chat and etc
