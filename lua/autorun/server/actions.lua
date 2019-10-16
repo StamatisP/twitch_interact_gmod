@@ -161,7 +161,7 @@ end)
 
 local function SendTimer(broadcast, plys, time)
 	broadcast = broadcast or false
-	time = time or ActionDuration
+	time = time or GetActionDuration()
 	plys = plys or player.GetAll()
 
 	if broadcast then
@@ -197,13 +197,13 @@ end
 local function RandomizeViews()
 	print("randomizing views")
 	local plys = GetAlivePlayers()
-	SendTimer(false, plys, ActionDuration)
+	SendTimer(false, plys, GetActionDuration())
 	local plyAngles = {}
 	for k, v in ipairs(plys) do
 		plyAngles[k] = v:EyeAngles()
 		v:SetEyeAngles(AngleRand())
 	end
-	timer.Simple(ActionDuration, function()
+	timer.Simple(GetActionDuration(), function()
 		for k, v in ipairs(plys) do
 			v:SetEyeAngles(Angle(plyAngles[k].pitch, plyAngles[k].yaw, 0))
 		end
@@ -218,7 +218,7 @@ local function LowerGravity()
 	print(oldgrav)
 	local oldnumgrav = GetConVar("sv_gravity"):GetInt()
 	RunConsoleCommand("sv_gravity", "200")
-	timer.Simple(ActionDuration, function()
+	timer.Simple(GetActionDuration(), function()
 		RunConsoleCommand("sv_gravity", oldnumgrav)
 	end)
 	//physenv.SetGravity(Vector())
@@ -235,7 +235,7 @@ local function DeepFry()
 	for k, v in ipairs(plys) do
 		v:SetDSP(38, false)
 	end
-	timer.Simple(ActionDuration, function()
+	timer.Simple(GetActionDuration(), function()
 		for k, v in ipairs(plys) do
 			v:SetDSP(1, false)
 		end
@@ -262,7 +262,7 @@ local function Inception()
 		accel = direction * accel
 		v:SetVelocity( accel )
 	end
-	timer.Simple(ActionDuration, function()
+	timer.Simple(GetActionDuration(), function()
 		RunConsoleCommand("sv_gravity", "600")
 		RunConsoleCommand("sv_airaccelerate", "10")
 		RunConsoleCommand("sv_sticktoground", "1")
@@ -339,12 +339,12 @@ local function MasterFOV()
 		v:SetFOV(177, 1)
 		v:ChatPrint("MASTER FOV ENGAGED")
 	end
-	timer.Create("MasterFOV", 1, ActionDuration - 1, function()
+	timer.Create("MasterFOV", 1, GetActionDuration() - 1, function()
 		for k, v in pairs(plys) do
 			v:SetFOV(177, 1)
 		end
 	end)
-	timer.Simple(ActionDuration, function()
+	timer.Simple(GetActionDuration(), function()
 		for k, v in pairs(plys) do
 			v:SetFOV(plyFovs[k], 1)
 		end
@@ -435,7 +435,7 @@ local function VoteTime(isDoubleVote)
 
 		SendTimer(true)
 
-		timer.Create("UpdateMenu", ActionDuration / 30, 30 - 1, function()
+		timer.Create("UpdateMenu", GetActionDuration() / 30, 30 - 1, function()
 			local json = util.TableToJSON(votable_funcs)
 			local data = util.Compress(json)
 			net.Start("UpdateDerma")
@@ -444,7 +444,7 @@ local function VoteTime(isDoubleVote)
 			net.Broadcast()
 		end)
 		// open a derma menu on clientside and send json of the votes
-		timer.Simple(ActionDuration, function()
+		timer.Simple(GetActionDuration(), function()
 			print("voting time over!")
 			hook.Run("VotingEnded")
 			PrintTable(votable_funcs)
@@ -519,15 +519,17 @@ local function ZaWarudo() // from Vipes, edited for personal use https://steamco
 		RunConsoleCommand( "ai_disabled", "1" )
 		RunConsoleCommand( "ragdoll_sleepaftertime", "0" )
 		math.randomseed(os.time())
-		local randplayer = math.random(#plys)
+		local randplayer = plys[math.random(#plys)]
+		if TGM_Streamer then randplayer = TGM_Streamer end
 		for k, v in pairs(plys) do
-			if v:Alive() and k != randplayer then
+			if v:Alive() and (v != randplayer or v != TGM_Streamer) then
+				print(v:Nick())
 				v:Freeze( true )
 				v:SetMoveType(MOVETYPE_NOCLIP)
-				v:ScreenFade( SCREENFADE.OUT, Color(0, 0, 0), 1, ActionDuration - 1) // this should be cool than just a screenfade
+				v:ScreenFade( SCREENFADE.OUT, Color(0, 0, 0), 1, GetActionDuration() - 1) // this should be cool than just a screenfade
 			end
 		end
-		timer.Create("stoppedTime", ActionDuration - 1, 1, function()
+		timer.Create("stoppedTime", GetActionDuration() - 1, 1, function()
 			net.Start("ZaWarudoSound")
 				net.WriteBool(false)
 			net.Broadcast()
@@ -570,7 +572,7 @@ local function InvisibleWarfare()
 			end
 		end
 	end
-	timer.Simple(ActionDuration, function()
+	timer.Simple(GetActionDuration(), function()
 		net.Start("PlayCloakSound")
 			net.WriteBool(false)
 		net.Broadcast()
@@ -688,7 +690,7 @@ local function RagdollEveryone()
 			v.ragdoll = ragdoll
 		end
 	end
-	timer.Simple(ActionDuration, function()
+	timer.Simple(GetActionDuration(), function()
 		for k, v in ipairs(plys) do
 			if not v.ragdoll:IsValid() then -- Something must have removed it, just spawn
 				SpawnPlayer(v)
@@ -709,7 +711,7 @@ end
 
 local function SpeedTime()
 	print("speeding up time!")
-	SendTimer(true, nil, 30)
+	SendTimer(true, nil, GetActionDuration() * 2)
 	game.SetTimeScale(2)
 	hook.Add("EntityEmitSound", "PitchUpSounds", function(tab)
 		local p = tab.Pitch
@@ -717,7 +719,7 @@ local function SpeedTime()
 		tab.Pitch = math.Clamp( p, 0, 255 )
 		return true
 	end)
-	timer.Simple(ActionDuration * 2, function()
+	timer.Simple(GetActionDuration() * 2, function()
 		game.SetTimeScale(1)
 		hook.Remove("EntityEmitSound", "PitchUpSounds")
 	end)
@@ -725,7 +727,7 @@ end
 
 local function SlowTime()
 	print("slowing time!")
-	SendTimer(true, nil, 7)
+	SendTimer(true, nil, GetActionDuration() / 2)
 	game.SetTimeScale(0.5)
 	hook.Add("EntityEmitSound", "PitchDownSounds", function(tab)
 		local p = tab.Pitch
@@ -733,7 +735,7 @@ local function SlowTime()
 		tab.Pitch = math.Clamp( p, 0, 255 )
 		return true
 	end)
-	timer.Simple(ActionDuration / 2, function()
+	timer.Simple(GetActionDuration() / 2, function()
 		game.SetTimeScale(1)
 		hook.Remove("EntityEmitSound", "PitchDownSounds")
 	end)
@@ -743,7 +745,7 @@ local function SpeedUp()
 	print("speeding up!")
 	SendTimer(false, GetAlivePlayers())
 	speedup = true
-	timer.Simple(ActionDuration, function()
+	timer.Simple(GetActionDuration(), function()
 		speedup = false
 	end)
 end
@@ -752,7 +754,7 @@ local function SlowDown()
 	print("slowing down!")
 	SendTimer(false, GetAlivePlayers())
 	slowdown = true
-	timer.Simple(ActionDuration, function()
+	timer.Simple(GetActionDuration(), function()
 		slowdown = false
 	end)
 end
@@ -828,7 +830,7 @@ local function FloorIsIce()
 	print("the floor is ice!")
 	SendTimer(true)
 	RunConsoleCommand("sv_friction", -0.01)
-	timer.Simple(ActionDuration, function()
+	timer.Simple(GetActionDuration(), function()
 		RunConsoleCommand("sv_friction", 8)
 	end)
 end
@@ -876,7 +878,7 @@ local function UpsideDownCameras()
 		local plyAngles = v:EyeAngles()
 		v:SetEyeAngles(Angle(plyAngles.pitch, plyAngles.yaw, 180))
 	end
-	timer.Simple(ActionDuration, function()
+	timer.Simple(GetActionDuration(), function()
 		for k, v in ipairs(plys) do
 			local angs = v:EyeAngles()
 			v:SetEyeAngles(Angle(angs.pitch, angs.yaw, 0))
@@ -889,11 +891,12 @@ local function Bomberman()
 	for k, v in ipairs(player.GetAll()) do
 		local barrel = ents.Create("prop_physics")
 		if IsValid(barrel) then
+			print(barrel:Health())
 			barrel:SetModel("models/props_c17/oildrum001_explosive.mdl")
 			barrel:SetPos(v:GetPos())
 			barrel:SetCollisionGroup(COLLISION_GROUP_WORLD)
 			barrel:Spawn()
-			barrel:Ignite(5)
+			timer.Simple(1, function() barrel:Ignite(5) end)
 			//print(constraint.NoCollide(v, barrel, 0, 0))
 		end
 	end
@@ -906,7 +909,7 @@ local function AntFight()
 	net.Start("AntFight")
 		net.WriteFloat(0.3)
 	net.Broadcast()
-	timer.Simple(ActionDuration, function()
+	timer.Simple(GetActionDuration(), function()
 		net.Start("AntFight")
 			net.WriteFloat(1)
 		net.Broadcast()
@@ -924,7 +927,7 @@ local function BigHeadMode() // can be laggy if lots of players
 			v:ManipulateBoneScale(bone, Vector(10, 10, 10))
 		end
 	end
-	timer.Simple(ActionDuration, function()
+	timer.Simple(GetActionDuration(), function()
 		for k, v in ipairs(plys) do
 			local bone = v:LookupBone("ValveBiped.Bip01_Head1")
 			if bone then
@@ -946,7 +949,7 @@ local function JellyMode()
 			i = i + 1
 		end
 	end
-	timer.Simple(ActionDuration, function()
+	timer.Simple(GetActionDuration(), function()
 		for k, v in ipairs(plys) do
 			local i = 0
 
@@ -984,7 +987,7 @@ local function Paranoia()
 	end
 	net.Start("Paranoia")
 	net.Broadcast()
-	timer.Simple(ActionDuration, function()
+	timer.Simple(GetActionDuration(), function()
 		ParanoiaVar = false
 		for k, ply in ipairs(plys) do
 			ply:DrawShadow( true )
@@ -1006,7 +1009,7 @@ local function Blindness()
 	print("blindness")
 	SendTimer(false, GetAlivePlayers())
 	for k, v in ipairs(GetAlivePlayers()) do
-		v:ScreenFade(SCREENFADE.OUT, Color(0, 0, 0), 3, ActionDuration - 1)
+		v:ScreenFade(SCREENFADE.OUT, Color(0, 0, 0), 3, GetActionDuration() - 1)
 	end
 end
 
@@ -1021,7 +1024,7 @@ local function Deafness()
 	hook.Add("EntityEmitSound", "Deafness", function()
 		return false
 	end)
-	timer.Simple(ActionDuration, function()
+	timer.Simple(GetActionDuration(), function()
 		DeafnessVar = false
 		for k, v in ipairs(plys) do
 			v:SetDSP(1, false)
@@ -1039,7 +1042,7 @@ local function Tinnitus()
 			v:SetDSP(35, false)
 		end
 	end)
-	timer.Simple(ActionDuration, function()
+	timer.Simple(GetActionDuration(), function()
 		for k, v in ipairs(plys) do
 			v:SetDSP(1, false)
 		end
@@ -1054,7 +1057,7 @@ local function BouncyJump()
 	for k, v in ipairs(plys) do
 		v:SetJumpPower(600)
 	end
-	timer.Simple(ActionDuration, function()
+	timer.Simple(GetActionDuration(), function()
 		bouncyJump = false
 		for k, v in ipairs(plys) do
 			v:SetJumpPower(200)
@@ -1090,7 +1093,7 @@ local function RainingBombs()
 	SendTimer(true)
 	local SpecialFunc = false
 	if GetGlobalInt("ActionCounter") % 10 == 0 then PrintMessage(HUD_PRINTTALK, "Double Bombs!") SpecialFunc = true end
-	timer.Create("RainingBombs", 1, ActionDuration, function()
+	timer.Create("RainingBombs", 1, GetActionDuration(), function()
 		for k, v in ipairs(player.GetAll()) do
 			CreateFrag(v)
 			if SpecialFunc then
@@ -1168,7 +1171,7 @@ end
 local function WhosWho()
 	//idea: like cods' who's who (sound clip) where you try to find your body within 15-45 seconds and if not you die
 	net.Start("StartTimer")
-		net.WriteFloat(ActionDuration * 2)
+		net.WriteFloat(GetActionDuration() * 2)
 	net.Broadcast()
 	local plys = GetAlivePlayers()
 	for k, v in ipairs(plys) do
@@ -1191,7 +1194,7 @@ local function WhosWho()
 	net.Start("WhosWho")
 		net.WriteBool(true)
 	net.Send(plys)
-	timer.Simple(ActionDuration * 2, function()
+	timer.Simple(GetActionDuration() * 2, function()
 		local affected_plys = {}
 		for k, v in ipairs(plys) do
 			if v.WhosWho then
@@ -1218,7 +1221,7 @@ local function ItsAMystery()
 end
 
 local function Earthquake()
-	util.ScreenShake(Vector(0, 0, 0), 30, 30, ActionDuration, 10000)
+	util.ScreenShake(Vector(0, 0, 0), 30, 30, GetActionDuration(), 10000)
 end
 
 local function Instakill()
@@ -1227,7 +1230,7 @@ local function Instakill()
 	SendTimer(true)
 	net.Start("Instakill")
 	net.Broadcast()
-	timer.Simple(ActionDuration, function()
+	timer.Simple(GetActionDuration(), function()
 		InstakillVar = false
 	end)
 end
@@ -1277,7 +1280,7 @@ local function Kamikaze()
 		net.WriteUInt(id, 8)
 	net.Broadcast()
 
-	timer.Create("KamikazeExplode", ActionDuration, 1, function()
+	timer.Create("KamikazeExplode", GetActionDuration(), 1, function()
 		if kamikazeplayer:Alive() then
 			local alivePlayers = #GetAlivePlayers() - 1
 
@@ -1490,7 +1493,7 @@ end
 local function PunchScreen()
 	SendTimer(true)
 	for k, v in ipairs(GetAlivePlayers()) do
-		timer.Create("Punch"..v:Nick(), 0.5, ActionDuration * 2, function()
+		timer.Create("Punch"..v:Nick(), 0.5, GetActionDuration() * 2, function()
 			local rand = AngleRand(-10, 10)
 			local eyeang = v:EyeAngles()
 			eyeang.pitch = eyeang.pitch + rand.pitch
@@ -1513,7 +1516,7 @@ local function MathTime()
 
 	PrintMessage(HUD_PRINTTALK, question_string)
 	PrintMessage(HUD_PRINTCENTER, question_string)
-	timer.Create("PrintQuestion", 1, ActionDuration - 1, function()
+	timer.Create("PrintQuestion", 1, GetActionDuration() - 1, function()
 		PrintMessage(HUD_PRINTCENTER, question_string)
 	end)
 
@@ -1525,7 +1528,7 @@ local function MathTime()
 			return ""
 		end
 	end)
-	timer.Simple(ActionDuration, function()
+	timer.Simple(GetActionDuration(), function()
 		for k, v in ipairs(plys) do
 			if not v:Alive() then continue end
 			if v.MathWin then v.MathWin = false continue end
@@ -1555,7 +1558,7 @@ local function PropHunt()
 		table.insert(ply_models, v:GetModel())
 		v:SetModel(prop_models[math.random(#prop_models)])
 	end
-	timer.Simple(ActionDuration, function()
+	timer.Simple(GetActionDuration(), function()
 		for k, v in ipairs(plys) do
 			v:SetModel(ply_models[k])
 		end
@@ -1584,7 +1587,7 @@ local function Phoon()
 		print("fug")
 		draw.SimpleText("Your velocity is: " .. math.floor(tostring(v:GetVelocity():Length())), "DermaLarge", 50, 50)
 	end)*/
-	timer.Create("PhoonJumpCheck", 0.1, ActionDuration * 10, function()
+	timer.Create("PhoonJumpCheck", 0.1, GetActionDuration() * 10, function()
 		for k, v in ipairs(GetAlivePlayers()) do
 			if not v:IsOnGround() then
 				v:ConCommand("-jump")
@@ -1592,7 +1595,7 @@ local function Phoon()
 			end
 		end
 	end)
-	timer.Simple(ActionDuration, function()
+	timer.Simple(GetActionDuration(), function()
 		SetGlobalBool("PhoonMode", false)
 		PhoonMode = false
 		hook.Remove("OnPlayerHitGround", "PhoonBhop")
@@ -1642,10 +1645,10 @@ local function SPBossMode()
 	net.Start("BossMode")
 		net.WriteBool(true)
 	net.Broadcast()
-	SendTimer(true, nil, ActionDuration * 2)
+	SendTimer(true, nil, GetActionDuration() * 2)
 	local boss = TGM_Streamer
 	boss:Give("tgm_bossminigun")
-	timer.Simple(ActionDuration * 2, function()
+	timer.Simple(GetActionDuration() * 2, function()
 		boss:StripWeapon("tgm_bossminigun")
 		net.Start("BossMode")
 			net.WriteBool(false)

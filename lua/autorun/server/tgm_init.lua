@@ -2,18 +2,38 @@ if game.SinglePlayer() then ErrorNoHalt("Twitch Interaction may not support sing
 
 require("gwsockets")
 //include("actions.lua")
-local VERSION = "v1.5.1"
+local VERSION = "v1.5.5"
 print("TGM version " .. VERSION .. " is runnin!")
 
 // This controls how fast you receive messages, like the twitch chat and etc
 // seems like 0.4 or so is the minimum
 local MessageDelay = 0.5
 local DebugMode = true
-local AutoVoteTimer = true
-local AutoVoteTimerDuration = 60
+local AutoVoteTimer = CreateConVar("tgm_autovote", "1", FCVAR_ARCHIVE, "If auto vote is enabled.")
+local AutoVoteTimerDuration = CreateConVar("tgm_autovoteinterval", "60", FCVAR_ARCHIVE, "How many seconds before an auto vote is triggered.")
 local VoteCounter = 0
 local socket_connected = false
 local socket_reconnect_tries = 0
+cvars.AddChangeCallback("tgm_autovote", function(convar, old, new)
+	if new == 1 then
+		timer.Destroy("AutoVote")
+		timer.Create("AutoVote", AutoVoteTimerDuration:GetInt(), 0, function()
+			VoteCounter = VoteCounter + 1
+			if VoteCounter % 10 == 0 then
+				WSFunctions["votetime"].func(true)
+			else
+				WSFunctions["votetime"].func(false)
+			end
+		end)
+	elseif new == 0 then
+		timer.Destroy("AutoVote")
+	end
+end)
+cvars.AddChangeCallback("tgm_autovoteinterval", function(convar, old, new)
+	if timer.Exists("AutoVote") then
+		timer.Adjust("AutoVote", new)
+	end
+end)
 
 ChatBossMode = false
 ChatBossEnt = nil
@@ -124,10 +144,10 @@ function WEBSOCKET:onConnected()
 	WEBSOCKET:write("Connected Message!")
 	timer.Create("CheckIfConnected", MessageDelay, 0, function()
 		//print("testing for connection")
-		WEBSOCKET:write("ConnTest")
+		//WEBSOCKET:write("ConnTest") // is this even needed anymore?
 	end)
-	if AutoVoteTimer then
-		timer.Create("AutoVote", AutoVoteTimerDuration, 0, function()
+	if AutoVoteTimer:GetBool() then
+		timer.Create("AutoVote", AutoVoteTimerDuration:GetInt(), 0, function()
 			VoteCounter = VoteCounter + 1
 			if VoteCounter % 10 == 0 then
 				WSFunctions["votetime"].func(true)
@@ -189,9 +209,7 @@ hook.Add("PlayerSay", "ChangeSettings", function(sender, txt, teamchat)
 	if args[1] == "!changedelay" then
 		MessageDelay = args[2]
 		print("BEFORE - -- -- - - -- - --" .. MessageDelay)
-		timer.Adjust("CheckIfConnected", MessageDelay, 0, function()
-			//WEBSOCKET:write("ConnTest")
-		end)
+		timer.Adjust("CheckIfConnected", MessageDelay)
 		timer.Start("CheckIfConnected")
 		print("AFTER - -- - - -- - - -" .. MessageDelay)
 	elseif args[1] == "!reconnectsocket" then
@@ -236,11 +254,6 @@ hook.Add("PlayerSay", "ChangeSettings", function(sender, txt, teamchat)
 		if sender:IsAdmin() then
 			WEBSOCKET:write("democracymode")
 		end
-	elseif args[1] == "!changewsurl" then
-		if sender:IsAdmin() then
-			tgm_url:SetString(args[2])
-			print("setting url to ".. tgm_url:GetString())
-		end
 	elseif args[1] == "!actioncounter" then
 		if sender:IsAdmin() then
 			if tonumber(args[2]) then
@@ -265,7 +278,7 @@ hook.Add("PlayerSay", "ChangeSettings", function(sender, txt, teamchat)
 		return "Voting disabled."
 	elseif args[1] == "!enablevoting" then
 		if sender:IsAdmin() then
-			timer.Create("AutoVote", AutoVoteTimerDuration, 0, function()
+			timer.Create("AutoVote", AutoVoteTimerDuration:GetInt(), 0, function()
 				VoteCounter = VoteCounter + 1
 				if VoteCounter % 10 == 0 then
 					WSFunctions["votetime"].func(true)
@@ -348,22 +361,6 @@ hook.Add("PlayerSay", "ChangeSettings", function(sender, txt, teamchat)
 		TGM_Streamer = sender
 		PrintMessage(HUD_PRINTTALK, TGM_Streamer:Nick() .. " has been set as the Streamer.")
 		WSFunctions["spbossmode"].enabled = true
-		return ""
-	elseif args[1] == "!actionduration" then
-		if tonumber(args[2]) then
-			ActionDuration = tonumber(args[2])
-			net.Start("ChangeActionDuration")
-				net.WriteUInt(ActionDuration, 8)
-			net.Broadcast()
-			print("Action duration changed to: " .. ActionDuration)
-		end
-		return ""
-	elseif args[1] == "!autovoteinterval" then
-		if tonumber(args[2]) then
-			AutoVoteTimerDuration = tonumber(args[2])
-			timer.Adjust("AutoVote", AutoVoteTimerDuration)
-			print("Auto vote interval changed to: " .. AutoVoteTimerDuration)
-		end
 		return ""
 	elseif WSFunctions[string.TrimLeft(args[1], "!")] then
 		print("function found in PlayerSay, running...")

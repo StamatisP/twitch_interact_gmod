@@ -172,8 +172,8 @@ local pp_effects = {
 
 local txt_effects = {
 	[1] = "pp/texturize/rainbow.png",
-	[2] = "pp/texturize/pinko.png",
-	[3] = "pp/texturize/squaredo.png"
+	//[2] = "pp/texturize/pinko.png",
+	[2] = "pp/texturize/squaredo.png"
 }
 
 /* HOOKS */
@@ -272,14 +272,14 @@ local function VRTGMRender()
 	end
 	if RandomTexturize then
 		if g_VR and g_VR.active then
-			DrawTexturizeVR(1, Material(TxtEffect))
+			DrawTexturize(1, Material(TxtEffect))
 		else
 			DrawTexturize(1, Material(TxtEffect))
 		end
 	end
 	if RandomOverlay then
 		if g_VR and g_VR.active then
-			DrawMaterialOverlayVR(RndOverlay, RndRefract)
+			DrawMaterialOverlay(RndOverlay, RndRefract)
 		else
 			DrawMaterialOverlay(RndOverlay, RndRefract)
 		end
@@ -505,6 +505,17 @@ function VoteMenu:Paint(wide, tall)
 	//surface.SetDrawColor(Color(255, 0, 0))
 	//surface.DrawRect(0, 0, wide, tall)
 end
+function VoteMenu:ClearAll()
+	self.f:Remove()
+	self.label1:Remove()
+	self.label2:Remove()
+	self.label3:Remove()
+	self.label4:Remove()
+	self.progbar1:Remove()
+	self.progbar2:Remove()
+	self.progbar3:Remove()
+	self.progbar4:Remove()
+end
 
 vgui.Register("FuncLabel", FuncLabel, "DLabel")
 vgui.Register("VoteMenuDerma", VoteMenu, "Panel")
@@ -561,11 +572,9 @@ end)
 
 net.Receive("EndVoting", function()
 	if not f then return end
-	f.f:Clear()
-	f:Remove()
+	f:ClearAll()
 	if g_VR and g_VR.active then
-		f2.f:Clear()
-		f:Remove()
+		f2:ClearAll()
 		VRUtilMenuClose("VoteMenu")
 	end
 end)
@@ -575,7 +584,7 @@ end)
 net.Receive("FuckWithScreen", function()
 	ScreenFuck = true
 	print("this be runnin")
-	timer.Simple(ActionDuration, function()
+	timer.Simple(GetActionDuration(), function()
 		ScreenFuck = false
 	end)
 end)
@@ -630,7 +639,7 @@ net.Receive("SilentHill", function()
 		Fog_End = math.Approach(Fog_End, 280, -70)
 		Fog_Density = math.Approach(Fog_Density, 0.99, 0.025)
 	end)
-	timer.Simple(ActionDuration, function()
+	timer.Simple(GetActionDuration(), function()
 		//LocalPlayer():ChatPrint("It's finally clearing up.")
 		timer.Create("fog_end_lerp_2", 0.05, 0, function()
 			if Fog_Density <= 0 then
@@ -696,7 +705,7 @@ net.Receive("Paranoia", function()
 	end)
 	hook.Add("PreDrawSkyBox", "ParanoiaStopSkybox", function() return true end)
 
-	timer.Simple(ActionDuration, function()
+	timer.Simple(GetActionDuration(), function()
 		surface.PlaySound("paranoia_end_1.mp3")
 		timer.Create("fog_end_lerp_2_paranoia", 0.05, 0, function()
 			if Fog_Density <= 0 then
@@ -716,7 +725,7 @@ end)
 
 net.Receive("Thirdperson", function()
 	ThirdPerson = true
-	timer.Simple(ActionDuration, function()
+	timer.Simple(GetActionDuration(), function()
 		ThirdPerson = false
 	end)
 end)
@@ -763,8 +772,8 @@ net.Receive("StartTimer", function()
 		timeText:CenterHorizontal(0.5)
 		timeText.Paint = function(self, w, h)
 			if g_VR and g_VR.active then
-				surface.SetDrawColor( Color( 0, 0, 0, 100 ) )
-				surface.DrawRect(0,0,w,h)
+				//surface.SetDrawColor( Color( 0, 0, 0, 100 ) )
+				//surface.DrawRect(0,0,w,h)
 				//print(actionTime)
 				DisableClipping(true)
 				draw.SimpleText(actionTime, "ChatFont", 0, 0, Color(255, 170, 60), TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
@@ -790,7 +799,7 @@ net.Receive("StartTimer", function()
 				VRUtilMenuClose("timer")
 			end
 			timeText:SetPos(0, 0)
-			VRUtilMenuOpen("timer", 32, 32, timeText, 1, Vector(6,6,6), Angle(0,-90,50), 0.6, false, nil)
+			VRUtilMenuOpen("timer", 32, 32, timeText, 1, Vector(6,6,6), Angle(0,-90,50), 0.3, false, nil)
 			VRUtilMenuRenderPanel("timer")
 		end
 	end
@@ -805,7 +814,7 @@ net.Receive("StartTimer", function()
 
 		if actionTime <= 0 or not actionTime then
 			if timeText then
-				if g_VR and g_VR.active then
+				if g_VR and g_VR.active and VRUtilIsMenuOpen("timer") then
 					VRUtilMenuClose("timer")
 				end
 				timeText:Remove()
@@ -821,7 +830,7 @@ net.Receive("ItsAMystery", function()
 	timer.Create("Mystery", 0, 0, function()
 		LocalPlayer():SetEyeAngles(Angle(0, SysTime() * 50 % 360, 0))
 	end)
-	timer.Simple(ActionDuration, function()
+	timer.Simple(GetActionDuration(), function()
 		timer.Destroy("Mystery")
 	end)
 end)
@@ -830,7 +839,7 @@ net.Receive("Instakill", function()
 	surface.PlaySound("instakill.mp3")
 	local loopsound = PlayLoopingSound("instakill_loop.wav")
 	loopsound:PlayEx(0.5, 100)
-	timer.Simple(ActionDuration, function()
+	timer.Simple(GetActionDuration(), function()
 		loopsound:FadeOut(1)
 	end)
 end)
@@ -842,18 +851,18 @@ net.Receive("Kamikaze", function()
 	if ply == LocalPlayer() then
 		KamikazeVar = true
 		LocalPlayer():ChatPrint("You are the Kamikaze! Kill " .. math.Clamp(#player.GetAll() / 5, 1, 200) .." or more players and you will be revived!")
-		timer.Simple(ActionDuration, function()
+		timer.Simple(GetActionDuration(), function()
 			KamikazeVar = false
 		end)
 	end
-	timer.Simple(ActionDuration, function()
+	timer.Simple(GetActionDuration(), function()
 		ply.Kamikaze = false
 	end)
 end)
 
 net.Receive("MobaMode", function()
 	MobaMode = true
-	timer.Simple(ActionDuration, function()
+	timer.Simple(GetActionDuration(), function()
 		MobaMode = false
 	end)
 end)
@@ -910,7 +919,7 @@ net.Receive("RandomOverlay", function()
 		RndRefract = math.Rand(0.3, 0.8)
 	end
 	RndOverlay = pp_effects[rand]
-	timer.Simple(ActionDuration, function()
+	timer.Simple(GetActionDuration(), function()
 		RandomOverlay = false
 	end)
 end)
@@ -919,7 +928,7 @@ net.Receive("RandomTexturize", function()
 	math.randomseed(os.time())
 	RandomTexturize = true
 	TxtEffect = txt_effects[math.random(#txt_effects)]
-	timer.Simple(ActionDuration, function()
+	timer.Simple(GetActionDuration(), function()
 		RandomTexturize = false
 	end)
 end)
@@ -928,7 +937,7 @@ net.Receive("Nearsightedness", function()
 	RunConsoleCommand("pp_dof_initlength", "9.00")
 	RunConsoleCommand("pp_dof_spacing", "8.00")
 	DOF_Start()
-	timer.Simple(ActionDuration, function()
+	timer.Simple(GetActionDuration(), function()
 		DOF_Kill()
 	end)
 end)
@@ -936,14 +945,14 @@ end)
 net.Receive("3DMode", function()
 	if g_VR and g_VR.active then print("Cannot do 3Dmode effect in VR!") return end
 	RunConsoleCommand("pp_stereoscopy", "1")
-	timer.Simple(ActionDuration, function()
+	timer.Simple(GetActionDuration(), function()
 		RunConsoleCommand("pp_stereoscopy", "0")
 	end)
 end)
 
 net.Receive("MegaBloom", function()
 	MegaBloom = true
-	timer.Simple(ActionDuration, function()
+	timer.Simple(GetActionDuration(), function()
 		MegaBloom = false
 	end)
 end)

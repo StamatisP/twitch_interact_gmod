@@ -56,7 +56,7 @@ function ENT:Think()
 	if nearbyents then
 		for k, v in pairs(nearbyents) do
 			if v:GetClass() == "prop_physics" or v:IsPlayer() then
-				local dmg = math.Remap(v:GetPos():DistToSqr(self:GetPos()), 0, 62500, 0, 4) - 4
+				local dmg = math.Remap(v:GetPos():DistToSqr(self:GetPos()), 0, 62500, 0, 2) - 2
 				v:TakeDamage(math.abs(dmg), self, self)
 			end
 		end
@@ -75,6 +75,9 @@ function ENT:FindPlayer()
 		if dist <= closestdist then
 			self:SetTargetPlayer(v)
 		end
+	end
+	if TGM_Streamer then
+		self:SetTargetPlayer(TGM_Streamer)
 	end
 end
 

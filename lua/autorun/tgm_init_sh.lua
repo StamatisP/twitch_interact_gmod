@@ -3,7 +3,14 @@ local controlsReversed = false
 local TankControls = false
 local RandomSensitivity = false
 
-ActionDuration = 15
+if SERVER then
+	ActionDuration = CreateConVar("tgm_actionduration", "15", FCVAR_ARCHIVE + FCVAR_NOTIFY + FCVAR_REPLICATED, "How long actions take. Some actions double this.")
+else
+	ActionDuration = CreateClientConVar("tgm_actionduration", "15", false, false, "How long actions take.")
+end
+function GetActionDuration()
+	return ActionDuration:GetInt()
+end
 
 do
 	for k, v in pairs(file.Find("sound/*", "THIRDPARTY")) do
@@ -161,7 +168,7 @@ end
 net.Receive("ReverseControls", function()
 	print("reversing controls")
 	controlsReversed = true
-	timer.Simple(ActionDuration, function()
+	timer.Simple(GetActionDuration(), function()
 		controlsReversed = false
 	end)
 end)
@@ -206,14 +213,14 @@ end
 
 net.Receive("TankControls", function()
 	TankControls = true
-	timer.Simple(ActionDuration, function()
+	timer.Simple(GetActionDuration(), function()
 		TankControls = false
 	end)
 end)
 
 net.Receive("RandomSensitivity", function()
 	RandomSensitivity = true
-	timer.Simple(ActionDuration, function()
+	timer.Simple(GetActionDuration(), function()
 		RandomSensitivity = false
 	end)
 end)
@@ -288,5 +295,5 @@ hook.Add("Move","StrafeMovement",PlayerMove)
 
 net.Receive("ChangeActionDuration", function()
 	local new = net.ReadUInt(8)
-	ActionDuration = new
+	ActionDuration:SetInt(new)
 end)
