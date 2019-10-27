@@ -1,9 +1,10 @@
 if game.SinglePlayer() then ErrorNoHalt("Twitch Interaction may not support singleplayer!")  end
 
 require("gwsockets")
+require("gwsockets") // apparently theres a bug with debian, this should work?
 //include("actions.lua")
-local VERSION = "v1.5.5"
-print("TGM version " .. VERSION .. " is runnin!")
+local tgm_ver = "v1.5.5"
+print("TGM version " .. tgm_ver .. " is runnin!")
 
 // This controls how fast you receive messages, like the twitch chat and etc
 // seems like 0.4 or so is the minimum
@@ -85,7 +86,7 @@ do // add files here precache in shared init.lua
 end
 
 local tgm_url = CreateConVar("tgm_url", "ws://localhost:8765", FCVAR_ARCHIVE + FCVAR_PROTECTED, "The URL pointing to your websocket. example (ws://localhost:8765)")
-local tgm_printvotes = CreateConVar("tgm_printvotes", "0", "If the votable actions are printed in Twitch chat.")
+local tgm_printvotes = CreateConVar("tgm_printvotes", "0", FCVAR_ARCHIVE, "If the votable actions are printed in Twitch chat.")
 WEBSOCKET = WEBSOCKET or GWSockets.createWebSocket(tgm_url:GetString(), false)
 
 function WEBSOCKET:onMessage(txt)
