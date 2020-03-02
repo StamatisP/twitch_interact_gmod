@@ -485,15 +485,15 @@ function VoteMenu:UpdateVotes(tab)
 	end
 	if not self.label1 then return end
 	if isDoubleVote then
-		self.label1:SetText2( (PrettyFuncs[tab[1].name] or tab[1].name) .. " + " .. (PrettyFuncs[tab[1].name2] or tab[1].name2) .. " (!" .. tab[1].name .. ")")
-		self.label2:SetText2( (PrettyFuncs[tab[2].name] or tab[2].name) .. " + " .. (PrettyFuncs[tab[2].name2] or tab[2].name2) .. " (!" .. tab[2].name .. ")")
-		self.label3:SetText2( (PrettyFuncs[tab[3].name] or tab[3].name) .. " + " .. (PrettyFuncs[tab[3].name2] or tab[3].name2) .. " (!" .. tab[3].name .. ")")
-		self.label4:SetText2( (PrettyFuncs[tab[4].name] or tab[4].name) .. " + " .. (PrettyFuncs[tab[4].name2] or tab[4].name2) .. " (!" .. tab[4].name .. ")")
+		self.label1:SetText2( (PrettyFuncs[tab[1].name] or tab[1].name) .. " + " .. (PrettyFuncs[tab[1].name2] or tab[1].name2) .. " (!1)")
+		self.label2:SetText2( (PrettyFuncs[tab[2].name] or tab[2].name) .. " + " .. (PrettyFuncs[tab[2].name2] or tab[2].name2) .. " (!2)")
+		self.label3:SetText2( (PrettyFuncs[tab[3].name] or tab[3].name) .. " + " .. (PrettyFuncs[tab[3].name2] or tab[3].name2) .. " (!3)")
+		self.label4:SetText2( (PrettyFuncs[tab[4].name] or tab[4].name) .. " + " .. (PrettyFuncs[tab[4].name2] or tab[4].name2) .. " (!4)")
 	else
-		self.label1:SetText2( (PrettyFuncs[tab[1].name] or tab[1].name) .. " (!" .. tab[1].name .. ")")
-		self.label2:SetText2( (PrettyFuncs[tab[2].name] or tab[2].name) .. " (!" .. tab[2].name .. ")")
-		self.label3:SetText2( (PrettyFuncs[tab[3].name] or tab[3].name) .. " (!" .. tab[3].name .. ")")
-		self.label4:SetText2( (PrettyFuncs[tab[4].name] or tab[4].name) .. " (!" .. tab[4].name .. ")")
+		self.label1:SetText2( (PrettyFuncs[tab[1].name] or tab[1].name) .. " (!1)")
+		self.label2:SetText2( (PrettyFuncs[tab[2].name] or tab[2].name) .. " (!2)")
+		self.label3:SetText2( (PrettyFuncs[tab[3].name] or tab[3].name) .. " (!3)")
+		self.label4:SetText2( (PrettyFuncs[tab[4].name] or tab[4].name) .. " (!4)")
 	end
 
 	self.progbar1:SetFraction(tab[1].value / self.maxVotes)
@@ -706,7 +706,7 @@ net.Receive("Paranoia", function()
 	hook.Add("PreDrawSkyBox", "ParanoiaStopSkybox", function() return true end)
 
 	timer.Simple(GetActionDuration(), function()
-		surface.PlaySound("paranoia_end_1.mp3")
+		//surface.PlaySound("paranoia_end_1.mp3") todo: remove the sound maybe? im not sure to keep it...
 		timer.Create("fog_end_lerp_2_paranoia", 0.05, 0, function()
 			if Fog_Density <= 0 then
 				loopsnd:FadeOut(1)
@@ -1007,5 +1007,34 @@ net.Receive("ChatBoss", function()
 	else
 		if IsValid(frame) then frame:Close() end
 		hook.Remove("RenderScreenspaceEffects", "NoColorWhenClose")
+	end
+end)
+
+net.Receive("TGM_ChonkyPlayers", function()
+	local scale = net.ReadInt(6)
+	for k, v in ipairs(player.GetAll()) do
+		if scale == 1 then
+			v:DisableMatrix("RenderMultiply")
+			continue
+		end
+		local mat = Matrix()
+		mat:Scale(Vector(scale, scale, 1))
+		v:EnableMatrix("RenderMultiply", mat)
+	end
+end)
+
+net.Receive("TGM_UpsidedownPlayers", function()
+	local bool = net.ReadBool()
+	if bool then
+		for k, v in ipairs(player.GetAll()) do
+			local mat = Matrix()
+			mat:Rotate(Angle(180, 0, 0))
+			mat:SetTranslation(Vector(0, 0, 72))
+			v:EnableMatrix("RenderMultiply", mat)
+		end
+	else
+		for k, v in ipairs(player.GetAll()) do
+			v:DisableMatrix("RenderMultiply")
+		end
 	end
 end)

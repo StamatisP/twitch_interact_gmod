@@ -1659,6 +1659,30 @@ local function SPBossMode()
 	end)
 end
 
+local function ChonkyPlayers()
+	SendTimer(true)
+	net.Start("TGM_ChonkyPlayers")
+		net.WriteInt(7, 6)
+	net.Broadcast()
+	timer.Simple(GetActionDuration(), function()
+		net.Start("TGM_ChonkyPlayers")
+			net.WriteInt(1, 6)
+		net.Broadcast()
+	end)
+end
+
+local function UpsidedownPlayers()
+	SendTimer(true)
+	net.Start("TGM_UpsidedownPlayers")
+		net.WriteBool(true)
+	net.Broadcast()
+	timer.Simple(GetActionDuration(), function()
+		net.Start("TGM_UpsidedownPlayers")
+			net.WriteBool(false)
+		net.Broadcast()
+	end)
+end
+
 print("setting actions...")
 /* UTILITY ACTIONS */
 WSFunctions["printtwitchchat"] = {enabled = true, func = PrintTwitchChat}
@@ -1722,6 +1746,8 @@ WSFunctions["reviveeveryone"] = {enabled = true, func = ReviveEveryone}
 WSFunctions["bossmode"] = {enabled = true, func = BossMode}
 WSFunctions["mathtime"] = {enabled = true, func = MathTime}
 WSFunctions["chatboss"] = {enabled = true, func = ChatBoss}
+WSFunctions["chonkyplayers"] = {enabled = true, func = ChonkyPlayers}
+WSFunctions["upsidedownplayers"] = {enabled = true, func = UpsidedownPlayers}
 
 if file.Exists("tgm_actions.txt", "DATA") then
 	local data = file.Read("tgm_actions.txt", "DATA")

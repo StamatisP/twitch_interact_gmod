@@ -82,6 +82,8 @@ util.AddNetworkString("MegaBloom")
 util.AddNetworkString("MathTime")
 util.AddNetworkString("ChatBoss")
 util.AddNetworkString("ChangeActionDuration")
+util.AddNetworkString("TGM_ChonkyPlayers")
+util.AddNetworkString("TGM_UpsidedownPlayers")
 
 do // add files here precache in shared init.lua
 	/*for k, v in pairs(file.Find("sound/*", "THIRDPARTY")) do

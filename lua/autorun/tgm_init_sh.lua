@@ -91,7 +91,9 @@ PrettyFuncs = {
 	["prophunt"] = "Prop Hunt",
 	["phoon"] = "too much for zblock",
 	["chatboss"] = "Chat Boss",
-	["spbossmode"] = "Single-Player Boss Mode"
+	["spbossmode"] = "Single-Player Boss Mode",
+	["chonkyplayers"] = "Chonky Players",
+	["upsidedownplayers"] = "Upside Down Players"
 }
 
 function IncrementActionCounter()
@@ -182,12 +184,15 @@ hook.Add("AntFight", "AntFightShared", function(scale) // bug: crouching hulls d
 		//print(v:GetHull())
 		//	print(v:GetHullDuck())
 		v:SetHull(scale * Vector(-16, -16, 0), scale * Vector(16, 16, 72))
-		v:SetHullDuck(scale * Vector(-16, -16, 0), scale * Vector(-16, -16, 36))
+		v:SetHullDuck(scale * Vector(-16, -16, 0), scale * Vector(16, 16, 36))
 		if SERVER then 
 			v:SetStepSize(18 * scale)
 		else
 			local mat = Matrix()
 			mat:Scale(Vector(scale, scale, scale))
+			if scale == 1 then
+				v:DisableMatrix("RenderMultiply")
+			end
 			v:EnableMatrix("RenderMultiply", mat)
 		end
 	end
