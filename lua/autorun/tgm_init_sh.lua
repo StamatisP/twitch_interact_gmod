@@ -4,9 +4,9 @@ local TankControls = false
 local RandomSensitivity = false
 
 if SERVER then
-	ActionDuration = CreateConVar("tgm_actionduration", "15", FCVAR_ARCHIVE + FCVAR_NOTIFY + FCVAR_REPLICATED, "How long actions take. Some actions double this.")
+	ActionDuration = CreateConVar("tgm_actionduration", "20", FCVAR_ARCHIVE + FCVAR_NOTIFY + FCVAR_REPLICATED, "How long actions take. Some actions double this.")
 else
-	ActionDuration = CreateClientConVar("tgm_actionduration", "15", false, false, "How long actions take.")
+	ActionDuration = CreateClientConVar("tgm_actionduration", "20", false, false, "How long actions take.")
 end
 function GetActionDuration()
 	return ActionDuration:GetInt()

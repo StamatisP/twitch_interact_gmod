@@ -398,6 +398,7 @@ local function GetVotableFuncs(tab, isDoubleVote)
 	PrintTable(used_funcs)
 end
 
+//AutoVote
 local function VoteTime(isDoubleVote)
 	if not isDoubleVote then isDoubleVote = false end
 	if not voting_time then
@@ -476,7 +477,7 @@ local function VoteTime(isDoubleVote)
 	end
 end
 
-local function ContainsFunc(tab, func)
+/*local function ContainsFunc(tab, func)
 	for k, v in pairs(tab) do
 		if v.name == func then
 			//print(v.name .. " = " .. func)
@@ -486,6 +487,7 @@ local function ContainsFunc(tab, func)
 			continue
 		end
 	end
+	if func == "1" or func == "2" or func == "3" or func == "4" then return true // !1-4 to vote instead of typing the name
 	return false
 end
 
@@ -495,14 +497,14 @@ local function GetKey(tab, func)
 			return k
 		end
 	end
-end
+end*/
 
 local function VoteInfo(user, message)
 	print("info received")
-	if not ContainsFunc(votable_funcs, message) then return end
-	local key = GetKey(votable_funcs, message)
-	PrintMessage(HUD_PRINTTALK, string.gsub(user, "^%l", string.upper) .. " has voted for " .. PrettyFuncs[message])
-	votable_funcs[key].value = votable_funcs[key].value + 1
+	message = tonumber(message)
+	if not votable_funcs[message] then return end
+	PrintMessage(HUD_PRINTTALK, string.gsub(user, "^%l", string.upper) .. " has voted for " .. PrettyFuncs[votable_funcs[message].name])
+	votable_funcs[message].value = votable_funcs[message].value + 1
 	//PrintTable(votable_funcs)
 end
 
@@ -1677,7 +1679,7 @@ WSFunctions["silenthill"] = {enabled = true, func = SilentHill}
 WSFunctions["timeskip"] = {enabled = true, func = TimeSkip}
 WSFunctions["upsidedowncams"] = {enabled = true, func = UpsideDownCameras}
 WSFunctions["bomberman"] = {enabled = true, func = Bomberman}
-WSFunctions["antfight"] = {enabled = true, func = AntFight}
+WSFunctions["antfight"] = {enabled = false, func = AntFight} // disabled because crouch hitbox is fucky
 WSFunctions["paranoia"] = {enabled = true, func = Paranoia}
 WSFunctions["blindness"] = {enabled = true, func = Blindness}
 WSFunctions["deafness"] = {enabled = true, func = Deafness}

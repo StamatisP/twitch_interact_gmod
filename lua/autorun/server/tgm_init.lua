@@ -1,10 +1,15 @@
 if game.SinglePlayer() then ErrorNoHalt("Twitch Interaction may not support singleplayer!")  end
+local tgm_ver = "v1.6"
+print("TGM version " .. tgm_ver .. " is running, on OS " .. jit.os .. "!")
 
-require("gwsockets")
-require("gwsockets") // apparently theres a bug with debian, this should work?
+local didload, sockerr = pcall(function() require("gwsockets") end)
+if not didload then
+	print(sockerr)
+	print("GWSockets did not load the first time, trying again...")
+	if _G.GWSockets then PrintTable(_G.GWSockets) print("------ gwsockets is in global table! ------") end
+	require("gwsockets") // apparently theres a bug with debian, this should work?
+end
 //include("actions.lua")
-local tgm_ver = "v1.5.5"
-print("TGM version " .. tgm_ver .. " is runnin!")
 
 // This controls how fast you receive messages, like the twitch chat and etc
 // seems like 0.4 or so is the minimum
@@ -370,7 +375,6 @@ hook.Add("PlayerSay", "ChangeSettings", function(sender, txt, teamchat)
 		if not args[2] then
 			if voting_time then
 				if WSFunctions[clean_command] then
-					PrintMessage(HUD_PRINTTALK, sender:Nick() .. " has voted for " .. PrettyFuncs[clean_command])
 					WSFunctions["voteinfo"].func(sender:Nick(), clean_command)
 				end
 			else
@@ -385,6 +389,11 @@ hook.Add("PlayerSay", "ChangeSettings", function(sender, txt, teamchat)
 			IncrementActionCounter()
 		end
 
+		return ""
+	elseif args[1] == "!1" or args[1] == "!2" or args[1] == "!3" or args[1] == "!4" then
+		if voting_time then
+			WSFunctions["voteinfo"].func(sender:Nick(), string.TrimLeft(args[1], "!"))
+		end
 		return ""
 	end
 end)
