@@ -150,10 +150,6 @@ function WEBSOCKET:onConnected()
 	socket_reconnect_tries = 0
 	PrintMessage(HUD_PRINTTALK, "Websocket connection established!")
 	WEBSOCKET:write("Connected Message!")
-	timer.Create("CheckIfConnected", MessageDelay, 0, function()
-		//print("testing for connection")
-		//WEBSOCKET:write("ConnTest") // is this even needed anymore?
-	end)
 	if AutoVoteTimer:GetBool() then
 		timer.Create("AutoVote", AutoVoteTimerDuration:GetInt(), 0, function()
 			VoteCounter = VoteCounter + 1
@@ -214,13 +210,7 @@ end)
 hook.Add("PlayerSay", "ChangeSettings", function(sender, txt, teamchat)
 	local args = string.Split(txt, " ")
 	args[1] = string.lower(args[1])
-	if args[1] == "!changedelay" then
-		MessageDelay = args[2]
-		print("BEFORE - -- -- - - -- - --" .. MessageDelay)
-		timer.Adjust("CheckIfConnected", MessageDelay)
-		timer.Start("CheckIfConnected")
-		print("AFTER - -- - - -- - - -" .. MessageDelay)
-	elseif args[1] == "!reconnectsocket" then
+	if args[1] == "!reconnectsocket" then
 		if sender:IsAdmin() then
 			if WEBSOCKET:isConnected() or socket_connected then
 				WEBSOCKET:close()
@@ -368,6 +358,7 @@ hook.Add("PlayerSay", "ChangeSettings", function(sender, txt, teamchat)
 	elseif args[1] == "!streamer" then
 		TGM_Streamer = sender
 		PrintMessage(HUD_PRINTTALK, TGM_Streamer:Nick() .. " has been set as the Streamer.")
+		file.Write("tgm_streamer.txt", TGM_Streamer:SteamID())
 		WSFunctions["spbossmode"].enabled = true
 		return ""
 	elseif WSFunctions[string.TrimLeft(args[1], "!")] then

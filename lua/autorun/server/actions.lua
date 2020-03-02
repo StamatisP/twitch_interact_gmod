@@ -83,8 +83,8 @@ local function GetAlivePlayers()
 end
 
 hook.Add("EntityTakeDamage", "TGMTakeDamage", function(target, dmginfo)
-	if target:IsPlayer() and InstakillVar then
-		dmginfo:ScaleDamage(99999)
+	if InstakillVar then
+		dmginfo:ScaleDamage(9999)
 	end
 	if target:IsPlayer() and target.Kamikaze then
 		dmginfo:ScaleDamage(0.2)
@@ -522,9 +522,8 @@ local function ZaWarudo() // from Vipes, edited for personal use https://steamco
 		RunConsoleCommand( "ragdoll_sleepaftertime", "0" )
 		math.randomseed(os.time())
 		local randplayer = plys[math.random(#plys)]
-		if TGM_Streamer then randplayer = TGM_Streamer end
 		for k, v in pairs(plys) do
-			if v:Alive() and (v != randplayer or v != TGM_Streamer) then
+			if v:Alive() and (v != randplayer) then
 				print(v:Nick())
 				v:Freeze( true )
 				v:SetMoveType(MOVETYPE_NOCLIP)
@@ -1263,7 +1262,7 @@ local function Kamikaze()
 	KamikazePlayer = kamikazeplayer
 	kamikazeplayer.Kamikaze = true
 
-	if GetGlobalInt("ActionCounter") % 10 == 0 then
+	if GetGlobalInt("ActionCounter") % 5 == 0 then
 		kamikazeplayer:EmitSound("mario_screaming")
 	else
 		kamikazeplayer:EmitSound("kamikaze_scream")
@@ -1655,7 +1654,10 @@ local function SPBossMode()
 		net.Start("BossMode")
 			net.WriteBool(false)
 		net.Broadcast()
-		timer.Simple(0.1, function() boss:ConCommand("-walk") end)
+		timer.Simple(0.1, function() 
+			boss:ConCommand("-walk")
+			boss:ConCommand("snd_restart") 
+		end)
 	end)
 end
 
