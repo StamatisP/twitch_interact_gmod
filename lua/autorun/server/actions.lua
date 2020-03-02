@@ -1703,7 +1703,7 @@ WSFunctions["silenthill"] = {enabled = true, func = SilentHill}
 WSFunctions["timeskip"] = {enabled = true, func = TimeSkip}
 WSFunctions["upsidedowncams"] = {enabled = true, func = UpsideDownCameras}
 WSFunctions["bomberman"] = {enabled = true, func = Bomberman}
-WSFunctions["antfight"] = {enabled = false, func = AntFight} // disabled because crouch hitbox is fucky
+WSFunctions["antfight"] = {enabled = true, func = AntFight}
 WSFunctions["paranoia"] = {enabled = true, func = Paranoia}
 WSFunctions["blindness"] = {enabled = true, func = Blindness}
 WSFunctions["deafness"] = {enabled = true, func = Deafness}
@@ -1726,7 +1726,7 @@ WSFunctions["punchscreen"] = {enabled = true, func = PunchScreen}
 WSFunctions["speedtime"] = {enabled = true, func = SpeedTime}
 WSFunctions["slowtime"] = {enabled = true, func = SlowTime}
 WSFunctions["phoon"] = {enabled = true, func = Phoon}
-WSFunctions["spbossmode"] = {enabled = false, func = SPBossMode}
+WSFunctions["spbossmode"] = {enabled = true, func = SPBossMode}
 /* MULTIPLAYER-BASED ACTIONS */
 WSFunctions["prophunt"] = {enabled = true, func = PropHunt}
 WSFunctions["spawnzombies"] = {enabled = true, func = SpawnZombies}
