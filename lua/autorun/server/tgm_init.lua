@@ -160,6 +160,16 @@ function WEBSOCKET:onConnected()
 			end
 		end)
 	end
+	if file.Exists("tgm_streamer.txt", "DATA") then
+		local streamer_id = file.Read("tgm_streamer.txt", "DATA")
+		TGM_Streamer = player.GetBySteamID(streamer_id)
+		if TGM_Streamer == false then
+			print("Streamer not found!")
+			return
+		end
+		print(TGM_Streamer:Nick() .. " is the Streamer.")
+	end
+	
 end
 
 function WEBSOCKET:onDisconnected()
