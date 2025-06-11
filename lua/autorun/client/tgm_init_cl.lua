@@ -677,12 +677,10 @@ end)
 net.Receive("Paranoia", function()
 	Paranoia = true
 	math.randomseed(os.time())
-	local rndvo = math.random(1, 5)
 	local rndstart = math.random(1, 2)
 	local rndloop = math.random(1, 4)
 	local loopstring = "paranoia_loop_"..rndloop..".wav"
 	local loopsnd = PlayLoopingSound(loopstring)
-	surface.PlaySound("paranoia_vo_"..rndvo..".mp3")
 	surface.PlaySound("paranoia_start_"..rndstart..".mp3")
 	loopsnd:PlayEx(0.6, 100)
 
@@ -706,7 +704,6 @@ net.Receive("Paranoia", function()
 	hook.Add("PreDrawSkyBox", "ParanoiaStopSkybox", function() return true end)
 
 	timer.Simple(GetActionDuration(), function()
-		//surface.PlaySound("paranoia_end_1.mp3") todo: remove the sound maybe? im not sure to keep it...
 		timer.Create("fog_end_lerp_2_paranoia", 0.05, 0, function()
 			if Fog_Density <= 0 then
 				loopsnd:FadeOut(1)
@@ -741,13 +738,9 @@ net.Receive("WhosWho", function()
 	end)
 	if WhosWho then
 		surface.PlaySound("whoswho_sting.mp3")
-		if GetGlobalInt("ActionCounter", 1) % 10 == 0 then
-			LocalPlayer():EmitSound("whoswho_jingle.mp3", 0, 100, 0.4, CHAN_AUTO)
-		else
-			timer.Simple(2, function()
-				loopsound:PlayEx(0.5, 100)
-			end)
-		end
+		timer.Simple(2, function()
+			loopsound:PlayEx(0.5, 100)
+		end)
 	else
 		print("ending")
 		loopsound:Stop()

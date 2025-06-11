@@ -45,7 +45,7 @@ ChatBossMode = false
 ChatBossEnt = nil
 ChatBossDamagers = {}
 
-TGM_CurrentViewers = 0
+TGM_CurrentViewers = 5
 TGM_Streamer = nil
 
 util.AddNetworkString("PrintTwitchChat")

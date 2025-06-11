@@ -1,18 +1,18 @@
 {
-	"title"		:	"Twitch Interaction",
-	"type"		:	"ServerContent",
-	"tags"		:	"fun",
-	"ignore"	:
-	[
-		"*.psd",
-		"*.vcproj",
-		"*.svn*",
-		".git/*",
-		"*.md",
-		"*.bat",
-		".gitattributes",
-		".gitignore",
-		"twitch_interact_gmod.jpg",
-		"twitch_interact_gmod.gma"
-	]
+  "title"   : "Twitch Interaction",
+  "type"    : "ServerContent",
+  "tags"    : "fun",
+  "ignore"  :
+  [
+    "*.psd",
+    "*.vcproj",
+    "*.svn*",
+    ".git/*",
+    "*.md",
+    "*.bat",
+    ".gitattributes",
+    ".gitignore",
+    "twitch_interact_gmod.jpg",
+    "twitch_interact_gmod.gma"
+  ]
 }

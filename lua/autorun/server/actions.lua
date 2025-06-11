@@ -66,7 +66,7 @@ hook.Add("VotingStarted", "TimeSkipRec", function()
 end)
 
 local function TGMCalcHear(listener, talker)
-	if ParanoiaVar or DeafnessVar then
+	if DeafnessVar then
 		return false
 	end
 end
@@ -967,7 +967,7 @@ local function Paranoia()
 	ParanoiaVar = true
 	local plys = GetAlivePlayers()
 	SendTimer(false, plys)
-	for k, ply in ipairs(plys) do // from ulib https://github.com/TeamUlysses/ulib/blob/master/LICENSE.md -- changes were made 
+	for k, ply in ipairs(plys) do -- from ulib https://github.com/TeamUlysses/ulib/blob/master/LICENSE.md -- changes were made 
 		local visibility = 0
 		ply:DrawShadow( false )
 		ply:SetMaterial( "models/effects/vol_light001" )
@@ -1094,7 +1094,7 @@ local function RainingBombs()
 	SendTimer(true)
 	local SpecialFunc = false
 	if GetGlobalInt("ActionCounter") % 10 == 0 then PrintMessage(HUD_PRINTTALK, "Double Bombs!") SpecialFunc = true end
-	timer.Create("RainingBombs", 1, GetActionDuration(), function()
+	timer.Create("RainingBombs", 1.5, GetActionDuration(), function()
 		for k, v in ipairs(player.GetAll()) do
 			CreateFrag(v)
 			if SpecialFunc then
@@ -1222,7 +1222,7 @@ local function ItsAMystery()
 end
 
 local function Earthquake()
-	util.ScreenShake(Vector(0, 0, 0), 30, 30, GetActionDuration(), 10000)
+	util.ScreenShake(Vector(0, 0, 0), 30, 30, GetActionDuration(), 999999, true)
 end
 
 local function Instakill()
@@ -1741,13 +1741,13 @@ WSFunctions["swappositions"] = {enabled = true, func = SwapPositions}
 WSFunctions["bigheadmode"] = {enabled = true, func = BigHeadMode}
 WSFunctions["jellymode"] = {enabled = true, func = JellyMode}
 WSFunctions["rainingbombs"] = {enabled = true, func = RainingBombs}
-WSFunctions["whoswho"] = {enabled = true, func = WhosWho}
+WSFunctions["whoswho"] = {enabled = false, func = WhosWho}
 WSFunctions["instakill"] = {enabled = true, func = Instakill}
 WSFunctions["kamikaze"] = {enabled = true, func = Kamikaze}
 WSFunctions["reviveeveryone"] = {enabled = true, func = ReviveEveryone}
 WSFunctions["bossmode"] = {enabled = true, func = BossMode}
 WSFunctions["mathtime"] = {enabled = true, func = MathTime}
-WSFunctions["chatboss"] = {enabled = true, func = ChatBoss}
+WSFunctions["chatboss"] = {enabled = false, func = ChatBoss} -- disabled due to a bug with the twitch program i made
 WSFunctions["chonkyplayers"] = {enabled = true, func = ChonkyPlayers}
 WSFunctions["upsidedownplayers"] = {enabled = true, func = UpsidedownPlayers}
 
